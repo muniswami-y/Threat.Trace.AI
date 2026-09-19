@@ -1,0 +1,131 @@
+{
+  "report_id": "upaE_RPT-2026-48DF819C_ECyr",
+  "generated_at": "2026-09-19T06:27:43.198342+00:00",
+  "case": {
+    "case_id": "b5Lz_TT-2026-AC80B73D_KX97",
+    "subject": "New message in villan",
+    "sender": "noreply@nsd.org.in",
+    "risk_score": 15.0,
+    "risk_level": "LOW",
+    "risk_factors": [
+      "Email headers not available (web client analysis)",
+      "Sender domain: nsd.org.in",
+      "Sender appears to be a service/notification address",
+      "Multiple ALL-CAPS words (5 found) \u2014 social engineering pattern",
+      "Excessive subdomains (3 levels) \u2014 obfuscation technique"
+    ],
+    "urls": [
+      {
+        "original": "http://nsd.org.in",
+        "unwrapped": "http://nsd.org.in",
+        "final": "http://nsd.org.in",
+        "redirect_count": 0,
+        "status": 405,
+        "error": null,
+        "is_google_wrapped": false,
+        "cross_domain_redirect": false,
+        "redirect_chain": [
+          "http://nsd.org.in"
+        ],
+        "ssrf_safe": true,
+        "homoglyph": {
+          "is_punycode": false,
+          "is_homoglyph_spoof": false,
+          "spoofed_brand": null,
+          "normalized_domain": "nsd.org.in"
+        }
+      },
+      {
+        "original": "https://hackathon.nsd.org.in/team",
+        "unwrapped": "https://hackathon.nsd.org.in/team",
+        "final": "https://hackathon.nsd.org.in/team",
+        "redirect_count": 0,
+        "status": null,
+        "error": "[Errno 11001] getaddrinfo failed",
+        "is_google_wrapped": false,
+        "cross_domain_redirect": false,
+        "redirect_chain": [
+          "https://hackathon.nsd.org.in/team"
+        ],
+        "ssrf_safe": true,
+        "homoglyph": {
+          "is_punycode": false,
+          "is_homoglyph_spoof": false,
+          "spoofed_brand": null,
+          "normalized_domain": "hackathon.nsd.org.in"
+        }
+      }
+    ],
+    "domains": [
+      "hackathon.nsd.org.in",
+      "nsd.org.in"
+    ],
+    "ips": [
+      "15.197.225.128"
+    ],
+    "geo_locations": [
+      {
+        "ip": "15.197.225.128",
+        "country": "Canada",
+        "region": "Quebec",
+        "city": "Montreal",
+        "lat": 45.5019,
+        "lon": -73.5674,
+        "isp": "Amazon.com, Inc.",
+        "org": "AWS Global Accelerator (GLOBAL)",
+        "is_private": false,
+        "status": "success"
+      }
+    ],
+    "recommendation": "ALLOW",
+    "created_at": "2026-09-19T06:27:34",
+    "report_id": "upaE_RPT-2026-48DF819C_ECyr",
+    "canonical_hash": "0x28feaf53a8ffdebc683e4219f415217eda4423d8779705ee14649232f0c5a5f5",
+    "signature": "0x3045022100bc3bcfc09d48ce018727cba52a97e58afbef13f354e7f194442ca7bf15ecf7e90220130c6fd537fa38f13224176ccab904d733e62b484cbefa9835564c779b2dff61",
+    "public_key_fingerprint": "TT-SECP256R1-14B6:1DE7:CEE4:E003",
+    "crypto_seal": {
+      "sealed": true,
+      "canonical_hash": "0x28feaf53a8ffdebc683e4219f415217eda4423d8779705ee14649232f0c5a5f5",
+      "raw_canonical_hash": "28feaf53a8ffdebc683e4219f415217eda4423d8779705ee14649232f0c5a5f5",
+      "body_hash": "0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "signature": "0x3045022100bc3bcfc09d48ce018727cba52a97e58afbef13f354e7f194442ca7bf15ecf7e90220130c6fd537fa38f13224176ccab904d733e62b484cbefa9835564c779b2dff61",
+      "algorithm": "ECDSA-SECP256R1-SHA256",
+      "public_key_fingerprint": "TT-SECP256R1-14B6:1DE7:CEE4:E003",
+      "public_key_pem": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAECU1o5xdBWFLezhgGpzbpc1MsTrmz\n7ScBzLh5RQkHZlwRYzJ6Z0X6i5GELZMY3svYwpRjPNfGIcr4bD7MNRy5lQ==\n-----END PUBLIC KEY-----\n",
+      "merkle_root": "0xd31b1c929e3c564a3b7a49442eec83bf841112c290eff2a56e96fe442a7f5c3b",
+      "blockchain_tx": "0xe83fb42616df5b4c530eb8512d48b581066786fb8dae72d7c0288b7740c09115",
+      "blockchain_network": "Polygon Amoy (Chain ID 80002)",
+      "timestamp": "2026-09-19T06:27:43.178847+00:00",
+      "canonical_fields": {
+        "case_id": "b5Lz_TT-2026-AC80B73D_KX97",
+        "subject": "New message in villan",
+        "sender": "noreply@nsd.org.in",
+        "recipient": "",
+        "body_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "risk_score": 15,
+        "risk_level": "LOW",
+        "risk_factors": [
+          "Email headers not available (web client analysis)",
+          "Excessive subdomains (3 levels) \u2014 obfuscation technique",
+          "Multiple ALL-CAPS words (5 found) \u2014 social engineering pattern",
+          "Sender appears to be a service/notification address",
+          "Sender domain: nsd.org.in"
+        ],
+        "urls": [
+          "http://nsd.org.in",
+          "https://hackathon.nsd.org.in/team"
+        ],
+        "domains": [
+          "hackathon.nsd.org.in",
+          "nsd.org.in"
+        ],
+        "ips": [
+          "15.197.225.128"
+        ],
+        "recommendation": "ALLOW",
+        "origin_ip": ""
+      }
+    }
+  },
+  "disclaimer": "This is an automated forensic summary produced by THREAT TRACE AI for cybersecurity threat attribution and chain-of-custody logging. Cryptographically hashed for tamper-evidence."
+}

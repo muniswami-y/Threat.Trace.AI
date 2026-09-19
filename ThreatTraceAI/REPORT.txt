@@ -1,0 +1,1941 @@
+================================================================================
+           THREAT TRACE AI — COMPREHENSIVE PROJECT REPORT
+================================================================================
+  Version   : 1.0.0
+  Platform  : Smart India Hackathon (SIH) 2026
+  Stack     : FastAPI · React (Vite) · Chrome Extension (MV3) · SQLite
+              · Polygon Amoy Blockchain · ECDSA Cryptography · AES-256-GCM
+  Location  : d:\SIH\ThreatTraceAI
+  Generated : September 16, 2026
+================================================================================
+
+TABLE OF CONTENTS
+-----------------
+ 1.  Executive Summary
+ 2.  Project Architecture Overview
+ 3.  Directory Structure (Full Tree)
+ 4.  Backend — FastAPI Server
+      4.1  Entry Point & Application Bootstrap (main.py)
+      4.2  Configuration System (config.py)
+      4.3  Database Layer (database.py & models.py)
+      4.4  API Routes — All Endpoints
+ 5.  Core Analysis Pipeline — 14 Steps
+      5.1  Step 1  : Email Parsing
+      5.2  Step 2  : Header Analysis (SPF / DKIM / DMARC)
+      5.3  Step 3  : Display Name Spoofing Detection
+      5.4  Step 4  : IOC Extraction
+      5.5  Step 5  : URL Unmasking & Deobfuscation Engine
+      5.6  Step 6  : Live Threat Intelligence Feeds
+      5.7  Step 7  : Content Scoring
+      5.8  Step 8  : URL Heuristic Scoring
+      5.9  Step 9  : Link Mismatch Detection
+      5.10 Step 10 : Sender Heuristics
+      5.11 Step 11 : Redirect Chain Analysis
+      5.12 Step 12 : Risk Score Combiner & Verdict
+      5.13 Step 13 : Geolocation
+      5.14 Step 14 : Infrastructure Graph
+ 6.  Risk Engine — Full Breakdown
+ 7.  Cryptographic Security Layer
+      7.1  ECDSA Key Management
+      7.2  Canonical SHA-256 Hashing
+      7.3  Digital Signature (ECDSA SECP256R1)
+      7.4  Cryptographic Evidence Seal
+      7.5  Tamper Detection Engine
+      7.6  AES-256-GCM End-to-End Encrypted Vault
+      7.7  DKIM Header Cryptographic Inspector
+ 8.  Blockchain Chain-of-Custody
+      8.1  Blockchain Service (blockchain_service.py)
+      8.2  Smart Contract (ThreatTraceRegistry.sol)
+ 9.  Salting & Peppering — ID Obfuscation
+10.  Report Generation System
+11.  SOC Orchestration & Notifier
+      11.1 CEF (Common Event Format)
+      11.2 Jira Service Management
+      11.3 Slack Alert Dispatch
+      11.4 SOC Route Extra Capabilities
+12.  SSRF Protection Layer
+13.  Geolocation Service
+14.  Browser Extension — Chrome MV3
+15.  Frontend — React Dashboard
+      15.1 Pages
+      15.2 Components
+16.  Frontend Services Layer (api.js)
+17.  Data Models — Full Schema
+18.  Utility Layer
+19.  Security Mechanisms Summary Table
+20.  Technology Stack Summary
+21.  Full Data Flow (End-to-End)
+22.  API Endpoint Reference (All Routes)
+23.  Keyword Dictionaries & Signal Lists
+24.  Configuration Variables Reference
+
+
+================================================================================
+1. EXECUTIVE SUMMARY
+================================================================================
+
+ThreatTrace AI is a full-stack, AI-powered email threat detection and forensic
+intelligence platform. It is designed for cybersecurity professionals, SOC
+(Security Operations Center) analysts, and law enforcement digital forensics
+teams.
+
+WHAT IT DOES:
+  - Accepts a raw email (pasted text, .eml content, or DOM-scraped from Gmail)
+  - Runs it through a 14-step automated analysis pipeline
+  - Produces an explainable risk score (0-100) with every signal traced to a
+    specific, human-readable evidence point
+  - Cryptographically seals the forensic evidence using ECDSA + SHA-256
+  - Anchors a tamper-proof hash to the Polygon Amoy blockchain for legal
+    chain-of-custody
+  - Generates a downloadable forensic report in JSON and styled HTML
+  - Dispatches SOC alerts in CEF format (Splunk/Sentinel), Jira tickets,
+    and Slack/Teams notifications
+
+KEY DIFFERENTIATORS:
+  - EXPLAINABILITY: Every risk point is tied to a concrete, readable signal —
+    no black-box ML, every rule can be shown to a judge or investigator
+  - CRYPTOGRAPHIC INTEGRITY: Evidence is ECDSA-signed and blockchain-anchored,
+    making post-hoc tampering detectable and provable in court
+  - GMAIL NATIVE: The Chrome extension scrapes Gmail's DOM without requiring
+    SMTP relay access or email forwarding
+  - END-TO-END SECURITY: Salt+pepper ID obfuscation, SSRF protection, AES-GCM
+    encrypted dossiers, and homoglyph detection all work together
+
+
+================================================================================
+2. PROJECT ARCHITECTURE OVERVIEW
+================================================================================
+
+  +----------------------------------------------------------+
+  |                   THREAT TRACE AI                        |
+  |                                                          |
+  |  +------------------+    +---------------------+        |
+  |  | Chrome Extension |    |  React Frontend      |        |
+  |  | Gmail MV3        |    |  Vite + JSX          |        |
+  |  | content.js       |    |  Port :5173           |        |
+  |  | popup.js         |    |  Dashboard /          |        |
+  |  | background.js    |    |  Investigation /      |        |
+  |  +--------+---------+    |  CaseReport           |        |
+  |           |              +----------+------------+        |
+  |           | POST /api/analyze       | HTTP                |
+  |           +-------------+----------+                     |
+  |                         v                                |
+  |          +---------------------------------+             |
+  |          |  FastAPI Backend  Port :8000     |             |
+  |          |  7 Router Modules               |             |
+  |          |  15+ Service Modules            |             |
+  |          +--------+-------+--------+-------+             |
+  |                   |       |        |                     |
+  |           +-------+  +----+----+  +----------+          |
+  |           | SQLite |  | Feeds   |  | Polygon  |          |
+  |           |   DB   |  | OpenPh. |  | Amoy     |          |
+  |           |        |  | URLHaus |  | Testnet  |          |
+  |           |        |  | ip-api  |  | Chain 80002|        |
+  |           +--------+  +---------+  +----------+          |
+  +----------------------------------------------------------+
+
+
+================================================================================
+3. DIRECTORY STRUCTURE (FULL TREE)
+================================================================================
+
+d:\SIH\ThreatTraceAI\
+|
++-- backend\
+|   +-- app\
+|   |   +-- main.py              FastAPI app entry, CORS, lifespan
+|   |   +-- config.py            Pydantic settings, env-driven configuration
+|   |   +-- database.py          SQLAlchemy async engine + Base + get_db()
+|   |   +-- models.py            ORM table definitions (Case, ThreatIntelCache)
+|   |   +-- keys\
+|   |   |   +-- forensic_authority_private.pem   ECDSA private key (PKCS8)
+|   |   |   +-- forensic_authority_public.pem    ECDSA public key (SPKI)
+|   |   +-- routes\
+|   |   |   +-- analyze.py       POST /api/analyze   (main pipeline)
+|   |   |   +-- cases.py         GET/DELETE /api/cases
+|   |   |   +-- reports.py       POST/GET /api/reports
+|   |   |   +-- intelligence.py  Manual IOC feed checks
+|   |   |   +-- blockchain.py    Chain-of-custody operations
+|   |   |   +-- crypto.py        ECDSA seal/verify/encrypt
+|   |   |   +-- soc.py           SOC dispatch + IP probe + URL unmask
+|   |   +-- services\
+|   |   |   +-- email_parser.py        Email .eml / plaintext parser
+|   |   |   +-- header_analyzer.py     SPF/DKIM/DMARC + display-name spoof
+|   |   |   +-- ioc_extractor.py       URL/IP/domain/email extraction + DNS
+|   |   |   +-- url_unmasker.py        Deobfuscation, SSRF, homoglyphs, hops
+|   |   |   +-- threat_intelligence.py OpenPhish + URLHaus live feed checks
+|   |   |   +-- risk_engine.py         Additive risk scoring (all 5 scorers)
+|   |   |   +-- graph_engine.py        Infrastructure node-edge graph builder
+|   |   |   +-- geolocation.py         GeoIP via ip-api.com
+|   |   |   +-- crypto_service.py      ECDSA + AES-GCM + DKIM + Merkle
+|   |   |   +-- blockchain_service.py  Polygon Amoy write + simulate
+|   |   |   +-- report_generator.py    JSON + styled HTML report writer
+|   |   |   +-- soc_notifier.py        CEF + Jira + Slack + Teams
+|   |   |   +-- ip_intel.py            TCP liveness probe + ASN lookup
+|   |   |   +-- related_emails.py      Related case finder
+|   |   +-- utils\
+|   |       +-- hashing.py     SHA-256 helpers for dict and text
+|   |       +-- salting.py     Salt + Pepper ID obfuscation (NEW)
+|   |       +-- validators.py  URL / IP / email regex extractors
+|   +-- contracts\
+|       +-- ThreatTraceRegistry.sol    Solidity smart contract (Polygon Amoy)
+|
++-- frontend\
+|   +-- src\
+|   |   +-- App.jsx
+|   |   +-- main.jsx
+|   |   +-- index.css              Design system (dark theme, glassmorphism)
+|   |   +-- pages\
+|   |   |   +-- ThreatTraceCockpit.jsx   Main analysis workspace (34 KB)
+|   |   |   +-- Dashboard.jsx            Cases overview dashboard (13 KB)
+|   |   |   +-- Investigation.jsx        Deep-dive case view (12 KB)
+|   |   |   +-- CaseReport.jsx           Report download page (8 KB)
+|   |   +-- components\
+|   |   |   +-- CryptoSealModal.jsx      ECDSA seal viewer + tamper demo (32 KB)
+|   |   |   +-- SOCDispatchModal.jsx     SOC alert dispatcher UI (21 KB)
+|   |   |   +-- InfrastructureGraph.jsx  Node-edge network graph (7 KB)
+|   |   |   +-- SihInfrastructureGraph.jsx  Simplified graph for SIH (4 KB)
+|   |   |   +-- ReportPanel.jsx          Report gen + download controls (7 KB)
+|   |   |   +-- IOCPanel.jsx             URLs/domains/IPs tabbed view (6 KB)
+|   |   |   +-- ResponseMatrix.jsx       Analyst response steps (4 KB)
+|   |   |   +-- RiskFactors.jsx          Explainable signals list (4 KB)
+|   |   |   +-- RiskScore.jsx            Animated circular gauge (3 KB)
+|   |   |   +-- IPGeolocation.jsx        GeoIP cards with coords (3 KB)
+|   |   |   +-- Header.jsx               Navigation header (4 KB)
+|   |   +-- services\
+|   |       +-- api.js                   Axios API client
+|
++-- extension\
+|   +-- manifest.json     Chrome MV3 manifest
+|   +-- content.js        Gmail DOM scraping + overlay injection (21 KB)
+|   +-- popup.js          Extension popup logic (3 KB)
+|   +-- popup.html        Extension popup UI
+|   +-- background.js     Service worker (message relay to backend)
+|   +-- content.css       Gmail overlay styling (6 KB)
+|   +-- popup.css         Popup styling (4 KB)
+|   +-- icon16.png / icon48.png / icon128.png / icon.svg
+|   +-- logo.png
+|
++-- reports\              Generated forensic reports (JSON + HTML)
++-- demo_data\            Sample email files for testing
++-- package.json          Monorepo scripts (concurrently backend + frontend)
++-- run_all.bat           One-click Windows launcher
++-- run_backend.bat       Backend-only launcher
++-- run_frontend.bat      Frontend-only launcher
++-- live_risk_lab.py      Standalone risk engine test script
++-- README.md
++-- README.txt
+
+
+================================================================================
+4. BACKEND — FASTAPI SERVER
+================================================================================
+
+------------------------------------------------------------------------
+4.1 ENTRY POINT & APPLICATION BOOTSTRAP
+------------------------------------------------------------------------
+File: backend/app/main.py
+
+The FastAPI application uses an ASYNC LIFESPAN CONTEXT MANAGER, which
+ensures init_db() is called before any request is served. This creates all
+SQLAlchemy ORM tables in the SQLite database if they do not already exist.
+
+CORS (Cross-Origin Resource Sharing) is configured to allow ALL origins ("*"),
+methods, and headers — appropriate for a hackathon demo environment.
+
+ROUTERS MOUNTED:
+  Router         | URL Prefix        | Purpose
+  ---------------|-------------------|---------------------------------
+  analyze        | /api              | Core analysis pipeline
+  cases          | /api/cases        | Case CRUD and retrieval
+  reports        | /api/reports      | Report generation and download
+  intelligence   | /api/intelligence | Threat feed lookups
+  blockchain     | /api/blockchain   | Chain-of-custody operations
+  crypto         | /api/crypto       | ECDSA seal/verify operations
+  soc            | /api/soc          | SOC alerting and dispatch
+
+HEALTH ENDPOINTS:
+  GET /         Returns: project name, version, demo mode status
+  GET /health   Returns: {"status": "healthy", "demo_mode": true/false}
+
+STDOUT/STDERR ENCODING:
+  The entry point reconfigures sys.stdout and sys.stderr to UTF-8 with
+  'replace' error handling — this prevents Windows encoding crashes when
+  printing non-ASCII characters from email bodies.
+
+
+------------------------------------------------------------------------
+4.2 CONFIGURATION SYSTEM
+------------------------------------------------------------------------
+File: backend/app/config.py
+
+Uses Pydantic Settings (pydantic-settings library) which auto-loads values
+from environment variables or a .env file in the working directory.
+
+The @lru_cache() decorator wraps get_settings() — the Settings object is
+only instantiated once per process, preventing redundant .env file reads.
+
+A field_validator on DATABASE_URL sanitizes the value — only sqlite://,
+postgresql://, or mysql:// prefixes are accepted. Any invalid value falls
+back safely to the default SQLite URL.
+
+CONFIGURATION VARIABLES:
+  Name                | Default Value                          | Purpose
+  --------------------|----------------------------------------|------------------
+  APP_NAME            | "THREAT TRACE AI"                      | Shown in API docs
+  DEBUG               | True                                   | Debug mode
+  SECRET_KEY          | "change-me"                            | App secret
+  DATABASE_URL        | sqlite+aiosqlite:///./threattrace.db   | DB connection
+  GOOGLE_CLIENT_ID    | ""                                     | OAuth (future)
+  GOOGLE_CLIENT_SECRET| ""                                     | OAuth (future)
+  PHISHTANK_API_KEY   | ""                                     | PhishTank (future)
+  OPENPHISH_ENABLED   | True                                   | Enable live feed
+  IP_API_URL          | http://ip-api.com/json/                | GeoIP base URL
+  POLYGON_RPC_URL     | https://rpc-amoy.polygon.technology    | Blockchain RPC
+  PRIVATE_KEY         | ""                                     | EVM wallet key
+  CONTRACT_ADDRESS    | ""                                     | Smart contract addr
+  CHAIN_ID            | 80002                                  | Polygon Amoy
+  DEMO_MODE           | True                                   | Simulated outputs
+
+
+------------------------------------------------------------------------
+4.3 DATABASE LAYER
+------------------------------------------------------------------------
+Files: backend/app/database.py, backend/app/models.py
+
+Database: SQLite via SQLAlchemy (async) + aiosqlite driver.
+Production-ready: swap DATABASE_URL to postgresql:// for Postgres.
+
+CASE TABLE — FULL COLUMN SCHEMA:
+  Column          | Type         | Notes
+  ----------------|--------------|----------------------------------------
+  id              | Integer (PK) | Auto-increment primary key
+  case_id         | String(64)   | Salted public-facing ID (UNIQUE, INDEX)
+  subject         | String(512)  | Email subject line
+  sender          | String(256)  | Sender email address
+  recipient       | String(256)  | Recipient email address
+  raw_headers     | Text         | Full raw SMTP headers if available
+  body_text       | Text         | First 5000 chars of email body
+  risk_score      | Float        | Computed score (0.0 - 100.0)
+  risk_level      | String(16)   | LOW / MEDIUM / HIGH
+  risk_factors    | JSON         | List of explainable factor strings
+  urls            | JSON         | URL objects (original/unwrapped/final/chain)
+  domains         | JSON         | Extracted domain list
+  ips             | JSON         | All public IP addresses found
+  geo_locations   | JSON         | GeoIP results per IP
+  recommendation  | String(32)   | ALLOW / REVIEW / QUARANTINE
+  blockchain_tx   | String(128)  | Polygon Amoy transaction hash
+  blockchain_hash | String(128)  | SHA-256 canonical digest (on-chain anchor)
+  created_at      | DateTime(TZ) | UTC creation timestamp (server default)
+  is_reported     | Boolean      | Whether a formal report was generated
+  report_id       | String(64)   | Salted report identifier
+  case_salt       | String(16)   | Stored salt prefix for ID recovery [NEW]
+  case_pepper     | String(16)   | Stored pepper suffix for ID recovery [NEW]
+
+THREAT INTEL CACHE TABLE:
+  Column     | Type          | Notes
+  -----------|---------------|------------------------------------------
+  id         | Integer (PK)  | Primary key
+  ioc        | String(512)   | The IOC value (URL / domain / IP), UNIQUE
+  ioc_type   | String(32)    | "url", "domain", or "ip"
+  is_malicious| Boolean      | Feed verdict (True/False)
+  source     | String(64)    | Feed name (OpenPhish, URLHaus, etc.)
+  raw        | JSON          | Full raw API response
+  checked_at | DateTime(TZ)  | Timestamp of the lookup
+
+
+========================================================================
+5. CORE ANALYSIS PIPELINE — 14 STEPS
+========================================================================
+
+The analyze.py route orchestrates a full 14-step async pipeline on every
+email submission received at POST /api/analyze.
+
+REQUEST SCHEMA (AnalyzeRequest):
+  Field             | Type          | Description
+  ------------------|---------------|--------------------------------------
+  email_text        | str (required)| Raw email body or full .eml content
+  subject           | str (optional)| Override for subject line
+  from_header       | str (optional)| Override for sender
+  links             | list (optional)| [{display, href, unwrapped}] from ext.
+  resolve_domain_ip | bool          | Whether to do live DNS resolution
+  save_case         | bool          | Whether to persist to database
+
+
+------------------------------------------------------------------------
+5.1 STEP 1 — EMAIL PARSING
+------------------------------------------------------------------------
+Service: email_parser.py
+
+Parses the raw email text to extract structured fields:
+  - subject         : Subject line text
+  - from_header     : Full "From:" header value
+  - sender_email    : Extracted email address from From header
+  - sender_name     : Display name from From header
+  - to_header       : Recipient address
+  - headers         : Dictionary of all SMTP headers (key: value)
+  - body_text       : The human-readable plain text body
+
+If the caller provides subject or from_header overrides in the request
+payload, those values replace the parsed ones. The sender_email is also
+re-extracted from from_header if it contains an "@" symbol.
+
+
+------------------------------------------------------------------------
+5.2 STEP 2 — HEADER ANALYSIS (SPF / DKIM / DMARC)
+------------------------------------------------------------------------
+Service: header_analyzer.py
+Function: analyze_headers(headers, sender_email)
+
+Determines if REAL headers are present by checking for:
+  Authentication-Results, ARC-Authentication-Results, Received, Message-ID
+
+MODE A — REAL HEADER ANALYSIS (headers available):
+  Check                          | Points | Factor Added
+  -------------------------------|--------|-----------------------------
+  SPF=fail or SPF=softfail       | +25    | "SPF failed or soft-failed"
+  SPF=none                       | +12    | "No SPF record for sender domain"
+  SPF=pass                       |  0     | "SPF passed ✓"
+  No clear SPF result            |  +8    | "No clear SPF result in headers"
+  DKIM=fail                      | +20    | "DKIM signature failed"
+  DKIM (not present)             |  +5    | "No clear DKIM result"
+  DKIM=pass                      |  0     | "DKIM passed ✓"
+  DMARC=fail                     | +25    | "DMARC failed"
+  DMARC=pass                     |  0     | "DMARC passed ✓"
+  From ≠ Return-Path             | +15    | "From address does not match Return-Path"
+  Missing Message-ID             |  +5    | "Missing Message-ID header"
+  PHP/Python/script in X-Mailer  | +10    | "Suspicious mailer string"
+  More than 6 Received hops      |  +5    | "Unusually long relay chain (N hops)"
+
+  MAX CAP: 60 points
+
+MODE B — HEURISTIC ANALYSIS (Gmail web client, no raw headers):
+  This is the typical case when analyzing via the Chrome extension.
+  Adds the factor "Email headers not available (web client analysis)".
+  Then checks:
+    - Does sender use a free email provider?              (+3 if yes)
+    - Is the local part of sender >20 chars?             (+5)
+    - Is the digit ratio of local part >0.6?             (+8)
+    - Does local part start with a safe service prefix?   (0 — whitelisted)
+      Safe prefixes: noreply, no-reply, notifications, info, support,
+                     admin, contact
+
+  MAX CAP: 60 points (shared with Mode A cap)
+
+
+------------------------------------------------------------------------
+5.3 STEP 3 — DISPLAY NAME SPOOFING DETECTION
+------------------------------------------------------------------------
+Service: header_analyzer.py
+Function: analyze_display_name_spoofing(display_name, sender_email)
+
+A DEDICATED CHECK separate from step 2. Compares what the email client
+SHOWS to the user (the display name) against the ACTUAL email domain.
+
+ATTACK EXAMPLE:
+  Display name shown  : "PayPal Security Team"
+  Actual email        : xjq93bz@gmail.com
+  Detection           : "Display name impersonates 'paypal' but uses free
+                         email provider 'gmail.com' — likely spoofing"
+  Points              : +22
+
+SECONDARY CHECK:
+  Detects display names that contain a full email address inside them.
+  Phishing kits sometimes put a legitimate email address in the display
+  name field to confuse mail clients into showing the wrong sender.
+  Example display name: "PayPal <security@paypal.com>"
+  but actual email is: attacker@evil.com
+  Points: +12
+
+MONITORED BRANDS (24 total):
+  paypal, apple, microsoft, google, amazon, netflix, facebook, instagram,
+  whatsapp, linkedin, twitter, chase, wells fargo, bank of america,
+  citibank, hsbc, dropbox, adobe, dhl, fedex, ups, usps, irs,
+  government/police
+
+MAX CAP: 25 points
+
+
+------------------------------------------------------------------------
+5.4 STEP 4 — IOC EXTRACTION
+------------------------------------------------------------------------
+Service: ioc_extractor.py
+Function: extract_iocs(body, headers, extension_links)
+
+IOC = Indicators of Compromise. Extracts all suspicious network artifacts.
+
+URLs:
+  - Extracted from body + headers using regex (via validators.py)
+  - Extension-provided link objects merged in (avoids duplicates)
+  - All Google redirect wrappers unwrapped:
+      https://www.google.com/url?q=REAL_URL → REAL_URL
+  - Filtered: tel:, mailto:, sms:, callto:, javascript:, # are EXCLUDED
+
+IPs:
+  - Extracted from body text using IPv4 pattern regex
+  - Additionally extracted from Received: headers using a specialized regex:
+      r'(?:from|by)\s+\S+\s+\((?:[^)]*?)[\[\(]?(\d{1,3}\.\d{1,3}...)'
+    This pattern finds the SMTP-origin IP — the real sending server IP
+    that first injected the email into the relay chain.
+  - PRIVATE IPs FILTERED OUT (non-routable, non-useful for attribution):
+      10.x, 127.x, 172.16-31.x, 192.168.x, 169.254.x, 0.x
+
+DOMAINS:
+  - From URL parsing (using tldextract for accurate registered domain)
+  - From direct domain mentions in text (regex for common TLDs)
+  - From email addresses in the body (@domain.com extraction)
+
+DNS RESOLUTION:
+  - Up to 8 domains resolved via socket.gethostbyname()
+  - Resolved IPs added to the IP list for geolocation
+  - Known safe domains skipped: google.com, googleapis.com, gstatic.com
+
+RETURN VALUE:
+  {
+    "urls": [...],          # Sorted, deduplicated
+    "domains": [...],       # Sorted, deduplicated
+    "ips": [...],           # Sorted, deduplicated (public only)
+    "header_ips": [...],    # True SMTP-origin IPs only
+    "emails": [...],        # Email addresses found in body
+    "resolved_ips": {...}   # {domain: ip} mapping from DNS
+  }
+
+
+------------------------------------------------------------------------
+5.5 STEP 5 — URL UNMASKING & DEOBFUSCATION ENGINE
+------------------------------------------------------------------------
+Service: url_unmasker.py
+Function: unmask_urls(urls, max_hops=5, timeout=4.0)
+
+The most sophisticated service. Handles multiple obfuscation layers.
+
+A. MULTI-LAYER URL DECODING (decode_obfuscated_url):
+   - urllib.parse.unquote() called TWICE to handle double URL encoding
+     Example: %2520 → %20 → space (attacker trick)
+   - Detects embedded Base64 data URIs:
+     data:text/html;base64,PHNjcmlwdD...
+     Decodes the base64, extracts real URL from decoded HTML
+   - Strips whitespace
+
+B. GOOGLE REDIRECT UNWRAPPING (unwrap_google_redirect):
+   Gmail wraps EVERY external link:
+   https://www.google.com/url?q=http://evil.xyz/login&sa=D&...
+   The function parses the 'q' query parameter to get the real URL.
+   Also handles AMP proxy: https://amp.google.com/...?url=...
+
+C. SSRF PROTECTION (is_ssrf_safe):
+   Before making ANY HTTP request, the hostname is resolved to IP
+   via socket.getaddrinfo(). ALL resolved IPs are checked against
+   9 private/reserved network ranges:
+     - 127.0.0.0/8   (Loopback)
+     - 10.0.0.0/8    (Private Class A)
+     - 172.16.0.0/12 (Private Class B)
+     - 192.168.0.0/16(Private Class C)
+     - 169.254.0.0/16(Link-Local / AWS/GCP/Azure metadata endpoint)
+     - 0.0.0.0/8     (Current network)
+     - ::1/128       (IPv6 loopback)
+     - fc00::/7      (IPv6 unique local)
+     - fe80::/10     (IPv6 link-local)
+   If ANY resolved IP is in a private range:
+     → Request is BLOCKED with error: "SSRF_BLOCKED: Host X resolves
+       to internal/cloud-metadata IP"
+     → No HTTP request is made
+
+D. HOMOGLYPH / PUNYCODE DETECTION (detect_homoglyphs):
+   Catches Internationalized Domain Name (IDN) lookalike attacks.
+   Example: pаypal.com (Cyrillic 'а' instead of Latin 'a')
+   - Checks for 'xn--' Punycode prefix in domain
+   - Compares .encode('idna') output to detect Unicode script mixing
+   - Flags if a known brand name appears in a homoglyph domain
+
+E. SAFE MULTI-HOP REDIRECT FOLLOWING:
+   - Uses HEAD requests only (never GET) — avoids downloading payloads
+   - Follows up to 5 redirect hops
+   - Tracks full redirect_chain[] array
+   - Detects cross-domain redirects (domain-A.com jumps to domain-B.com)
+   - Uses custom User-Agent: "ThreatTraceAI/2.0 (Forensic Analysis Bot)"
+
+RESULT PER URL:
+  {
+    "original":             "https://www.google.com/url?q=http://evil.xyz",
+    "unwrapped":            "http://evil.xyz/login",
+    "final":                "http://evil.xyz/phish",
+    "redirect_count":       1,
+    "status":               301,
+    "is_google_wrapped":    true,
+    "cross_domain_redirect":false,
+    "redirect_chain":       ["http://evil.xyz/login", "http://evil.xyz/phish"],
+    "ssrf_safe":            true,
+    "homoglyph":            {"is_punycode": false, "is_homoglyph_spoof": false}
+  }
+
+
+------------------------------------------------------------------------
+5.6 STEP 6 — LIVE THREAT INTELLIGENCE FEEDS
+------------------------------------------------------------------------
+Service: threat_intelligence.py
+Function: check_urls(urls)
+
+Checks all extracted URLs against two free public threat feeds.
+Feeds are LAZY-LOADED and CACHED IN-MEMORY per process lifecycle —
+no redundant network fetches for subsequent analyses.
+
+OPENPHISH:
+  Source  : https://openphish.com/feed.txt
+  Content : Actively-maintained list of live phishing URLs
+  Loading : httpx GET, parses line-by-line, stores URLs and domains
+
+URLHAUS (abuse.ch):
+  Source  : https://urlhaus-api.abuse.ch/v1/urls/recent/
+  Content : Recent malware-hosting URLs (up to 2000 entries loaded)
+  Loading : httpx GET, parses JSON response
+
+MATCHING LOGIC (in priority order):
+  1. OpenPhish exact URL match    → is_malicious=true, source="OpenPhish"
+  2. OpenPhish domain-level match → is_malicious=true, match_type="domain"
+  3. URLHaus exact URL match      → is_malicious=true, source="URLHaus"
+  4. URLHaus domain-level match   → is_malicious=true, match_type="domain"
+  5. OpenPhish partial/prefix     → is_malicious=true, match_type="partial"
+
+  Each malicious URL found adds +30 points to total risk score.
+  Additional malicious URLs each add +5 more (above the first).
+
+
+------------------------------------------------------------------------
+5.7 STEP 7 — CONTENT SCORING
+------------------------------------------------------------------------
+Service: risk_engine.py
+Function: score_content(body, subject)
+
+Scans the combined "subject + body_text" (lowercased) against FOUR keyword
+categories. Each category grants points ONLY ONCE (first-match-wins to
+prevent double-counting).
+
+URGENCY KEYWORDS (+12 points, first match only):
+  urgent, immediately, asap, act now, within 24 hours, account will be locked,
+  suspended, expire, expiring, last warning, final notice, respond now,
+  action required, your account has been, unauthorized, unusual activity,
+  verify immediately, limited time
+
+CREDENTIAL KEYWORDS (+18 points, first match only):
+  password, login, verify your account, confirm your identity, otp, one-time,
+  security code, reset your password, update your information, sign in,
+  log in to, enter your credentials, ssn, social security, credit card number,
+  cvv, pin number
+
+FINANCIAL KEYWORDS (+15 points, first match only):
+  wire transfer, invoice attached, payment overdue, bank details,
+  account number, bitcoin, crypto wallet, western union, money gram,
+  gift card, itunes card, refund, prize, lottery, you have won, claim your,
+  inheritance, beneficiary
+
+THREAT KEYWORDS (+20 points, first match only):
+  legal action, lawsuit, police, arrest, fine, court order, warrant,
+  prosecution, jail, prison, penalty, terminate your account, permanently delete
+
+ADDITIONAL SIGNALS:
+  Short body (20-180 chars) + "click" or "http" → +10
+    (Classic phishing lure: minimal text, just a malicious link)
+
+  3 or more ALL-CAPS words (4+ letters each) → +5
+    (Social engineering pattern using aggressive capitalization)
+
+MAX CAP: 55 points
+
+
+------------------------------------------------------------------------
+5.8 STEP 8 — URL HEURISTIC SCORING
+------------------------------------------------------------------------
+Service: risk_engine.py
+Function: score_url_heuristics(urls)
+
+Analyzes up to 20 URLs for structural phishing indicators.
+Uses a 'seen_flags' set to avoid counting the same signal type twice.
+
+SCORING TABLE:
+  Signal                           | Points | Example
+  ---------------------------------|--------|-----------------------------
+  Raw IP address in URL            | +20    | http://192.168.1.1/login
+  Suspicious TLD                   | +12    | .xyz .top .click .gq .ml .tk
+  URL shortener                    | +10    | bit.ly tinyurl.com goo.gl
+  3+ subdomain levels              | +10    | login.secure.paypal.com.evil.xyz
+  URL length > 200 chars           | +5     | Obfuscation via long URL
+  Typosquatting (Levenshtein ≤ 2)  | +22    | pаypa1.com (paypal lookalike)
+  Brand name in misleading subdomain| +15   | paypal.evil.com
+  Non-standard port (not 80/443)   | +8     | http://evil.xyz:8080/login
+  '@' symbol in URL                | +15    | http://real.com@evil.com/
+  data: or javascript: URI scheme  | +20    | data:text/html;base64,...
+  Suspicious path keyword          | +5     | /login /verify /secure /webscr
+
+SUSPICIOUS TLDs (30 total):
+  .xyz .top .click .buzz .gq .ml .tk .cf .ga .work .loan .racing
+  .review .download .stream .win .bid .date .science .party .cricket
+  .faith .accountant .icu .monster .rest .surf .sbs .cfd .boats .uno
+
+URL SHORTENERS (22 total):
+  bit.ly tinyurl.com goo.gl t.co ow.ly is.gd buff.ly adf.ly bit.do
+  mcaf.ee su.pr dlvr.it lnkd.in db.tt qr.ae cutt.ly shorturl.at
+  rb.gy tiny.cc v.gd surl.li rebrand.ly
+
+BRAND TARGETS FOR TYPOSQUATTING (28 total):
+  paypal apple microsoft google amazon netflix facebook instagram whatsapp
+  linkedin twitter chase wellsfargo bankofamerica citibank hsbc dropbox
+  adobe yahoo outlook onedrive icloud dhl fedex ups usps
+
+HOMOGLYPH MAP (25 substitutions):
+  Digit lookalikes : 0→o, 1→l, 3→e, 4→a, 5→s, 8→b
+  Symbol lookalikes: @→a, $→s, !→i
+  Latin diacritics : ä→a, ë→e, ï→i, ö→o, ü→u, à→a, è→e, ì→i, ò→o, ù→u
+                     á→a, é→e, í→i, ó→o, ú→u
+  IPA characters   : ɑ→a, ɡ→g, ɩ→i, ɪ→i
+  CYRILLIC (most dangerous — visually identical to Latin):
+                     а→a, е→e, о→o, р→p, с→c, у→y, х→x
+
+LEVENSHTEIN DISTANCE ALGORITHM:
+  A dynamic programming algorithm computing the minimum number of single-
+  character edits (insertions, deletions, substitutions) to transform one
+  string into another. A distance of 1 means one character difference.
+  Example: "paypa1.com" vs "paypal.com" → distance=1 → TYPOSQUATTING ALERT
+
+MAX CAP: 50 points
+
+
+------------------------------------------------------------------------
+5.9 STEP 9 — LINK MISMATCH DETECTION
+------------------------------------------------------------------------
+Service: risk_engine.py
+Function: score_link_mismatches(links)
+
+Designed specifically for Chrome extension use. The extension provides
+structured link objects: [{display: "text shown", href: "real URL"}]
+
+HOW IT WORKS:
+  1. Extract domains mentioned in the link's display text using regex
+  2. Extract hostname from the href URL
+  3. If display text shows "paypal.com" but href goes to "evil.xyz":
+     → Flag: "Link text shows 'paypal.com' but actually points to
+              'evil.xyz' — classic phishing mismatch!"
+     → +25 points per mismatch
+
+This is one of the MOST RELIABLE phishing signals. Legitimate HTML emails
+never show one domain in anchor text while linking to a completely
+different domain. Only phishing emails do this.
+
+MAX CAP: 30 points
+
+
+------------------------------------------------------------------------
+5.10 STEP 10 — SENDER HEURISTICS
+------------------------------------------------------------------------
+Service: risk_engine.py
+Function: score_sender_heuristics(sender_email, sender_display_name, subject)
+
+Analyzes the sender email for patterns of auto-generated accounts.
+
+DISPLAY NAME + FREE EMAIL PROVIDER:
+  If display name contains a brand name (from BRAND_TARGETS list) AND
+  the email domain is a free provider (gmail.com, yahoo.com, etc.):
+  → +20 points
+  → Factor: "Display name contains 'paypal' but email uses free provider
+             'gmail.com' — possible display-name spoofing"
+
+RANDOM-LOOKING LOCAL PART:
+  The local part (before @) is analyzed:
+  WHITELISTED role words (never flagged as random):
+    support, contact, info, admin, service, services, customer, billing,
+    sales, help, security, team, office, alert, alerts, notification,
+    notifications, noreply, no-reply, marketing, updates, account,
+    accounts, enquiry, enquiries, general, feedback, postmaster,
+    compliance, banking, finance, dispatch, operations, helpdesk
+
+  If local part is NOT whitelisted and has >6 chars:
+    Consonant ratio > 0.85 → +8 (e.g., "xjqkzbn" — no vowels)
+    Digit ratio > 0.55 → +8 (e.g., "us3r94812" — mostly numbers)
+
+FREE EMAIL PROVIDERS (16 total):
+  gmail.com yahoo.com yahoo.co.in hotmail.com outlook.com aol.com
+  icloud.com mail.com protonmail.com zoho.com yandex.com gmx.com
+  live.com tutanota.com fastmail.com rediffmail.com
+
+MAX CAP: 25 points
+
+
+------------------------------------------------------------------------
+5.11 STEP 11 — REDIRECT CHAIN ANALYSIS
+------------------------------------------------------------------------
+Service: url_unmasker.py
+Function: has_suspicious_redirects(unmasked_results)
+
+Reviews all URL unmasking results from Step 5.
+Returns True (suspicious=True) if ANY URL has:
+  - redirect_count >= 3        (3 or more HTTP hops)
+  - cross_domain_redirect=True (jumped between different domains)
+  - homoglyph.is_homoglyph_spoof=True (Punycode/Unicode spoof)
+
+If suspicious=True:
+  → +8 points added in combine_scores()
+  → Factor: "URL redirect chain is suspiciously long (3+ hops)"
+
+
+------------------------------------------------------------------------
+5.12 STEP 12 — RISK SCORE COMBINER & VERDICT
+------------------------------------------------------------------------
+Service: risk_engine.py
+Function: combine_scores(header_points, content_points, malicious_url_count, ...)
+
+FORMULA:
+  total = header_points
+        + content_points
+        + url_heuristic_points
+        + link_mismatch_points
+        + sender_heuristic_points
+        + (30 + (malicious_count - 1) * 5) if any malicious URLs
+        + 10 if geo_mismatch=True
+        + 8 if redirect_chain_suspicious=True
+  
+  total = min(total, 100.0)   <- hard cap
+
+VERDICT THRESHOLDS:
+  Score >= 70  →  Risk Level: HIGH    →  Recommendation: QUARANTINE
+  Score 40-69  →  Risk Level: MEDIUM  →  Recommendation: REVIEW
+  Score < 40   →  Risk Level: LOW     →  Recommendation: ALLOW
+
+Each module's factors are merged into a single all_factors list, which
+is stored in the Case record and shown to the analyst.
+
+
+------------------------------------------------------------------------
+5.13 STEP 13 — GEOLOCATION
+------------------------------------------------------------------------
+Service: geolocation.py
+Function: geolocate_ips(ips)
+
+For each public IP (up to 10), calls ip-api.com (free, no API key):
+  GET http://ip-api.com/json/{ip}?fields=status,country,regionName,...
+
+RESPONSE PER IP:
+  {
+    "ip":      "45.77.81.9",
+    "country": "United States",
+    "region":  "Illinois",
+    "city":    "Chicago",
+    "lat":     41.85,
+    "lon":     -87.65,
+    "isp":     "Vultr Holdings LLC",
+    "org":     "AS20473 Vultr Holdings LLC",
+    "status":  "success"
+  }
+
+Results stored in geo_locations on Case. Displayed in frontend with
+country flags, city names, and latitude/longitude for map rendering.
+
+
+------------------------------------------------------------------------
+5.14 STEP 14 — INFRASTRUCTURE GRAPH
+------------------------------------------------------------------------
+Service: graph_engine.py
+Function: build_infrastructure_graph(case_data)
+
+Builds a node-edge graph of the email's infrastructure:
+  NODES: sender email, each domain, each IP, each final URL destination
+  EDGES: sender → domains → IPs → URLs
+
+The graph is returned in the API response and rendered in the frontend
+InfrastructureGraph.jsx and SihInfrastructureGraph.jsx components.
+
+
+========================================================================
+6. RISK ENGINE — FULL BREAKDOWN
+========================================================================
+
+File: backend/app/services/risk_engine.py (457 lines)
+
+DESIGN PRINCIPLES:
+  1. Additive scoring: Every point increase is tied to one specific signal
+  2. No black-box ML: All rules are explicit, human-readable, and auditable
+  3. Capped modules: Each scorer has its own max to balance contribution
+  4. Deduplication: seen_flags prevents counting the same issue twice
+  5. Explainable output: Every signal produces a human-readable factor string
+
+MODULE CAPS SUMMARY:
+  Module                  | Individual Cap | Typical Range
+  ------------------------|---------------|---------------
+  Header Analysis         | 60 points     | 0-60
+  Display Name Spoofing   | 25 points     | 0-25
+  Content Scoring         | 55 points     | 0-55
+  URL Heuristics          | 50 points     | 0-50
+  Link Mismatch           | 30 points     | 0-30
+  Sender Heuristics       | 25 points     | 0-25
+  Live Malicious URLs     | Uncapped*     | 30-80
+  Geo Mismatch            | 10 points     | 0 or 10
+  Redirect Chain          | 8 points      | 0 or 8
+  TOTAL                   | 100 (hard cap)| 0-100
+
+  *Malicious URL scoring: 30 + (count-1)*5, but total is capped at 100
+
+
+========================================================================
+7. CRYPTOGRAPHIC SECURITY LAYER
+========================================================================
+
+File: backend/app/services/crypto_service.py (397 lines)
+
+Provides 5 distinct cryptographic capabilities using the Python
+'cryptography' library (pyca/cryptography).
+
+
+------------------------------------------------------------------------
+7.1 ECDSA KEY MANAGEMENT
+------------------------------------------------------------------------
+
+KEY ALGORITHM: NIST P-256 (SECP256R1)
+  - 128-bit security level (equivalent to RSA-3072)
+  - Used by TLS 1.3, Bitcoin, Ethereum, and most modern PKI
+  - Fast signing (~0.1ms) and verification (~0.3ms)
+
+KEY FILES:
+  backend/app/keys/forensic_authority_private.pem  (PKCS8 format)
+  backend/app/keys/forensic_authority_public.pem   (SubjectPublicKeyInfo)
+
+LIFECYCLE:
+  - On FIRST startup: new keypair generated and saved to disk
+  - On SUBSEQUENT startups: existing keys loaded from PEM files
+  - This gives ThreatTrace AI a persistent forensic authority identity
+
+KEY FINGERPRINT FORMAT:
+  TT-SECP256R1-XXXX:XXXX:XXXX:XXXX
+  (SHA-256 of DER-encoded public key, first 16 hex chars formatted as 4 groups)
+
+
+------------------------------------------------------------------------
+7.2 CANONICAL SHA-256 HASHING
+------------------------------------------------------------------------
+
+Function: canonical_case_dict(case) + compute_canonical_hash(case)
+
+Before hashing, case data is NORMALIZED into a deterministic canonical form:
+
+  Step 1: URLs → extract final destination strings → sort alphabetically
+  Step 2: Domains → sort alphabetically
+  Step 3: IPs → sort alphabetically
+  Step 4: Risk factors → sort alphabetically
+  Step 5: String fields → strip whitespace, lowercase (sender, recipient)
+  Step 6: Body text → hash to SHA-256 separately; only the hash goes
+          in the canonical dict — body content itself never included
+
+  CANONICAL DICT FIELDS:
+    case_id, subject, sender, recipient, body_hash,
+    risk_score, risk_level, risk_factors, urls, domains, ips,
+    recommendation, origin_ip
+
+SERIALIZATION:
+  json.dumps(canonical, sort_keys=True, separators=(",",":"))
+  → NO spaces, keys always in alphabetical order
+  → Identical output on every machine, every Python version
+
+FINAL HASH:
+  hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+
+------------------------------------------------------------------------
+7.3 DIGITAL SIGNATURE (ECDSA SECP256R1)
+------------------------------------------------------------------------
+
+SIGNING:
+  digest_hex = SHA256(canonical_json)
+  signature  = ECDSA_SIGN(private_key, digest_bytes, ECDSA(SHA256()))
+
+VERIFICATION:
+  pubkey.verify(sig_bytes, digest_bytes, ECDSA(SHA256()))
+  → Raises InvalidSignature if ANY byte of the sealed data was changed
+
+The signature is stored as a lowercase hex string prefixed with "0x".
+
+WHY THIS MATTERS:
+  If an attacker tries to change even one character of a sealed case
+  (e.g., change risk_score from 95 to 0 to clear a QUARANTINE verdict):
+    → canonical_hash will be completely different
+    → ECDSA_VERIFY will fail → "CRITICAL SECURITY ALERT: tampered"
+    → The original sealed hash on blockchain will not match
+  The forgery is provably detectable.
+
+
+------------------------------------------------------------------------
+7.4 CRYPTOGRAPHIC EVIDENCE SEAL
+------------------------------------------------------------------------
+
+Function: seal_case(case_dict)
+
+Returns a complete forensic seal package:
+  {
+    "sealed": true,
+    "canonical_hash": "0x3f7a1b...",      SHA-256 of canonical JSON
+    "body_hash": "0xa9c2f1...",            SHA-256 of email body
+    "signature": "0x304502...",            ECDSA-SECP256R1 signature
+    "algorithm": "ECDSA-SECP256R1-SHA256",
+    "public_key_fingerprint": "TT-SECP256R1-14B6:1DE7:CEE4:E003",
+    "public_key_pem": "-----BEGIN PUBLIC KEY-----...",
+    "merkle_root": "0xf0a3b2...",
+    "blockchain_tx": "0xe9b1a4...",
+    "blockchain_network": "Polygon Amoy (Chain ID 80002)",
+    "timestamp": "2026-09-16T06:30:00Z",
+    "canonical_fields": { ... }
+  }
+
+MERKLE ROOT:
+  merkle_payload = f"{canonical_hash}:{timestamp}:{fingerprint}"
+  merkle_root = SHA256(merkle_payload.encode("utf-8"))
+  
+  Binds the evidence hash to a specific time and forensic authority
+  key fingerprint. Proves WHEN the evidence was sealed, independent
+  of the blockchain timestamp.
+
+
+------------------------------------------------------------------------
+7.5 TAMPER DETECTION ENGINE
+------------------------------------------------------------------------
+
+Function: verify_seal(current_case, signature_hex, public_key_pem, expected_hash)
+
+  Step 1: Re-compute canonical_hash from current_case state
+  Step 2: Compare to expected_hash (from original seal)
+  Step 3: Run ECDSA verify(current_hash, signature, public_key)
+  
+  If Step 2 fails → "Canonical SHA-256 digest does not match. Evidence
+                      was altered after sealing."
+  If Step 3 fails → "ECDSA digital signature verification failed."
+  If both pass    → "Cryptographic integrity verified. 100% untampered."
+
+Function: simulate_tamper_attack(case)
+
+  DEMONSTRATION MODE:
+  1. Seals the original case (gets signature + canonical_hash)
+  2. Creates tampered copy:
+     - sender changed to "legitimate-bank@trusted.com"
+     - risk_score changed to 0
+     - recommendation changed to "ALLOW"
+  3. Runs verify_seal() against original signature
+  4. Returns:
+     {
+       "breach_detected": true,
+       "signature_status": "REJECTED (Invalid Signature)",
+       "alert": "CRITICAL SECURITY ALERT: Cryptographic evidence
+                 tampering detected!"
+     }
+
+
+------------------------------------------------------------------------
+7.6 AES-256-GCM END-TO-END ENCRYPTED VAULT
+------------------------------------------------------------------------
+
+Function: encrypt_dossier(dossier_dict, passphrase)
+Function: decrypt_dossier(envelope_dict, passphrase)
+
+For sharing forensic packages with law enforcement or external SOC:
+
+KEY DERIVATION:
+  Algorithm  : PBKDF2-HMAC-SHA256
+  Iterations : 100,000 (NIST SP 800-132 minimum recommendation)
+  Salt       : 16 bytes (cryptographically random via secrets.token_bytes)
+  Output     : 32-byte AES key
+
+ENCRYPTION:
+  Algorithm  : AES-256-GCM (Galois/Counter Mode)
+  Nonce      : 12 bytes (96-bit, standard for AES-GCM)
+  Auth tag   : 16 bytes (built into GCM — guarantees integrity + authenticity)
+
+ENVELOPE FORMAT (JSON):
+  {
+    "cipher": "AES-256-GCM",
+    "kdf": "PBKDF2-HMAC-SHA256",
+    "iterations": 100000,
+    "salt_b64": "...",       base64-encoded 16-byte salt
+    "nonce_b64": "...",      base64-encoded 12-byte nonce
+    "ciphertext_b64": "...", base64-encoded ciphertext + auth tag
+    "encrypted_at": "...",   UTC timestamp
+    "recipient_role": "Law Enforcement / Authorized SOC Analyst",
+    "format_version": "TT-E2EE-v1"
+  }
+
+DECRYPTION SECURITY:
+  Any modification to the ciphertext (even 1 bit) causes authentication
+  to fail — GCM's auth tag ensures tamper-evidence of encrypted content.
+  Wrong passphrase → raises ValueError("Decryption failed. Invalid
+  passphrase or ciphertext has been tampered with.")
+
+
+------------------------------------------------------------------------
+7.7 DKIM HEADER CRYPTOGRAPHIC INSPECTOR
+------------------------------------------------------------------------
+
+Function: inspect_dkim_cryptography(headers_text)
+
+Parses the DKIM-Signature header to extract:
+  - Signing algorithm  (a= tag) : e.g., rsa-sha256, ed25519-sha256
+  - Signing domain     (d= tag) : e.g., paypal.com
+  - Selector           (s= tag) : used to find public key in DNS (_domainkey)
+  - Body hash          (bh= tag): SHA-256 of canonicalized email body
+  - Signature data     (b= tag) : the actual RSA or Ed25519 signature bytes
+  - Canonicalization   (c= tag) : e.g., relaxed/relaxed
+
+RETURN VALUE (if DKIM present):
+  {
+    "has_dkim": true,
+    "status": "VALID_STRUCTURE",
+    "algorithm": "rsa-sha256",
+    "domain": "paypal.com",
+    "selector": "pp-dkim1",
+    "body_hash": "47DEQpj8...",
+    "signature_snippet": "abc123...xyz789",
+    "key_type": "RSA-2048",
+    "canonicalization": "relaxed/relaxed",
+    "cryptographic_status": "DKIM Cryptographic Signature Detected & Parsed"
+  }
+
+RETURN VALUE (if DKIM absent):
+  {"has_dkim": false, "status": "MISSING", "message": "No DKIM header."}
+
+
+========================================================================
+8. BLOCKCHAIN CHAIN-OF-CUSTODY
+========================================================================
+
+------------------------------------------------------------------------
+8.1 BLOCKCHAIN SERVICE (blockchain_service.py)
+------------------------------------------------------------------------
+
+BLOCKCHAIN: Polygon Amoy Testnet
+  - Chain ID    : 80002
+  - Type        : EVM-compatible Ethereum Layer 2
+  - Consensus   : Proof-of-Stake
+  - Explorer    : https://amoy.polygonscan.com
+
+WHAT GOES ON-CHAIN:
+  - bytes32 caseHash   : SHA-256 canonical digest of the case (32 bytes)
+  - string  caseId     : The salted case identifier
+
+WHAT NEVER GOES ON-CHAIN:
+  Email content, sender data, recipient data, body text, or any PII.
+  Only the cryptographic fingerprint is published.
+
+TRANSACTION PARAMETERS:
+  Gas limit          : 200,000
+  Max fee per gas    : 50 gwei
+  Max priority fee   : 30 gwei
+  Signing            : eth_account.Account.from_key(PRIVATE_KEY)
+
+SMART CONTRACT ABI (minimal logger):
+  function logCaseHash(bytes32 caseHash, string caseId) external
+
+HASH PREPARATION (prepare_case_hash):
+  Hashes only stable forensic fields (not timestamps or mutable data):
+    case_id, subject, sender, risk_score, risk_level,
+    urls, domains, ips, recommendation, created_at
+
+DEMO/FALLBACK MODE:
+  If PRIVATE_KEY or CONTRACT_ADDRESS are not set in .env:
+  → Returns: {"simulated": true, "case_hash": "...", "success": false}
+  → Hash is still computed; the system still shows chain-of-custody UI
+  → No real blockchain write is attempted
+
+
+------------------------------------------------------------------------
+8.2 SMART CONTRACT (ThreatTraceRegistry.sol)
+------------------------------------------------------------------------
+
+File: backend/contracts/ThreatTraceRegistry.sol
+Language: Solidity ^0.8.20
+Network: Polygon Amoy (intended deployment)
+
+CONTRACT DESIGN:
+  - IMMUTABLE REGISTRY: Once a case is anchored, it cannot be modified
+    (require(!isCaseAnchored[caseId], "Case ID already registered"))
+  - ACCESS CONTROL: Only the deployer address (forensicAuthority) can
+    anchor records (onlyAuthority modifier)
+  - PUBLIC VERIFICATION: Anyone can verify or retrieve records
+
+ForensicRecord STRUCT:
+  Field         | Type    | Description
+  --------------|---------|-------------------------------------
+  merkleRoot    | bytes32 | Merkle Root of IOCs + attack paths
+  canonicalHash | bytes32 | SHA-256 case digest
+  clientDigest  | bytes32 | WebCrypto ingestion hash (client side)
+  riskScore     | uint8   | AI risk score (0-100)
+  ipfsCid       | string  | Off-chain encrypted evidence vault pointer
+  timestamp     | uint256 | Block.timestamp of anchoring
+  investigator  | address | Signing investigator wallet address
+
+CONTRACT FUNCTIONS:
+  1. anchorForensicCase(caseId, merkleRoot, canonicalHash, clientDigest,
+                        riskScore, ipfsCid)
+     → Stores ForensicRecord, emits CaseAnchored event
+     → Reverts if case already anchored
+
+  2. verifyForensicCase(caseId, targetMerkleRoot, targetCanonicalHash)
+     → Returns: (isValid, anchoredAt, investigator)
+     → Emits EvidenceAudited event
+     → Can be called by ANYONE (auditors, courts, lawyers)
+
+  3. getCaseRecord(caseId)
+     → Returns full ForensicRecord for judicial review
+     → View function (no gas cost for calling)
+
+EVENTS:
+  CaseAnchored(caseId, merkleRoot, canonicalHash, riskScore,
+               ipfsCid, timestamp, investigator)
+  EvidenceAudited(caseId, verified, auditedAt, auditor)
+
+
+========================================================================
+9. SALTING & PEPPERING — ID OBFUSCATION
+========================================================================
+
+File: backend/app/utils/salting.py
+
+PROBLEM SOLVED:
+  Without salting, case IDs like "TT-2026-00000001", "TT-2026-00000002"
+  are predictable. An attacker could enumerate all cases by trying
+  sequential IDs against /api/reports/{case_id}/generate.
+
+TERMINOLOGY:
+  SALT   : Random data PREPENDED to an ID (stored in DB, non-secret)
+  PEPPER : Random data APPENDED to an ID (stored in DB, extra entropy)
+
+RANDOM SOURCE:
+  secrets.choice() — Python's CSPRNG (Cryptographically Secure
+  Pseudo-Random Number Generator), backed by os.urandom() / OS entropy.
+  NEVER uses the insecure random module.
+
+ALPHABET: a-z A-Z 0-9 (62 characters — URL-safe, human-readable)
+
+FORMAT:
+  [4-char salt]_[base_id]_[4-char pepper]
+
+EXAMPLES:
+  Base ID               → Salted ID
+  TT-2026-3F7A912B      → Xk9f_TT-2026-3F7A912B_9p2Q
+  RPT-2026-A4C2F109     → aB3z_RPT-2026-A4C2F109_kL7w
+
+SECURITY:
+  Salt+pepper length: 4 + 4 = 8 characters
+  Alphabet size: 62 characters
+  Combinations: 62^8 = 218,340,105,584,896 (218 trillion)
+  → Brute-force enumeration is completely impractical
+
+FUNCTIONS:
+  generate_salt(length=4)
+    → Returns 4-char cryptographically random alphanumeric string
+
+  generate_pepper(length=4)
+    → Same as salt, distinct role (appended instead of prepended)
+
+  apply_salt_pepper(base_id, salt_length=4, pepper_length=4)
+    → Returns (salted_id, salt, pepper)
+    → Used in analyze.py and reports.py
+
+  strip_salt_pepper(salted_id, salt, pepper)
+    → Recovers original base_id from stored salt+pepper
+    → Used for forensic recovery and internal cross-reference
+    → Raises ValueError if pattern doesn't match
+
+STORAGE:
+  case_salt and case_pepper columns in the Case table.
+  Both values are persisted so the original base ID can always
+  be recovered for internal audit or cross-referencing.
+
+
+========================================================================
+10. REPORT GENERATION SYSTEM
+========================================================================
+
+File: backend/app/services/report_generator.py
+
+Triggered by: POST /api/reports/{case_id}/generate
+Output files written to: reports/ directory
+
+TWO FILES PER REPORT:
+
+1. JSON REPORT  ({report_id}.json)
+   Machine-readable forensic package:
+   {
+     "report_id": "aB3z_RPT-2026-A4C2F109_kL7w",
+     "generated_at": "2026-09-16T06:30:00Z",
+     "case": { ... full case dict with crypto seal ... },
+     "disclaimer": "Automated forensic summary by THREAT TRACE AI.
+                    Cryptographically hashed for tamper-evidence."
+   }
+
+2. HTML FORENSIC CERTIFICATE ({report_id}.html)
+   A styled, printable forensic certificate containing:
+
+   HEADER SECTION:
+     - ThreatTrace AI logo (from CDN) + gradient brand name
+     - Color-coded risk score badge (red/amber/green)
+
+   METADATA GRID:
+     - Report ID, Case ID, Sender Attribution, Recommended Action,
+       Email Subject, UTC Generation Timestamp
+
+   IOC SECTION:
+     - Domains displayed as badge pills
+     - IP addresses displayed as badge pills
+     - Extracted URLs as monospace code list
+
+   EXPLAINABLE RISK FACTORS:
+     - Bullet list of all risk_factors strings
+
+   CRYPTOGRAPHIC CHAIN-OF-CUSTODY BOX:
+     - SHA-256 Canonical Forensic Digest (blockchain hash)
+     - ECDSA (SECP256R1) Digital Signature snippet
+     - Key Fingerprint: TT-CERT-2026-SECP256R1
+     - Ledger Anchor: Polygon Amoy Testnet
+     - "✓ VERIFIED UNTAMPERED" status
+
+   FOOTER:
+     - "End-to-End Cryptographically Sealed & Signed for Law Enforcement
+        and SOC Judicial Presentation."
+
+   PRINT CSS:
+     - @media print rule sets background: white, color: black
+     - No box-shadows, no borders — clean print output
+
+DOWNLOAD:
+  GET /api/reports/{report_id}/download?format=json
+  GET /api/reports/{report_id}/download?format=html
+  → Returns FileResponse with correct MIME type and filename
+
+
+========================================================================
+11. SOC ORCHESTRATION & NOTIFIER
+========================================================================
+
+File: backend/app/services/soc_notifier.py
+
+Integrates ThreatTrace AI into enterprise security operations.
+
+------------------------------------------------------------------------
+11.1 CEF — COMMON EVENT FORMAT
+------------------------------------------------------------------------
+Compatible with: Splunk, ArcSight, QRadar, Microsoft Sentinel
+
+FORMAT:
+  CEF:0|ThreatTraceAI|ForensicEngine|2.0|CYBER_THREAT_DETECTED|{subject}|{sev}|
+    src={ip} suser={sender}
+    cs1Label=IncidentId cs1={case_id}
+    cs2Label=CanonicalHash cs2={hash}
+    cs3Label=ActionRecommendation cs3={recommendation}
+    cn1Label=RiskScore cn1={score}
+
+SEVERITY MAPPING:
+  Score >= 80  → CEF Severity 10 (Highest)
+  Score >= 50  → CEF Severity 7  (High)
+  Score >= 20  → CEF Severity 4  (Medium)
+  Score < 20   → CEF Severity 1  (Low)
+
+
+------------------------------------------------------------------------
+11.2 JIRA SERVICE MANAGEMENT TICKET
+------------------------------------------------------------------------
+API-ready JSON payload for Jira Cloud / Jira Service Desk
+
+SUMMARY:
+  "[THREAT-TRACE] [HIGHEST] Phishing/Malware Incident: {subject}"
+
+DESCRIPTION (Jira Wiki Markup):
+  Incident ID, Sender, Risk Score, Origin IP, Target Domain,
+  SOC Recommendation, Cryptographic Hash, Key Fingerprint,
+  Ledger Anchor, IOC section header
+
+PRIORITY:
+  Score >= 80 → Highest
+  Score >= 50 → High
+  Score >= 30 → Medium
+  Score < 30  → Low
+
+LABELS: threattrace-ai, cybersecurity, phishing-triage, blockchain-sealed
+ISSUE TYPE: Security Incident
+PROJECT: SEC
+
+
+------------------------------------------------------------------------
+11.3 SLACK ALERT DISPATCH
+------------------------------------------------------------------------
+Rich Slack attachment card (color-coded):
+  Red    (#ef4444) → Score >= 70
+  Amber  (#f59e0b) → Score >= 40
+  Green  (#10b981) → Score < 40
+
+FIELDS: Risk Score, Attributed Sender, Origin Host IP,
+        Recommended Action, Cryptographic Evidence Hash (truncated)
+
+FALLBACK MODE (no webhook configured):
+  Returns payload_preview for demo without actual delivery.
+
+LIVE MODE (webhook URL in .env):
+  Makes httpx POST to Slack webhook URL (4 second timeout).
+
+
+------------------------------------------------------------------------
+11.4 SOC ROUTE EXTRA CAPABILITIES (soc.py)
+------------------------------------------------------------------------
+Beyond notifications, the /api/soc router provides:
+
+POST /api/soc/probe-ip
+  → IP Liveness Check: Non-intrusive TCP socket handshake
+  → ASN (Autonomous System Number) lookup
+  → Uses ip_intel.py: check_ip_liveness() + query_asn_info()
+  → Identifies hosting provider, autonomous system, and network owner
+
+POST /api/soc/unmask-url
+  → Deobfuscates, inspects homoglyphs, and follows redirects
+  → Returns full safe_unmask_url() result
+  → Useful for manual SOC analyst investigation of suspicious links
+
+
+========================================================================
+12. SSRF PROTECTION LAYER
+========================================================================
+
+SSRF = Server-Side Request Forgery
+An attack where a malicious URL in an email tricks the analysis server
+into making HTTP requests to internal infrastructure.
+
+ATTACK SCENARIO:
+  Attacker includes URL: http://169.254.169.254/latest/meta-data/
+  (AWS EC2 metadata endpoint — exposes cloud credentials)
+  Without protection: server fetches the URL → cloud keys exposed.
+
+PROTECTION IMPLEMENTATION (url_unmasker.py: is_ssrf_safe):
+  Before ANY HTTP request:
+  1. Resolve hostname to ALL IPs via socket.getaddrinfo()
+  2. For each resolved IP, check against 9 protected ranges using
+     ipaddress.ip_network membership test
+  3. If ANY IP is in a protected range → BLOCK
+
+PROTECTED RANGES:
+  127.0.0.0/8     Loopback (localhost)
+  10.0.0.0/8      Private Class A (corporate networks)
+  172.16.0.0/12   Private Class B (Docker, AWS VPC)
+  192.168.0.0/16  Private Class C (home/office networks)
+  169.254.0.0/16  Link-Local (AWS metadata, GCP metadata, Azure IMDS)
+  0.0.0.0/8       Current network (invalid/unspecified)
+  ::1/128         IPv6 loopback
+  fc00::/7        IPv6 unique local
+  fe80::/10       IPv6 link-local
+
+Also uses HEAD requests only (never GET) to prevent downloading
+binary malware payloads during redirect following.
+
+
+========================================================================
+13. GEOLOCATION SERVICE
+========================================================================
+
+File: backend/app/services/geolocation.py
+
+API: ip-api.com (free tier, no API key, 45 req/min limit)
+Query URL: http://ip-api.com/json/{ip}?fields=status,country,regionName,...
+
+PROCESSES: Up to 10 IPs per analysis (limiting factor: API rate)
+TIMEOUT: 5 seconds per IP
+
+USE IN INVESTIGATION:
+  - Latitude/longitude → map visualization in frontend
+  - ISP/Organization → identifies bullet-proof hosting providers
+    commonly used in phishing campaigns (Vultr, DigitalOcean, etc.)
+  - Country → flags emails claiming US origin but routing via Russia, China, etc.
+
+
+========================================================================
+14. BROWSER EXTENSION — CHROME MV3
+========================================================================
+
+Directory: extension/
+Type: Chrome Manifest Version 3 (required for Chrome Web Store)
+
+PERMISSIONS:
+  activeTab, storage, scripting
+  (Minimal permissions — no "tabs" permission needed)
+
+HOST PERMISSIONS:
+  https://mail.google.com/*    (to inject content script)
+  http://127.0.0.1:8000/*     (to call backend API)
+  http://localhost:8000/*
+  http://localhost:5173/*      (to open frontend dashboard)
+
+CONTENT SCRIPT (content.js — 21 KB):
+  - Injected at document_idle into all Gmail pages
+  - Uses MutationObserver to watch for Gmail navigation events
+    (Gmail is a Single Page Application — pages don't reload)
+  - When an email is opened:
+    → Scrapes DOM: subject, from display name, from email, body text
+    → Scrapes ALL <a> tags: display text + href (including wrapped URLs)
+    → Sends {email_text, subject, from_header, links} to background.js
+    → Receives analysis result back
+    → Injects ThreatTrace AI overlay panel into the Gmail UI
+
+BACKGROUND SERVICE WORKER (background.js):
+  - Listens for chrome.runtime.onMessage events from content.js
+  - Makes the actual HTTP POST to /api/analyze
+  - Service workers have a different security context than content scripts
+    and can make cross-origin requests to the backend
+
+POPUP (popup.js + popup.html):
+  - Opens when user clicks the ThreatTrace AI browser icon
+  - Manual email paste submission
+  - Shows last analysis result
+  - Link to open full React dashboard in a new tab
+
+STYLING (content.css — 6 KB):
+  - Styles for the inline Gmail overlay panel
+  - Dark theme matching ThreatTrace AI's design system
+
+
+========================================================================
+15. FRONTEND — REACT DASHBOARD
+========================================================================
+
+Directory: frontend/src/
+Framework: React 18 + Vite
+Dev server: Port :5173
+
+------------------------------------------------------------------------
+15.1 PAGES
+------------------------------------------------------------------------
+
+ThreatTraceCockpit.jsx (34 KB — largest file):
+  The main analyst workspace. Contains:
+  - Email paste panel (textarea for raw email or .eml)
+  - Subject and From field overrides
+  - "Analyze" submit button → calls POST /api/analyze
+  - Full results display integrating all child components:
+    RiskScore, RiskFactors, IOCPanel, IPGeolocation,
+    InfrastructureGraph, ReportPanel, CryptoSealModal, SOCDispatchModal
+
+Dashboard.jsx (13 KB):
+  System overview page:
+  - Recent cases list from GET /api/cases
+  - Statistics: total cases, HIGH risk count, today's count
+  - Quick-access cards for recent incidents
+  - Risk level distribution indicators
+
+Investigation.jsx (12 KB):
+  Deep-dive investigation view for a selected case:
+  - Full case timeline and metadata
+  - All IOCs in structured tabbed format
+  - Infrastructure graph
+  - Cryptographic seal verification
+  - Related case finder
+
+CaseReport.jsx (8 KB):
+  Report management page:
+  - Generate Report button → POST /api/reports/{case_id}/generate
+  - Download JSON or HTML report
+  - Displays cryptographic seal proof
+  - Shows blockchain anchoring status
+
+
+------------------------------------------------------------------------
+15.2 COMPONENTS
+------------------------------------------------------------------------
+
+CryptoSealModal.jsx (32 KB):
+  Full modal for cryptographic seal inspection:
+  - Canonical hash display
+  - ECDSA signature and algorithm details
+  - Public key and fingerprint
+  - Merkle root and blockchain link
+  - TAMPER DEMO tab: shows simulate_tamper_attack() result
+  - Verify tab: re-runs verify_seal()
+  - E2E Encrypt tab: AES-256-GCM envelope generator
+
+SOCDispatchModal.jsx (21 KB):
+  SOC alert dispatch interface:
+  - CEF tab: formatted CEF string, copy button
+  - Jira tab: ticket preview with all fields
+  - Slack tab: webhook URL input, dispatch button, response status
+  - ServiceNow tab: incident payload preview
+
+InfrastructureGraph.jsx (7 KB):
+  Interactive node-edge graph visualization:
+  - Sender → Domain → IP → URL nodes
+  - Color-coded by node type
+  - Hover tooltips with full values
+  - Zoom and pan support
+
+ReportPanel.jsx (7 KB):
+  Report generation controls:
+  - Generate Report button with loading state
+  - Download JSON button
+  - Download HTML button
+  - Report ID display after generation
+
+IOCPanel.jsx (6 KB):
+  Tabbed IOC viewer:
+  - URLs tab: final destination + redirect count + threat status badge
+  - Domains tab: domain list with homoglyph flags
+  - IPs tab: IP list with liveness status
+  - Threat Feeds tab: OpenPhish + URLHaus match results
+
+ResponseMatrix.jsx (4 KB):
+  Shows recommended analyst response steps based on verdict:
+  - QUARANTINE → Immediate isolation steps
+  - REVIEW → Investigation steps
+  - ALLOW → Monitoring recommendations
+
+RiskFactors.jsx (4 KB):
+  Displays all risk_factors strings as a styled list
+  with severity icons and color coding by signal type.
+
+RiskScore.jsx (3 KB):
+  Animated circular gauge showing the risk score (0-100)
+  with color transition: green → amber → red.
+
+IPGeolocation.jsx (3 KB):
+  Cards showing GeoIP data per IP:
+  Country flag, city, region, ISP, organization, coordinates.
+
+Header.jsx (4 KB):
+  Navigation bar with:
+  - ThreatTrace AI logo + gradient title
+  - Links: Dashboard, Cockpit, Investigation
+  - Status indicator (backend connection)
+
+
+========================================================================
+16. FRONTEND SERVICES LAYER (api.js)
+========================================================================
+
+File: frontend/src/services/api.js
+Library: Axios with base URL http://localhost:8000
+
+EXPORTED FUNCTIONS:
+  analyzeEmail(payload)          → POST /api/analyze
+  getCases(params)               → GET  /api/cases
+  getCase(caseId)                → GET  /api/cases/{caseId}
+  generateReport(caseId)         → POST /api/reports/{caseId}/generate
+  downloadReport(reportId, fmt)  → GET  /api/reports/{reportId}/download
+  verifyBlockchain(caseId)       → GET  /api/blockchain/status/{caseId}
+  dispatchSOC(caseId, payload)   → POST /api/soc/dispatch
+  sealCase(caseData)             → POST /api/crypto/seal
+  verifyCase(payload)            → POST /api/crypto/verify
+  encryptDossier(payload)        → POST /api/crypto/encrypt
+  decryptDossier(payload)        → POST /api/crypto/decrypt
+
+
+========================================================================
+17. DATA MODELS — FULL SCHEMA
+========================================================================
+
+See Section 4.3 for complete column-level schema.
+
+ENTITY OVERVIEW:
+
+  Case (persisted in SQLite)
+  ├── case_id (salted)
+  ├── risk_score, risk_level, recommendation
+  ├── risk_factors []
+  ├── urls [{original, unwrapped, final, redirect_chain, ...}]
+  ├── domains []
+  ├── ips []
+  ├── geo_locations [{ip, country, city, lat, lon, isp}]
+  ├── blockchain_tx, blockchain_hash
+  ├── case_salt, case_pepper
+  └── report_id (salted, nullable)
+
+  ThreatIntelCache (persisted in SQLite)
+  ├── ioc (URL/domain/IP)
+  ├── ioc_type
+  ├── is_malicious, source
+  └── checked_at
+
+  Forensic Reports (files on disk in reports/)
+  ├── {report_id}.json
+  └── {report_id}.html
+
+  ECDSA Keys (files on disk in backend/app/keys/)
+  ├── forensic_authority_private.pem
+  └── forensic_authority_public.pem
+
+
+========================================================================
+18. UTILITY LAYER
+========================================================================
+
+backend/app/utils/hashing.py:
+  sha256_of_dict(data: dict) -> str
+    Deterministic SHA-256 of a dictionary.
+    Uses json.dumps(sort_keys=True, default=str) for stability.
+    Used by blockchain_service.py for on-chain hash computation.
+
+  sha256_text(text: str) -> str
+    SHA-256 of a plain UTF-8 string.
+
+backend/app/utils/salting.py:  [NEW]
+  generate_salt(length=4) -> str
+  generate_pepper(length=4) -> str
+  apply_salt_pepper(base_id) -> (salted_id, salt, pepper)
+  strip_salt_pepper(salted_id, salt, pepper) -> base_id
+  (Full details in Section 9)
+
+backend/app/utils/validators.py:
+  extract_urls(text) -> List[str]
+    Regex to find all http:// and https:// URLs in text.
+
+  extract_ips(text) -> List[str]
+    Regex to find all IPv4 addresses in text.
+
+  extract_emails(text) -> List[str]
+    Regex to find all email addresses in text.
+
+
+========================================================================
+19. SECURITY MECHANISMS SUMMARY TABLE
+========================================================================
+
+  Mechanism                | Standard/Algorithm          | Where Applied
+  -------------------------|-----------------------------|-----------------
+  Canonical evidence hash  | SHA-256                     | crypto_service.py
+  Digital signature        | ECDSA SECP256R1 + SHA-256   | crypto_service.py
+  Blockchain anchoring     | EVM Solidity (bytes32 hash) | blockchain_service
+  Encrypted dossier        | AES-256-GCM + PBKDF2-SHA256 | crypto_service.py
+  DKIM inspection          | RSA-2048 / Ed25519          | crypto_service.py
+  ID obfuscation           | Salt + Pepper (CSPRNG)      | salting.py
+  SSRF protection          | IP range blocking (9 CIDRs) | url_unmasker.py
+  Homoglyph detection      | Punycode/IDNA + Unicode     | url_unmasker.py
+  Typosquatting detection  | Levenshtein distance ≤ 2    | risk_engine.py
+  Threat feed matching     | OpenPhish + URLHaus         | threat_intelligence
+  SPF/DKIM/DMARC analysis  | RFC 7208, 6376, 7489        | header_analyzer.py
+  Private IP filtering     | RFC 1918 + RFC 3927         | ioc_extractor.py
+  SOC alerting             | CEF standard                | soc_notifier.py
+  Encrypted evidence share | AES-256-GCM envelope        | crypto_service.py
+
+
+========================================================================
+20. TECHNOLOGY STACK SUMMARY
+========================================================================
+
+  Layer               | Technology                | Notes
+  --------------------|---------------------------|----------------------
+  Backend API         | FastAPI (Python)          | Async, Uvicorn ASGI
+  Database ORM        | SQLAlchemy (async)        | aiosqlite driver
+  Database            | SQLite                    | PostgreSQL-ready
+  Cryptography        | pyca/cryptography         | ECDSA, AES-GCM, PBKDF2
+  Async HTTP          | httpx                     | URL following, feeds
+  Blockchain client   | web3.py + eth_account     | Polygon Amoy testnet
+  Config management   | pydantic-settings         | .env file support
+  DNS resolution      | socket (stdlib)           | Domain-to-IP
+  Domain parsing      | tldextract                | Accurate registered domain
+  Settings cache      | functools.lru_cache       | Singleton settings
+  Frontend            | React 18 + Vite           | JSX, fast HMR
+  Frontend HTTP       | Axios                     | API client
+  Styling             | Vanilla CSS               | Dark theme, glassmorphism
+  Browser Extension   | Chrome MV3                | content.js, service worker
+  Dev orchestration   | concurrently (npm)        | backend + frontend together
+  Solidity            | ^0.8.20                   | EVM smart contract
+  OS compatibility    | Windows + Linux           | .bat launchers included
+
+
+========================================================================
+21. FULL DATA FLOW (END-TO-END)
+========================================================================
+
+  Gmail Email Opened by User
+           |
+           v
+  Chrome Extension (content.js)
+    - MutationObserver detects email open
+    - Scrapes DOM: subject, from, body, all <a> links
+           |
+           v
+  background.js sends POST /api/analyze
+           |
+           v
+  FastAPI Backend Pipeline:
+    1. parse_email_content()           Extract fields from raw text
+    2. analyze_headers()               SPF/DKIM/DMARC (or heuristics)
+    3. analyze_display_name_spoofing() Brand impersonation check
+    4. extract_iocs()                  URLs, IPs, domains, emails
+       + unwrap_google_redirect()      Unwrap Gmail link wrappers
+    5. unmask_urls()                   SSRF protection + hop following
+       + detect_homoglyphs()           Punycode/Unicode spoof check
+       + decode_obfuscated_url()       Base64/hex decoding
+    6. check_urls()                    OpenPhish + URLHaus lookup
+    7. score_content()                 Urgency/credential/financial/threat kw
+    8. score_url_heuristics()          TLD/shortener/typosquatting analysis
+    9. score_link_mismatches()         Display text vs href domain check
+   10. score_sender_heuristics()       Random local part / free email check
+   11. has_suspicious_redirects()      Redirect chain depth check
+   12. combine_scores()                Final verdict: LOW/MEDIUM/HIGH
+   13. geolocate_ips()                 ip-api.com GeoIP lookup
+   14. build_infrastructure_graph()    Node-edge graph construction
+   15. apply_salt_pepper(_base_case_id) → salted case_id
+   16. INSERT Case into SQLite
+           |
+           v
+  JSON response returned to Chrome Extension
+           |
+  Chrome Extension injects result overlay into Gmail UI
+           |
+  User clicks "Open in Dashboard" → React Cockpit loads
+           |
+           v
+  React Cockpit renders:
+    RiskScore gauge (animated 0-100)
+    RiskFactors list (all explainable signals)
+    IOCPanel (URLs/Domains/IPs/Threat checks)
+    IPGeolocation cards
+    InfrastructureGraph
+    ReportPanel + CryptoSealModal + SOCDispatchModal
+           |
+  User clicks "Generate Report"
+           |
+           v
+  POST /api/reports/{salted_case_id}/generate
+    - apply_salt_pepper(report_id)      Salt the report ID
+    - crypto_service.seal_case()        ECDSA sign + Merkle root
+    - log_case_to_chain()               Polygon Amoy tx (or simulated)
+    - generate_case_report()            Write .json + .html to reports/
+    - INSERT report_id + blockchain data to Case record
+           |
+           v
+  User downloads report:
+  GET /api/reports/{salted_report_id}/download?format=html
+    → FileResponse({report_id}.html)
+
+
+========================================================================
+22. API ENDPOINT REFERENCE (ALL ROUTES)
+========================================================================
+
+  Method  | Path                               | Description
+  --------|------------------------------------|--------------------------
+  GET     | /                                  | Health + version info
+  GET     | /health                            | Health check
+  POST    | /api/analyze                       | Full 14-step analysis
+  GET     | /api/cases                         | List all saved cases
+  GET     | /api/cases/{case_id}               | Get single case
+  DELETE  | /api/cases/{case_id}               | Delete a case
+  POST    | /api/reports/{case_id}/generate    | Generate forensic report
+  GET     | /api/reports/{report_id}/download  | Download report file
+  POST    | /api/crypto/seal                   | Seal case cryptographically
+  POST    | /api/crypto/verify                 | Verify seal integrity
+  POST    | /api/crypto/tamper-demo            | Run tamper simulation
+  POST    | /api/crypto/encrypt                | AES-256-GCM encrypt dossier
+  POST    | /api/crypto/decrypt                | Decrypt dossier
+  GET     | /api/blockchain/status/{case_id}   | Blockchain anchor status
+  POST    | /api/soc/dispatch                  | Dispatch SOC alerts (all)
+  POST    | /api/soc/cef                       | Generate CEF string only
+  POST    | /api/soc/jira-ticket               | Generate Jira payload only
+  POST    | /api/soc/probe-ip                  | Live TCP probe + ASN lookup
+  POST    | /api/soc/unmask-url                | Safe URL unmask + homoglyphs
+  GET     | /api/intelligence/check            | Manual IOC feed check
+  POST    | /api/intelligence/domains          | Check domains against feeds
+
+
+========================================================================
+23. KEYWORD DICTIONARIES & SIGNAL LISTS
+========================================================================
+
+URGENCY KEYWORDS (19 items):
+  urgent, immediately, asap, act now, within 24 hours,
+  account will be locked, suspended, expire, expiring, last warning,
+  final notice, respond now, action required, your account has been,
+  unauthorized, unusual activity, verify immediately, limited time
+
+CREDENTIAL KEYWORDS (17 items):
+  password, login, verify your account, confirm your identity, otp,
+  one-time, security code, reset your password, update your information,
+  sign in, log in to, enter your credentials, ssn, social security,
+  credit card number, cvv, pin number
+
+FINANCIAL KEYWORDS (18 items):
+  wire transfer, invoice attached, payment overdue, bank details,
+  account number, bitcoin, crypto wallet, western union, money gram,
+  gift card, itunes card, refund, prize, lottery, you have won,
+  claim your, inheritance, beneficiary
+
+THREAT KEYWORDS (12 items):
+  legal action, lawsuit, police, arrest, fine, court order, warrant,
+  prosecution, jail, prison, penalty, terminate your account,
+  permanently delete
+
+SUSPICIOUS TLDs (30 items):
+  .xyz .top .click .buzz .gq .ml .tk .cf .ga .work .loan .racing
+  .review .download .stream .win .bid .date .science .party .cricket
+  .faith .accountant .icu .monster .rest .surf .sbs .cfd .boats .uno
+
+URL SHORTENERS (22 items):
+  bit.ly tinyurl.com goo.gl t.co ow.ly is.gd buff.ly adf.ly bit.do
+  mcaf.ee su.pr dlvr.it lnkd.in db.tt qr.ae cutt.ly shorturl.at rb.gy
+  tiny.cc v.gd surl.li rebrand.ly
+
+BRAND TARGETS (28 items):
+  paypal apple microsoft google amazon netflix facebook instagram whatsapp
+  linkedin twitter chase wellsfargo bankofamerica citibank hsbc dropbox
+  adobe yahoo outlook onedrive icloud dhl fedex ups usps
+
+FREE EMAIL PROVIDERS (16 items):
+  gmail.com yahoo.com yahoo.co.in hotmail.com outlook.com aol.com
+  icloud.com mail.com protonmail.com zoho.com yandex.com gmx.com
+  live.com tutanota.com fastmail.com rediffmail.com
+
+SAFE SENDER ROLE WORDS (30 items — never flagged as random):
+  support contact info admin service services customer billing sales help
+  security team office alert alerts notification notifications noreply
+  no-reply marketing updates account accounts enquiry enquiries general
+  feedback postmaster compliance banking finance dispatch operations helpdesk
+
+SAFE DOMAINS (skipped during DNS resolution):
+  google.com www.google.com mail.google.com googleapis.com gstatic.com
+
+HOMOGLYPH MAP (25 substitutions):
+  0→o  1→l  3→e  4→a  5→s  8→b  @→a  $→s  !→i
+  ä→a  ë→e  ï→i  ö→o  ü→u  à→a  è→e  ì→i  ò→o  ù→u
+  á→a  é→e  í→i  ó→o  ú→u  ɑ→a  ɡ→g  ɩ→i  ɪ→i
+  а→a(Cyr) е→e(Cyr) о→o(Cyr) р→p(Cyr) с→c(Cyr) у→y(Cyr) х→x(Cyr)
+
+PHISHING PATH KEYWORDS (9 items):
+  login signin verify secure account update confirm banking webscr
+
+PRIVATE IP PREFIXES FILTERED IN ioc_extractor.py:
+  10.  127.  172.16.  172.17.  172.18.  172.19.  172.20.  172.21.
+  172.22.  172.23.  172.24.  172.25.  172.26.  172.27.  172.28.
+  172.29.  172.30.  172.31.  192.168.  0.  169.254.
+
+
+========================================================================
+24. CONFIGURATION VARIABLES REFERENCE
+========================================================================
+
+All configurable via .env file in project root or environment variables.
+
+  Variable             | Default                                | Required?
+  ---------------------|----------------------------------------|----------
+  APP_NAME             | THREAT TRACE AI                        | No
+  DEBUG                | True                                   | No
+  SECRET_KEY           | change-me                              | YES (prod)
+  DATABASE_URL         | sqlite+aiosqlite:///./threattrace.db   | No
+  GOOGLE_CLIENT_ID     | (empty)                                | For OAuth
+  GOOGLE_CLIENT_SECRET | (empty)                                | For OAuth
+  GOOGLE_REDIRECT_URI  | http://localhost:8000/auth/callback    | For OAuth
+  PHISHTANK_API_KEY    | (empty)                                | Optional
+  OPENPHISH_ENABLED    | True                                   | No
+  IP_API_URL           | http://ip-api.com/json/                | No
+  POLYGON_RPC_URL      | https://rpc-amoy.polygon.technology    | For live BC
+  PRIVATE_KEY          | (empty)                                | For live BC
+  CONTRACT_ADDRESS     | (empty)                                | For live BC
+  CHAIN_ID             | 80002                                  | For live BC
+  SLACK_WEBHOOK_URL    | (empty)                                | For Slack
+  TEAMS_WEBHOOK_URL    | (empty)                                | For Teams
+  DEMO_MODE            | True                                   | No
+
+
+================================================================================
+END OF REPORT
+================================================================================
+ThreatTrace AI — Forensic Threat Attribution & Chain-of-Custody Platform
+Built for Smart India Hackathon 2026
+All cryptographic operations use industry-standard algorithms (ECDSA, AES-GCM,
+SHA-256, PBKDF2-HMAC-SHA256) via the pyca/cryptography library.
+================================================================================

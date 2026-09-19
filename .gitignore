@@ -1,0 +1,50 @@
+# Dependencies
+node_modules/
+*/node_modules/
+**/node_modules/
+
+# Python
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+**/env/
+**/venv/
+**/.venv/
+
+# Database & Environment Secrets
+*.db
+*.sqlite3
+.env
+.env.local
+.env.*.local
+**/.env
+**/.env.local
+**/.env.*.local
+!.env.example
+!**/.env.example
+*.pem
+
+# Build Outputs & Bundles
+dist/
+build/
+*.egg-info/
+ThreatTraceAI-Extension.zip.zip
+
+# IDE & Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Logs & Temporary Files
+*.log
+.cache/

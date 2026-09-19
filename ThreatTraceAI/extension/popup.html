@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Threat Trace AI</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="popup-container">
+    
+    <!-- Top Header -->
+    <header class="popup-header">
+      <div class="popup-brand">
+        <div class="logo-box">
+          <img src="logo.png" alt="ThreatTrace AI Logo" width="22" height="22" style="border-radius: 4px;" />
+        </div>
+        <div>
+          <div class="title">THREAT TRACE AI</div>
+          <div class="subtitle">Gmail Forensic Shield <span id="versionBadge" style="font-size:9px;opacity:0.6;margin-left:4px;">v1.2</span></div>
+        </div>
+      </div>
+      <div class="status-indicator" id="topStatusIndicator">
+        <span class="pulse-dot" id="topPulseDot"></span>
+        <span id="topStatusText">LOCKED</span>
+      </div>
+    </header>
+
+    <!-- 1. LOGIN / AUTHENTICATION VIEW -->
+    <section id="authSection" class="popup-content auth-view" style="display: none;">
+      <div class="auth-card">
+        <div class="auth-icon-badge">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+        </div>
+        <h3 class="auth-title">Account Lock & Binding</h3>
+        <p class="auth-desc">
+          Authenticate with your email. Valid for <strong>1 Month (30 Days)</strong> before re-verification.
+        </p>
+
+        <!-- Dedicated Onboarding & OTP Button -->
+        <button id="openOnboardingBtn" type="button" class="primary-btn auth-btn" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); margin-top: 10px; margin-bottom: 12px;">
+          <span>🚀 Open OTP Verification Setup ↗</span>
+        </button>
+
+        <div id="authAlert" class="auth-alert" style="display: none;"></div>
+
+        <div class="auth-security-notice">
+          🛡️ <strong>Zero-Trust Policy:</strong> Account binding requires OTP verification on the setup page. Once verified, your 30-day session activates automatically across all tabs.
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. AUTHENTICATED SCANNER VIEW -->
+    <main id="scannerSection" class="popup-content scanner-view" style="display: none;">
+      
+      <!-- Bound Account Bar -->
+      <div class="user-account-bar">
+        <div class="user-info">
+          <span class="user-badge-icon">🛡️</span>
+          <div class="user-details">
+            <div class="bound-label">BOUND EMAIL ACCOUNT (1 MONTH)</div>
+            <div class="bound-email" id="boundEmailDisplay">user@example.com</div>
+          </div>
+        </div>
+        <button id="logoutBtn" class="logout-btn" title="Sign out of this extension">
+          Sign Out
+        </button>
+      </div>
+
+      <!-- 1-Month Lifespan Info Pill -->
+      <div id="sessionLifespanBanner" style="font-size: 11px; background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 6px 10px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <span>⏳ Session: <strong>30-Day Lifespan</strong></span>
+        <span id="sessionDaysRemaining">-- days left</span>
+      </div>
+
+      <!-- Live Mailbox Detection Check -->
+      <div id="tabStatusBanner" class="tab-status-card checking">
+        <span class="tab-status-icon">🔎</span>
+        <span id="tabStatusText">Verifying active browser mailbox…</span>
+      </div>
+
+      <div class="helper-text">
+        Threat risk scores appear automatically in Gmail! Or paste email content below to inspect:
+      </div>
+
+      <textarea id="emailText" rows="3" placeholder="Paste email text or headers here…"></textarea>
+
+      <button id="analyzeBtn" class="primary-btn">
+        <span>⚡ Scan Forensic Threat</span>
+      </button>
+
+      <div id="resultBox" class="result-box" style="display: none;">
+        <div class="result-score-row">
+          <div>
+            <div class="score-label">RISK SCORE</div>
+            <div id="scoreVal" class="score-number">--</div>
+          </div>
+          <div id="scoreBadge" class="score-badge danger">CRITICAL</div>
+        </div>
+
+        <div class="rec-line" id="recLine">Action: QUARANTINE</div>
+
+        <div class="factor-title">DETECTED SIGNALS:</div>
+        <ul id="factorList" class="factor-list"></ul>
+
+        <button id="btnOpenCaseDashboard" type="button" class="primary-btn" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); margin-top: 12px; width: 100%; display: none;">
+          <span>🔍 Open in Full Forensic Cockpit ↗</span>
+        </button>
+
+        <!-- Canary Trap Button (shown only when case exists) -->
+        <button id="btnDeployCanary" type="button" class="primary-btn" style="background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); margin-top: 8px; width: 100%; display: none;">
+          <span>🪤 Deploy Canary Trap</span>
+        </button>
+
+        <!-- Subpoena Package Button -->
+        <button id="btnSubpoena" type="button" class="primary-btn" style="background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%); margin-top: 8px; width: 100%; display: none;">
+          <span>📋 Get Subpoena Package</span>
+        </button>
+
+        <!-- Canary result display -->
+        <div id="canaryResult" style="display:none; margin-top:10px; padding:8px; background:#1e1b4b; border-radius:6px; border:1px solid #7c3aed; font-size:11px; color:#c4b5fd; word-break:break-all;">
+          <div style="font-weight:700; color:#a78bfa; margin-bottom:4px;">🪤 Canary Token Deployed</div>
+          <div id="canaryTokenDisplay"></div>
+          <div id="canaryPingUrl" style="margin-top:4px; color:#818cf8;"></div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Bottom Footer -->
+    <footer class="popup-footer">
+      <a href="http://localhost:5173/" target="_blank" class="footer-link" id="footerDashboardLink">
+        🌐 Open Full Forensic Dashboard →
+      </a>
+    </footer>
+
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

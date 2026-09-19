@@ -1,0 +1,16 @@
+{
+  "name": "threattrace-ai",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ThreatTrace AI - Intelligent Email Forensics & Threat Attribution Platform",
+  "scripts": {
+    "dev": "concurrently -n backend,frontend -c blue,green \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && python -m uvicorn app.main:app --reload --port 8000 --host 127.0.0.1",
+    "dev:frontend": "cd frontend && npm run dev",
+    "install:frontend": "cd frontend && npm install",
+    "build": "cd frontend && npm run build"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.1"
+  }
+}

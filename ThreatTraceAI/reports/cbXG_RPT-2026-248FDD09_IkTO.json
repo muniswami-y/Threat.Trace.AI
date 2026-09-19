@@ -1,0 +1,271 @@
+{
+  "report_id": "cbXG_RPT-2026-248FDD09_IkTO",
+  "generated_at": "2026-09-16T11:32:25.368724+00:00",
+  "case": {
+    "case_id": "wLKX_TT-2026-0CA999E9_wEkG",
+    "subject": "September Product and Feature Retirement Newsletter",
+    "sender": "techcomms@mail.salesforce.com",
+    "risk_score": 36.0,
+    "risk_level": "LOW",
+    "risk_factors": [
+      "Email headers not available (web client analysis)",
+      "Sender domain: mail.salesforce.com",
+      "Credential / verification request: 'login'",
+      "URL redirect chain is suspiciously long (3+ hops)",
+      "Excessive subdomains (3 levels) \u2014 obfuscation technique"
+    ],
+    "urls": [
+      {
+        "original": "http://click.mail.salesforce.com/?qs=ABp7ImQiOjUwMDAsInQiOjExMzQyLCJzIjo4fQAIAAAAAAAJbD5dkjFIG-yRGDOItNpBlBF9aVZeh4xAlv8ovWPySijiEZ53uQyaMPC37_mtpLCYIpWziVknRdJ0wM4pdHMnxa1LhejpppGPwmXa5uU",
+        "unwrapped": "http://click.mail.salesforce.com/?qs=ABp7ImQiOjUwMDAsInQiOjExMzQyLCJzIjo4fQAIAAAAAAAJbD5dkjFIG-yRGDOItNpBlBF9aVZeh4xAlv8ovWPySijiEZ53uQyaMPC37_mtpLCYIpWziVknRdJ0wM4pdHMnxa1LhejpppGPwmXa5uU",
+        "final": "https://help.salesforce.com/s/?language=en_US&utm_source=techcomms&utm_campaign=FY27_EOL_4310215",
+        "redirect_count": 2,
+        "status": 200,
+        "error": null,
+        "is_google_wrapped": false,
+        "cross_domain_redirect": true,
+        "redirect_chain": [
+          "http://click.mail.salesforce.com/?qs=ABp7ImQiOjUwMDAsInQiOjExMzQyLCJzIjo4fQAIAAAAAAAJbD5dkjFIG-yRGDOItNpBlBF9aVZeh4xAlv8ovWPySijiEZ53uQyaMPC37_mtpLCYIpWziVknRdJ0wM4pdHMnxa1LhejpppGPwmXa5uU",
+          "https://help.salesforce.com/s/?utm_source=techcomms&utm_campaign=FY27_EOL_4310215",
+          "https://help.salesforce.com/s/?language=en_US&utm_source=techcomms&utm_campaign=FY27_EOL_4310215"
+        ],
+        "ssrf_safe": true,
+        "homoglyph": {
+          "is_punycode": false,
+          "is_homoglyph_spoof": false,
+          "spoofed_brand": null,
+          "normalized_domain": "help.salesforce.com"
+        }
+      },
+      {
+        "original": "http://click.mail.salesforce.com/?qs=ABp7ImQiOjUwMDAsInQiOjExMzQyLCJzIjo4fQAIAAAAAAAJbD5dkx6tI1yaYxKfIuCzoGVZI7O-XhrLdr1JQz0CeCwrHsjiGUBzJvvab70jw2kwEeJpskmCMmF9aypNagLPMwDeAicb7MslYTQJfUI",
+        "unwrapped": "http://click.mail.salesforce.com/?qs=ABp7ImQiOjUwMDAsInQiOjExMzQyLCJzIjo4fQAIAAAAAAAJbD5dkx6tI1yaYxKfIuCzoGVZI7O-XhrLdr1JQz0CeCwrHsjiGUBzJvvab70jw2kwEeJpskmCMmF9aypNagLPMwDeAicb7MslYTQJfUI",
+        "final": "https://help.salesforce.com/s/articleView?language=en_US&id=005132110&type=1&utm_source=techcomms&utm_campaign=FY27_EOL_4310215",
+        "redirect_count": 2,
+        "status": 200,
+        "error": null,
+        "is_google_wrapped": false,
+        "cross_domain_redirect": true,
+        "redirect_chain": [
+          "http://click.mail.salesforce.com/?qs=ABp7ImQiOjUwMDAsInQiOjExMzQyLCJzIjo4fQAIAAAAAAAJbD5dkx6tI1yaYxKfIuCzoGVZI7O-XhrLdr1JQz0CeCwrHsjiGUBzJvvab70jw2kwEeJpskmCMmF9aypNagLPMwDeAicb7MslYTQJfUI",
+          "https://help.salesforce.com/s/articleView?id=005132110&type=1&utm_source=techcomms&utm_campaign=FY27_EOL_4310215",
+          "https://help.salesforce.com/s/articleView?language=en_US&id=005132110&type=1&utm_source=techcomms&utm_campaign=FY27_EOL_4310215"
+        ],
+        "ssrf_safe": true,
+        "homoglyph": {
+          "is_punycode": false,
+          "is_homoglyph_spoof": false,
+          "spoofed_brand": null,
+          "normalized_domain": "help.salesforce.com"
+        }
+      },
+      {
+        "original": "http://click.mail.salesforce.com/?qs=ABp7ImQiOjUwMDAsInQiOjExMzQyLCJzIjo4fQAIAAAAAAAJbD5dlCusrNR9bwNXFBtltNYROy0xGupv9NYRMOpEXsLJrcbotiTmBpo9iuwdAlwlHIxJAd5suz7B-X7vjkH73vmEw_yI2yEUbQiOTfk",
+        "unwrapped": "http://click.mail.salesforce.com/?qs=ABp7ImQiOjUwMDAsInQiOjExMzQyLCJzIjo4fQAIAAAAAAAJbD5dlCusrNR9bwNXFBtltNYROy0xGupv9NYRMOpEXsLJrcbotiTmBpo9iuwdAlwlHIxJAd5suz7B-X7vjkH73vmEw_yI2yEUbQiOTfk",
+        "final": "https://help.salesforce.com/s/articleView?language=en_US&id=005321531&type=1&utm_source=techcomms&utm_campaign=FY27_EOL_4310215",
+        "redirect_count": 2,
+        "status": 200,
+        "error": null,
+        "is_google_wrapped": false,
+        "cross_domain_redirect": true,
+        "redirect_chain": [
+          "http://click.mail.salesforce.com/?qs=ABp7ImQiOjUwMDAsInQiOjExMzQyLCJzIjo4fQAIAAAAAAAJbD5dlCusrNR9bwNXFBtltNYROy0xGupv9NYRMOpEXsLJrcbotiTmBpo9iuwdAlwlHIxJAd5suz7B-X7vjkH73vmEw_yI2yEUbQiOTfk",
+          "https://help.salesforce.com/s/articleView?id=005321531&type=1&utm_source=techcomms&utm_campaign=FY27_EOL_4310215",
+          "https://help.salesforce.com/s/articleView?language=en_US&id=005321531&type=1&utm_source=techcomms&utm_campaign=FY27_EOL_4310215"
+        ],
+        "ssrf_safe": true,
+        "homoglyph": {
+          "is_punycode": false,
+          "is_homoglyph_spoof": false,
+          "spoofed_brand": null,
+          "normalized_domain": "help.salesforce.com"
+        }
+      },
+      {
+        "original": "http://click.mail.salesforce.com/?qs=ABp7ImQiOjUwMDAsInQiOjExMzQyLCJzIjo4fQAIAAAAAAAJbD5dlTz05S72flGgbMansNBF_k6jwRMAtK6rinnXWbCFrFipopkSaL3PLf6IGhmtDADpQMU27m9QRt3M8NYCQxK5Gm5dsLIIcaZiwSY",
+        "unwrapped": "http://click.mail.salesforce.com/?qs=ABp7ImQiOjUwMDAsInQiOjExMzQyLCJzIjo4fQAIAAAAAAAJbD5dlTz05S72flGgbMansNBF_k6jwRMAtK6rinnXWbCFrFipopkSaL3PLf6IGhmtDADpQMU27m9QRt3M8NYCQxK5Gm5dsLIIcaZiwSY",
+        "final": "https://www.salesforce.com/in/?ir=1&utm_source=techcomms&utm_campaign=FY27_EOL_4310215",
+        "redirect_count": 3,
+        "status": 200,
+        "error": null,
+        "is_google_wrapped": false,
+        "cross_domain_redirect": true,
+        "redirect_chain": [
+          "http://click.mail.salesforce.com/?qs=ABp7ImQiOjUwMDAsInQiOjExMzQyLCJzIjo4fQAIAAAAAAAJbD5dlTz05S72flGgbMansNBF_k6jwRMAtK6rinnXWbCFrFipopkSaL3PLf6IGhmtDADpQMU27m9QRt3M8NYCQxK5Gm5dsLIIcaZiwSY",
+          "http://www.salesforce.com?utm_source=techcomms&utm_campaign=FY27_EOL_4310215",
+          "http://www.salesforce.com/in/?ir=1&utm_source=techcomms&utm_campaign=FY27_EOL_4310215",
+          "https://www.salesforce.com/in/?ir=1&utm_source=techcomms&utm_campaign=FY27_EOL_4310215"
+        ],
+        "ssrf_safe": true,
+        "homoglyph": {
+          "is_punycode": false,
+          "is_homoglyph_spoof": false,
+          "spoofed_brand": null,
+          "normalized_domain": "www.salesforce.com"
+        }
+      },
+      {
+        "original": "http://click.mail.salesforce.com/?qs=ABp7ImQiOjUwMDAsInQiOjExMzQyLCJzIjo4fQAIAAAAAAAJbD5dliNWVmHHfWxb79dI7o_1Sf00z12ZAfiGE1SaWdIOVz5fX7RWtFUoKLikxuPaQUl8k0BgQOjTs7DVAXuXV9Up5uYPbWdDJF9L9RM",
+        "unwrapped": "http://click.mail.salesforce.com/?qs=ABp7ImQiOjUwMDAsInQiOjExMzQyLCJzIjo4fQAIAAAAAAAJbD5dliNWVmHHfWxb79dI7o_1Sf00z12ZAfiGE1SaWdIOVz5fX7RWtFUoKLikxuPaQUl8k0BgQOjTs7DVAXuXV9Up5uYPbWdDJF9L9RM",
+        "final": "https://www.salesforce.com/company/legal/privacy/?utm_source=techcomms&utm_campaign=FY27_EOL_4310215",
+        "redirect_count": 3,
+        "status": 200,
+        "error": null,
+        "is_google_wrapped": false,
+        "cross_domain_redirect": true,
+        "redirect_chain": [
+          "http://click.mail.salesforce.com/?qs=ABp7ImQiOjUwMDAsInQiOjExMzQyLCJzIjo4fQAIAAAAAAAJbD5dliNWVmHHfWxb79dI7o_1Sf00z12ZAfiGE1SaWdIOVz5fX7RWtFUoKLikxuPaQUl8k0BgQOjTs7DVAXuXV9Up5uYPbWdDJF9L9RM",
+          "http://www.salesforce.com/company/privacy?utm_source=techcomms&utm_campaign=FY27_EOL_4310215",
+          "http://www.salesforce.com/company/legal/privacy/?utm_source=techcomms&utm_campaign=FY27_EOL_4310215",
+          "https://www.salesforce.com/company/legal/privacy/?utm_source=techcomms&utm_campaign=FY27_EOL_4310215"
+        ],
+        "ssrf_safe": true,
+        "homoglyph": {
+          "is_punycode": false,
+          "is_homoglyph_spoof": false,
+          "spoofed_brand": null,
+          "normalized_domain": "www.salesforce.com"
+        }
+      },
+      {
+        "original": "https://www.google.com/maps/search/415+Mission+Street,+3rd+Floor,+San+Francisco,+CA+94105,+United+States?entry=gmail&source=g",
+        "unwrapped": "https://www.google.com/maps/search/415+Mission+Street,+3rd+Floor,+San+Francisco,+CA+94105,+United+States?entry=gmail&source=g",
+        "final": "https://www.google.com/maps/search/415+Mission+Street,+3rd+Floor,+San+Francisco,+CA+94105,+United+States?entry=gmail&source=g",
+        "redirect_count": 0,
+        "status": 200,
+        "error": null,
+        "is_google_wrapped": false,
+        "cross_domain_redirect": false,
+        "redirect_chain": [
+          "https://www.google.com/maps/search/415+Mission+Street,+3rd+Floor,+San+Francisco,+CA+94105,+United+States?entry=gmail&source=g"
+        ],
+        "ssrf_safe": true,
+        "homoglyph": {
+          "is_punycode": false,
+          "is_homoglyph_spoof": false,
+          "spoofed_brand": null,
+          "normalized_domain": "www.google.com"
+        }
+      }
+    ],
+    "domains": [
+      "click.mail.salesforce.com",
+      "gmail.com",
+      "google.com",
+      "mail.salesforce.com",
+      "salesforce.com"
+    ],
+    "ips": [
+      "136.147.129.61",
+      "136.147.129.81",
+      "172.217.24.133",
+      "23.1.35.132"
+    ],
+    "geo_locations": [
+      {
+        "ip": "136.147.129.61",
+        "country": "United States",
+        "region": "California",
+        "city": "San Francisco",
+        "lat": 37.7898,
+        "lon": -122.397,
+        "isp": "Salesforce.com, Inc.",
+        "org": "Salesforce.com, Inc.",
+        "status": "success"
+      },
+      {
+        "ip": "136.147.129.81",
+        "country": "United States",
+        "region": "California",
+        "city": "San Francisco",
+        "lat": 37.7898,
+        "lon": -122.397,
+        "isp": "Salesforce.com, Inc.",
+        "org": "Salesforce.com, Inc.",
+        "status": "success"
+      },
+      {
+        "ip": "172.217.24.133",
+        "country": "Japan",
+        "region": "Tokyo",
+        "city": "Chiyoda City",
+        "lat": 35.694,
+        "lon": 139.754,
+        "isp": "Google LLC",
+        "org": "Google LLC",
+        "status": "success"
+      },
+      {
+        "ip": "23.1.35.132",
+        "country": "Australia",
+        "region": "New South Wales",
+        "city": "Sydney",
+        "lat": -33.8688,
+        "lon": 151.209,
+        "isp": "Akamai International B.V.",
+        "org": "Akamai Technologies, Inc.",
+        "status": "success"
+      }
+    ],
+    "recommendation": "ALLOW",
+    "created_at": "2026-09-16T11:30:32",
+    "report_id": "cbXG_RPT-2026-248FDD09_IkTO",
+    "canonical_hash": "0xa220f65ddbecb6c1524df1c3e50713bbdff5744cb42e658f94504bcb9147e3d5",
+    "signature": "0x30450220098639b35759b1c4beb42bd81c084392c4986cebe4be372e8a1761ce23fc9950022100a109edd8dd20d9f02a2fce9b546296aa3737fd22568488d3773388a7b81b4661",
+    "public_key_fingerprint": "TT-SECP256R1-14B6:1DE7:CEE4:E003",
+    "crypto_seal": {
+      "sealed": true,
+      "canonical_hash": "0xa220f65ddbecb6c1524df1c3e50713bbdff5744cb42e658f94504bcb9147e3d5",
+      "raw_canonical_hash": "a220f65ddbecb6c1524df1c3e50713bbdff5744cb42e658f94504bcb9147e3d5",
+      "body_hash": "0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "signature": "0x30450220098639b35759b1c4beb42bd81c084392c4986cebe4be372e8a1761ce23fc9950022100a109edd8dd20d9f02a2fce9b546296aa3737fd22568488d3773388a7b81b4661",
+      "algorithm": "ECDSA-SECP256R1-SHA256",
+      "public_key_fingerprint": "TT-SECP256R1-14B6:1DE7:CEE4:E003",
+      "public_key_pem": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAECU1o5xdBWFLezhgGpzbpc1MsTrmz\n7ScBzLh5RQkHZlwRYzJ6Z0X6i5GELZMY3svYwpRjPNfGIcr4bD7MNRy5lQ==\n-----END PUBLIC KEY-----\n",
+      "merkle_root": "0x9e7c8e34e9440db12fbdeb7d8ee965b4dff972fed8afc9ea553a0e65f6ea8ddc",
+      "blockchain_tx": "0xfcfd86912331330b7c7387bf9559d815e969f86d8586908fe5d67ed0426fcc04",
+      "blockchain_network": "Polygon Amoy (Chain ID 80002)",
+      "timestamp": "2026-09-16T11:32:25.306862+00:00",
+      "canonical_fields": {
+        "case_id": "wLKX_TT-2026-0CA999E9_wEkG",
+        "subject": "September Product and Feature Retirement Newsletter",
+        "sender": "techcomms@mail.salesforce.com",
+        "recipient": "",
+        "body_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "risk_score": 36,
+        "risk_level": "LOW",
+        "risk_factors": [
+          "Credential / verification request: 'login'",
+          "Email headers not available (web client analysis)",
+          "Excessive subdomains (3 levels) \u2014 obfuscation technique",
+          "Sender domain: mail.salesforce.com",
+          "URL redirect chain is suspiciously long (3+ hops)"
+        ],
+        "urls": [
+          "https://help.salesforce.com/s/?language=en_US&utm_source=techcomms&utm_campaign=FY27_EOL_4310215",
+          "https://help.salesforce.com/s/articleView?language=en_US&id=005132110&type=1&utm_source=techcomms&utm_campaign=FY27_EOL_4310215",
+          "https://help.salesforce.com/s/articleView?language=en_US&id=005321531&type=1&utm_source=techcomms&utm_campaign=FY27_EOL_4310215",
+          "https://www.google.com/maps/search/415+Mission+Street,+3rd+Floor,+San+Francisco,+CA+94105,+United+States?entry=gmail&source=g",
+          "https://www.salesforce.com/company/legal/privacy/?utm_source=techcomms&utm_campaign=FY27_EOL_4310215",
+          "https://www.salesforce.com/in/?ir=1&utm_source=techcomms&utm_campaign=FY27_EOL_4310215"
+        ],
+        "domains": [
+          "click.mail.salesforce.com",
+          "gmail.com",
+          "google.com",
+          "mail.salesforce.com",
+          "salesforce.com"
+        ],
+        "ips": [
+          "136.147.129.61",
+          "136.147.129.81",
+          "172.217.24.133",
+          "23.1.35.132"
+        ],
+        "recommendation": "ALLOW",
+        "origin_ip": ""
+      }
+    }
+  },
+  "disclaimer": "This is an automated forensic summary produced by THREAT TRACE AI for cybersecurity threat attribution and chain-of-custody logging. Cryptographically hashed for tamper-evidence."
+}

@@ -1,0 +1,238 @@
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, Field
+from typing import Optional, List, Dict, Any
+from datetime import datetime, timezone
+import uuid
+
+from app.utils.salting import apply_salt_pepper
+
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+
+from app.database import get_db
+from app.models import Case
+from app.services.email_parser import parse_email_content
+from app.services.header_analyzer import analyze_headers, analyze_display_name_spoofing
+from app.services.ioc_extractor import extract_iocs
+from app.services.url_unmasker import unmask_urls, has_suspicious_redirects, unwrap_google_redirect
+from app.services.threat_intelligence import check_urls, check_ip_reputation
+from app.services.geolocation import geolocate_ips
+from app.services.risk_engine import (
+    score_content, combine_scores, score_url_heuristics,
+    score_link_mismatches, score_sender_heuristics,
+)
+from app.services.graph_engine import build_infrastructure_graph
+from app.services.blockchain_service import log_case_to_chain, prepare_case_hash
+from app.utils.hashing import sha256_of_dict
+
+router = APIRouter(prefix="/api", tags=["Analysis"])
+
+
+class LinkInfo(BaseModel):
+    """Structured link info from browser extension."""
+    display: Optional[str] = ""
+    href: Optional[str] = ""
+    unwrapped: Optional[str] = ""
+
+
+class AnalyzeRequest(BaseModel):
+    email_text: str = Field(..., description="Raw email body or full .eml content")
+    subject: Optional[str] = None
+    from_header: Optional[str] = None
+    links: Optional[List[Any]] = Field(
+        default=None,
+        description="Structured links from extension: [{display, href, unwrapped}]"
+    )
+    resolve_domain_ip: Optional[bool] = False
+    save_case: bool = True
+
+
+@router.post("/analyze")
+async def analyze_email(payload: AnalyzeRequest, db: AsyncSession = Depends(get_db)):
+    # 1. Parse
+    parsed = parse_email_content(payload.email_text)
+    if payload.subject:
+        parsed["subject"] = payload.subject
+    if payload.from_header:
+        parsed["from_header"] = payload.from_header
+        # re-extract sender email roughly
+        if "@" in payload.from_header:
+            parsed["sender_email"] = payload.from_header.split()[-1].strip("<>")
+
+    # 2. Header analysis (now with smart fallback for no real headers)
+    header_factors, header_points = analyze_headers(
+        parsed.get("headers") or {},
+        parsed.get("sender_email") or ""
+    )
+
+    # 2b. Display-name spoofing check
+    spoof_factors, spoof_points = analyze_display_name_spoofing(
+        parsed.get("sender_name") or parsed.get("from_header") or "",
+        parsed.get("sender_email") or ""
+    )
+    header_factors.extend(spoof_factors)
+    header_points = min(header_points + spoof_points, 60)
+
+    # 3. IOC extraction — pass extension links directly for merging
+    extension_links = payload.links or []
+    iocs = extract_iocs(
+        parsed.get("body_text") or "",
+        parsed.get("headers"),
+        extension_links=extension_links,
+    )
+
+    # Ensure sender domain is included in IOC domains
+    sender_email = parsed.get("sender_email") or ""
+    if "@" in sender_email:
+        s_dom = sender_email.split("@")[-1].lower().strip("<> ")
+        if s_dom and s_dom not in iocs["domains"]:
+            iocs["domains"].append(s_dom)
+
+    import asyncio
+
+    # Fire all external async tasks concurrently (URL unmasking, threat intel, geoIP)
+    unmask_task = asyncio.create_task(unmask_urls(iocs["urls"]))
+    threat_task = asyncio.create_task(check_urls(iocs["urls"]))
+    geo_task = asyncio.create_task(geolocate_ips(iocs["ips"])) if iocs.get("ips") else None
+    ip_rep_task = asyncio.create_task(check_ip_reputation(iocs["ips"])) if iocs.get("ips") else None
+
+    # Immediate local heuristic engines (runs in microseconds)
+    content_factors, content_points = score_content(
+        parsed.get("body_text") or "",
+        parsed.get("subject") or ""
+    )
+
+    url_heuristic_factors, url_heuristic_points = score_url_heuristics(iocs["urls"])
+
+    structured_links = []
+    for link in extension_links:
+        if isinstance(link, dict):
+            structured_links.append(link)
+        elif isinstance(link, str):
+            structured_links.append({"display": "", "href": link})
+    link_mismatch_factors, link_mismatch_points = score_link_mismatches(structured_links)
+
+    sender_h_factors, sender_h_points = score_sender_heuristics(
+        parsed.get("sender_email") or "",
+        parsed.get("sender_name") or parsed.get("from_header") or "",
+        parsed.get("subject") or "",
+    )
+
+    # Await concurrent IO tasks
+    unmasked = await unmask_task
+    url_checks = await threat_task
+    geos = (await geo_task) if geo_task else []
+    ip_rep_checks = (await ip_rep_task) if ip_rep_task else []
+
+    malicious_count = sum(1 for c in url_checks if c.get("is_malicious"))
+    redirect_suspicious = has_suspicious_redirects(unmasked)
+
+    # Combine all risk scores
+    risk_score, risk_level, recommendation, extra_factors = combine_scores(
+        header_points=header_points,
+        content_points=content_points,
+        malicious_url_count=malicious_count,
+        url_heuristic_points=url_heuristic_points,
+        url_heuristic_factors=url_heuristic_factors,
+        link_mismatch_points=link_mismatch_points,
+        link_mismatch_factors=link_mismatch_factors,
+        sender_heuristic_points=sender_h_points,
+        sender_heuristic_factors=sender_h_factors,
+        geo_mismatch=False,
+        redirect_chain_suspicious=redirect_suspicious,
+    )
+
+    all_factors = header_factors + content_factors + extra_factors
+
+    now_utc = datetime.now(timezone.utc)
+    # Generate base ID then wrap with cryptographic salt + pepper
+    _base_case_id = f"TT-{now_utc.year}-{uuid.uuid4().hex[:8].upper()}"
+    case_id, _case_salt, _case_pepper = apply_salt_pepper(_base_case_id)
+
+    # Match origin_geo and payload_geo from resolved geo list
+    origin_ip = iocs.get("origin_ip")
+    payload_ip = iocs.get("payload_ip")
+    origin_geo = None
+    payload_geo = None
+
+    if geos:
+        if origin_ip:
+            for g in geos:
+                if g.get("ip") == origin_ip:
+                    origin_geo = g
+                    break
+        if payload_ip:
+            for g in geos:
+                if g.get("ip") == payload_ip:
+                    payload_geo = g
+                    break
+        if not origin_geo and geos:
+            origin_geo = geos[0]
+
+    case_data = {
+        "case_id": case_id,
+        "subject": parsed.get("subject"),
+        "sender": parsed.get("sender_email") or parsed.get("from_header") or "unknown",
+        "recipient": parsed.get("to_header"),
+        "body_text": (parsed.get("body_text") or payload.email_text or "")[:5000],
+        "risk_score": risk_score,
+        "risk_level": risk_level,
+        "risk_factors": all_factors,
+        "urls": unmasked,
+        "domains": iocs["domains"],
+        "origin_ip": origin_ip,
+        "origin_geo": origin_geo,
+        "payload_ip": payload_ip,
+        "payload_geo": payload_geo,
+        "ips": iocs["ips"],
+        "header_ips": iocs.get("header_ips", []),
+        "resolved_ips": iocs.get("resolved_ips", {}),
+        "geo_locations": geos,
+        "recommendation": recommendation,
+        "created_at": now_utc.isoformat()
+    }
+
+    # Graph
+    graph = build_infrastructure_graph(case_data)
+
+    # Optional: persist
+    if payload.save_case:
+        db_case = Case(
+            case_id=case_id,
+            subject=case_data["subject"],
+            sender=case_data["sender"],
+            recipient=case_data["recipient"],
+            body_text=case_data["body_text"],
+            risk_score=risk_score,
+            risk_level=risk_level,
+            risk_factors=all_factors,
+            urls=unmasked,
+            domains=iocs["domains"],
+            ips=iocs["ips"],
+            geo_locations=geos,
+            recommendation=recommendation,
+            # Persist salt + pepper for forensic ID recovery
+            case_salt=_case_salt,
+            case_pepper=_case_pepper,
+        )
+        db.add(db_case)
+        await db.commit()
+
+    return {
+        **case_data,
+        "graph": graph,
+        "url_threat_checks": url_checks,
+        "ip_reputation_checks": ip_rep_checks,
+        "evidence_hash_sha256": __import__('hashlib').sha256(
+            __import__('json').dumps({
+                "case_id": case_data["case_id"],
+                "sender": case_data["sender"],
+                "subject": case_data["subject"],
+                "body_text": (case_data.get("body_text") or "")[:4096],
+                "created_at": case_data["created_at"],
+            }, sort_keys=True, ensure_ascii=False).encode()
+        ).hexdigest(),
+        "subpoena_ready": True,
+        "subpoena_note": "Use GET /api/cases/{case_id}/subpoena to generate the full LE evidence package.",
+        "message": "Analysis complete (live feeds used where available)"
+    }
