@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy - ThreatTrace AI</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      color: #1e293b;
+      background-color: #f8fafc;
+      margin: 0;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e2e8f0;
+    }
+    h1 {
+      color: #0f172a;
+      border-bottom: 2px solid #0284c7;
+      padding-bottom: 12px;
+      margin-top: 0;
+    }
+    h2 {
+      color: #0369a1;
+      margin-top: 28px;
+    }
+    ul {
+      padding-left: 20px;
+    }
+    li {
+      margin-bottom: 8px;
+    }
+    .date {
+      color: #64748b;
+      font-size: 0.9rem;
+      margin-bottom: 24px;
+    }
+    .contact {
+      background: #f1f5f9;
+      padding: 16px;
+      border-radius: 8px;
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Privacy Policy for ThreatTrace AI – Gmail Forensic Shield</h1>
+    <div class="date"><strong>Last Updated:</strong> September 2026</div>
+
+    <p>ThreatTrace AI ("we", "our", or "the extension") is an open-source cybersecurity and email forensics tool developed for threat detection, phishing mitigation, and forensic analysis. We are fully committed to protecting your privacy and handling your data transparently.</p>
+
+    <h2>1. Information We Process</h2>
+    <ul>
+      <li><strong>Email Content for Forensic Analysis:</strong> When you click "Scan Forensic Threat" or trigger an on-demand analysis, the extension inspects text, headers, and hyperlinks of the active email strictly to identify indicators of compromise (IOCs), malicious URLs, phishing markers, and domain spoofing.</li>
+      <li><strong>Local Settings & Preferences:</strong> The extension uses local browser storage (<code>chrome.storage.local</code>) exclusively to cache analysis results and user interface preferences locally on your machine.</li>
+    </ul>
+
+    <h2>2. How Information is Used</h2>
+    <ul>
+      <li>All forensic analysis is performed on-demand when explicitly triggered by the user.</li>
+      <li>Processed email metadata is used solely for calculating threat risk scores, deobfuscating suspicious URLs, and generating cryptographic chain-of-custody hashes.</li>
+      <li>We do <strong>not</strong> sell, rent, monetize, or transmit your personal data to unauthorized third parties.</li>
+      <li>We do <strong>not</strong> collect personal identifiable information (PII), passwords, financial data, or browsing history outside of the explicit forensic scan requested by you.</li>
+    </ul>
+
+    <h2>3. Data Storage & Security</h2>
+    <ul>
+      <li>Cryptographic evidence hashing is performed client-side using industry-standard cryptographic algorithms (SHA-256).</li>
+      <li>Communication with the analysis service is encrypted using TLS (HTTPS).</li>
+    </ul>
+
+    <h2>4. Permissions Justification</h2>
+    <ul>
+      <li><strong>activeTab:</strong> Enables interaction only with the currently viewed email tab upon user initiation.</li>
+      <li><strong>storage:</strong> Saves local scan state and configuration preferences directly on your device.</li>
+      <li><strong>scripting:</strong> Injects the forensic scan controls and threat indicators into the webmail interface.</li>
+      <li><strong>Host Permissions:</strong> Limited to <code>mail.google.com</code> to facilitate on-page security inspection.</li>
+    </ul>
+
+    <h2>5. Contact Us</h2>
+    <div class="contact">
+      <p>If you have any questions or inquiries regarding this Privacy Policy, please reach out through our official repository:</p>
+      <p><a href="https://github.com/muniswami-y/Threat.Trace.AI" target="_blank" rel="noreferrer">https://github.com/muniswami-y/Threat.Trace.AI</a></p>
+    </div>
+  </div>
+</body>
+</html>

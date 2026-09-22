@@ -1,54 +1,56 @@
 const BASE = import.meta.env.VITE_API_URL !== undefined ? import.meta.env.VITE_API_URL : ''
 
+let cachedWorkingBase = null
+
+async function fetchWithTimeout(url, options = {}, timeoutMs = 2500) {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), timeoutMs)
+  try {
+    const res = await fetch(url, { ...options, signal: controller.signal })
+    clearTimeout(timer)
+    return res
+  } catch (err) {
+    clearTimeout(timer)
+    throw err
+  }
+}
+
 async function request(path, options = {}) {
   const reqHeaders = { 'Content-Type': 'application/json', ...(options.headers || {}) }
+  const fetchOpts = { headers: reqHeaders, ...options }
 
-  // 1. Try relative path (uses Vite dev server proxy to :8000)
-  try {
-    const res = await fetch(`${BASE}${path}`, {
-      headers: reqHeaders,
-      ...options
-    })
-    if (res.ok) {
-      return await res.json()
+  // 1. If we already found a working active base, try it first with 3s timeout
+  if (cachedWorkingBase) {
+    try {
+      const res = await fetchWithTimeout(`${cachedWorkingBase}${path}`, fetchOpts, 3500)
+      if (res.ok) return await res.json()
+    } catch (e) {
+      cachedWorkingBase = null // Invalidate on error
     }
-  } catch (e) {
-    // Relative fetch failed, fallback
   }
 
-  // 2. Try direct localhost:8000
-  try {
-    const res = await fetch(`http://localhost:8000${path}`, {
-      headers: reqHeaders,
-      ...options
-    })
-    if (res.ok) {
-      return await res.json()
-    }
-  } catch (e) {}
+  // 2. Try direct local endpoints
+  const localCandidates = [
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    BASE
+  ].filter(Boolean)
 
-  // 3. Try direct 127.0.0.1:8000
-  try {
-    const res = await fetch(`http://127.0.0.1:8000${path}`, {
-      headers: reqHeaders,
-      ...options
-    })
-    if (res.ok) {
-      return await res.json()
+  for (const base of localCandidates) {
+    try {
+      const res = await fetchWithTimeout(`${base}${path}`, fetchOpts, 3000)
+      if (res.ok) {
+        cachedWorkingBase = base
+        return await res.json()
+      }
+    } catch (e) {
+      // Continue to next candidate immediately
     }
-  } catch (e) {}
-
-  // 4. Try live Render cloud backend (24/7)
-  const res = await fetch(`https://threattrace-backend-a8ll.onrender.com${path}`, {
-    headers: reqHeaders,
-    ...options
-  })
-  if (!res.ok) {
-    const text = await res.text()
-    throw new Error(text || res.statusText)
   }
-  return res.json()
+
+  throw new Error('Local ThreatTrace AI backend not reachable on port 8000.')
 }
+
 
 export const api = {
   analyze: (body) => request('/api/analyze', { method: 'POST', body: JSON.stringify(body) }),
@@ -75,8 +77,11 @@ export const api = {
   socUnmaskUrl: (url, maxHops) => request('/api/soc/unmask-url', { method: 'POST', body: JSON.stringify({ url, max_hops: maxHops }) }),
   socGetSubpoenaPackage: (caseData) => request('/api/soc/subpoena-package', { method: 'POST', body: JSON.stringify({ case: caseData }) }),
   socGetCanaryToken: (caseData) => request('/api/soc/canary-token', { method: 'POST', body: JSON.stringify({ case: caseData }) }),
+  socQuarantine: (payload) => request('/api/soc/quarantine', { method: 'POST', body: JSON.stringify(payload) }),
+  socGetQuarantineFolders: () => request('/api/soc/quarantine/folders'),
   cybercrimeReport: (reportData) => request('/api/cybercrime/report', { method: 'POST', body: JSON.stringify(reportData) }),
   cybercrimeGetCases: () => request('/api/cybercrime/cases')
 }
+
 
 

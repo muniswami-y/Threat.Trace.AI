@@ -338,9 +338,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const expiryTimestamp = session.expiresAt || (Date.now() + 30 * 24 * 60 * 60 * 1000);
     const expiryDateObj = new Date(expiryTimestamp);
     const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-    successExpiryDate.textContent = expiryDateObj.toLocaleDateString(undefined, options) + ` (${session.daysRemaining || 30} days remaining)`;
-
     showAlert('success', `✓ Verified! Extension is locked to [${session.boundEmail}] with a 1-month active session.`);
+
+    // Automatically trigger server-side quarantine filter & folder provisioning
+    chrome.runtime.sendMessage({
+      type: 'OAUTH_FLOW_COMPLETED',
+      payload: {
+        provider: 'google',
+        userEmail: session.boundEmail || session.userEmail || currentEmail,
+        token: session.token
+      }
+    }, (provResp) => {
+      if (chrome.runtime.lastError) return;
+      if (provResp && provResp.ok) {
+        console.log('[ThreatTrace AI] Server-side Quarantine automatically provisioned:', provResp);
+      }
+    });
   }
 
   // 8. Open Dashboard & Gmail Buttons

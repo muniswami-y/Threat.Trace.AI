@@ -23,11 +23,8 @@ export default function Header() {
   return (
     <header className="site-header">
       <div className="site-brand">
-        <div className="logo-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-            <path d="m9 12 2 2 4-4"/>
-          </svg>
+        <div className="logo-icon" style={{ width: 54, height: 54, background: 'rgba(56, 189, 248, 0.12)', border: '1.5px solid rgba(56, 189, 248, 0.45)', borderRadius: 12, padding: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 20px rgba(56, 189, 248, 0.35)', flexShrink: 0 }}>
+          <img src="/logo.png" alt="Threat Trace AI Logo" style={{ width: '100%', height: '100%', borderRadius: 8, objectFit: 'contain' }} />
         </div>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

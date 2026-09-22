@@ -12,7 +12,7 @@
     <header class="popup-header">
       <div class="popup-brand">
         <div class="logo-box">
-          <img src="logo.png" alt="ThreatTrace AI Logo" width="22" height="22" style="border-radius: 4px;" />
+          <img src="logo.png" alt="ThreatTrace AI Logo" width="38" height="38" style="border-radius: 6px; object-fit: contain;" />
         </div>
         <div>
           <div class="title">THREAT TRACE AI</div>
@@ -105,7 +105,21 @@
         <div class="factor-title">DETECTED SIGNALS:</div>
         <ul id="factorList" class="factor-list"></ul>
 
-        <button id="btnOpenCaseDashboard" type="button" class="primary-btn" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); margin-top: 12px; width: 100%; display: none;">
+        <!-- Report Incident directly to Cybercrime Button -->
+        <button id="btnReportCybercrime" type="button" class="primary-btn" style="background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); margin-top: 10px; width: 100%; display: none;">
+          <span>🚨 Report Incident to Cybercrime</span>
+        </button>
+
+        <!-- Reporting Success Confirmation Container -->
+        <div id="popupReportSuccess" style="display: none; margin-top: 10px; padding: 10px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 6px; font-size: 11.5px; color: #34d399;">
+          <div style="font-weight: 700; display: flex; align-items: center; gap: 4px;">
+            <span>✓ Case Registered & Dispatched!</span>
+          </div>
+          <div id="popupCaseIdDisplay" style="font-family: monospace; font-size: 11px; margin-top: 4px; color: #ffffff; font-weight: 700;"></div>
+          <div id="popupAckDisplay" style="font-size: 10.5px; opacity: 0.9; margin-top: 2px; color: #a7f3d0;"></div>
+        </div>
+
+        <button id="btnOpenCaseDashboard" type="button" class="primary-btn" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); margin-top: 10px; width: 100%; display: none;">
           <span>🔍 Open in Full Forensic Cockpit ↗</span>
         </button>
 

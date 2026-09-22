@@ -158,6 +158,12 @@ function setupEventListeners() {
     btnSubpoena.addEventListener('click', openSubpoenaPackage);
   }
 
+  // Report Incident Directly to Cybercrime Button
+  const btnReport = document.getElementById('btnReportCybercrime');
+  if (btnReport) {
+    btnReport.addEventListener('click', reportIncidentToCybercrime);
+  }
+
   // Catch-all link handler for popup
   document.addEventListener('click', (e) => {
     const link = e.target.closest('a');
@@ -196,8 +202,11 @@ function hideAuthAlert() {
 }
 
 // ===================================================================
-// Forensic Scan Execution
+// Forensic Scan Execution (In-Memory, No Case ID Created on Init)
 // ===================================================================
+let lastScannedData = null;
+let lastScannedText = '';
+
 function runScan() {
   if (!currentSession || !currentSession.isAuthenticated) {
     alert('Extension is locked. Please authenticate with your email first.');
@@ -207,16 +216,23 @@ function runScan() {
 
   const text = document.getElementById('emailText').value.trim();
   if (!text) return;
+  lastScannedText = text;
 
   const btn = document.getElementById('analyzeBtn');
   btn.textContent = 'Analyzing Forensic Threat…';
   btn.disabled = true;
 
+  // Reset reporting state for new scan
+  currentCaseId = null;
+  const reportSuccessBox = document.getElementById('popupReportSuccess');
+  if (reportSuccessBox) reportSuccessBox.style.display = 'none';
+
   chrome.runtime.sendMessage(
     {
       type: 'ANALYZE_EMAIL',
       email_text: text,
-      mailbox_email: currentSession.boundEmail
+      mailbox_email: currentSession.boundEmail,
+      save_case: false
     },
     (resp) => {
       btn.textContent = '⚡ Scan Forensic Threat';
@@ -228,12 +244,10 @@ function runScan() {
       }
 
       const d = resp.data;
+      lastScannedData = d;
       const score = Math.round(d.risk_score || 0);
       const isHigh = d.risk_level === 'HIGH' || score >= 70;
       const isMed = (d.risk_level === 'MEDIUM' || (score >= 40 && score < 70)) && !isHigh;
-
-      // Track case ID for canary/subpoena buttons
-      currentCaseId = d.case_id || null;
 
       const resultBox = document.getElementById('resultBox');
       resultBox.style.display = 'block';
@@ -256,25 +270,32 @@ function runScan() {
         listEl.appendChild(li);
       });
 
+      // Show the Report Incident button prominently
+      const btnReport = document.getElementById('btnReportCybercrime');
+      if (btnReport) {
+        btnReport.style.display = 'block';
+        btnReport.disabled = false;
+        btnReport.innerHTML = '<span>🚨 Report Incident to Cybercrime</span>';
+        btnReport.style.background = 'linear-gradient(135deg, #dc2626 0%, #991b1b 100%)';
+      }
+
       const btnOpenCase = document.getElementById('btnOpenCaseDashboard');
       if (btnOpenCase) {
         btnOpenCase.style.display = 'block';
         btnOpenCase.onclick = () => {
-          const targetUrl = d.case_id ? `http://localhost:5173/case/${d.case_id}` : 'http://localhost:5173/';
+          const payloadStr = encodeURIComponent(JSON.stringify(d));
+          const targetUrl = currentCaseId 
+            ? `http://localhost:5173/case/${currentCaseId}` 
+            : `http://localhost:5173/#payload=${payloadStr}`;
           chrome.tabs.create({ url: targetUrl });
         };
       }
 
-      // Show canary + subpoena buttons only when a case was saved
+      // Hide canary & subpoena buttons until case is explicitly reported/created
       const btnCanary = document.getElementById('btnDeployCanary');
       const btnSubpoena = document.getElementById('btnSubpoena');
-      if (currentCaseId) {
-        if (btnCanary) btnCanary.style.display = 'block';
-        if (btnSubpoena) btnSubpoena.style.display = 'block';
-      } else {
-        if (btnCanary) btnCanary.style.display = 'none';
-        if (btnSubpoena) btnSubpoena.style.display = 'none';
-      }
+      if (btnCanary) btnCanary.style.display = 'none';
+      if (btnSubpoena) btnSubpoena.style.display = 'none';
 
       // Reset canary result panel
       const canaryResult = document.getElementById('canaryResult');
@@ -284,11 +305,89 @@ function runScan() {
 }
 
 // ===================================================================
+// Report Incident to Cybercrime (Generates Case ID & Transmits Data)
+// ===================================================================
+function reportIncidentToCybercrime() {
+  if (!lastScannedData) {
+    alert('Please scan an email first before reporting.');
+    return;
+  }
+
+  const btnReport = document.getElementById('btnReportCybercrime');
+  if (btnReport) {
+    btnReport.textContent = 'Transferring Incident to Cybercrime…';
+    btnReport.disabled = true;
+  }
+
+  // 1. Generate unique Case ID strictly upon explicit report action
+  const randHex = Math.random().toString(16).slice(2, 10).toUpperCase();
+  const newCaseId = `TT-2026-${randHex}`;
+  currentCaseId = newCaseId;
+
+  // 2. Extract and compile incident context
+  const bound = currentSession?.boundEmail || 'analyst@threattrace.ai';
+  const reportPayload = {
+    case_id: newCaseId,
+    subject: lastScannedData.subject || 'Reported Phishing Incident',
+    sender: lastScannedData.sender || 'unknown@threat.origin',
+    recipient: bound,
+    reporter_email: bound,
+    reporter_name: bound.split('@')[0].replace('.', ' ').toUpperCase(),
+    body_text: lastScannedData.body_text || lastScannedText || '',
+    raw_headers: lastScannedData.raw_headers || '',
+    risk_score: lastScannedData.risk_score || 0,
+    risk_level: lastScannedData.risk_level || 'HIGH',
+    urls: (lastScannedData.urls || []).map(u => typeof u === 'string' ? u : (u.original || u.final || '')).filter(Boolean),
+    domains: lastScannedData.domains || [],
+    ips: lastScannedData.ips || [lastScannedData.origin_ip].filter(Boolean)
+  };
+
+  // 3. Transmit compiled data directly to cybercrime department endpoint
+  chrome.runtime.sendMessage(
+    {
+      type: 'REPORT_CYBERCRIME',
+      payload: reportPayload
+    },
+    (resp) => {
+      const ackNumber = `NCRP-IN-2026-${randHex.slice(-6)}`;
+
+      if (btnReport) {
+        btnReport.innerHTML = '<span>✓ Case Created & Dispatched</span>';
+        btnReport.style.background = 'linear-gradient(135deg, #059669 0%, #047857 100%)';
+        btnReport.disabled = true;
+      }
+
+      const reportSuccessBox = document.getElementById('popupReportSuccess');
+      const caseIdDisplay = document.getElementById('popupCaseIdDisplay');
+      const ackDisplay = document.getElementById('popupAckDisplay');
+
+      if (reportSuccessBox) reportSuccessBox.style.display = 'block';
+      if (caseIdDisplay) caseIdDisplay.textContent = `CASE ID: ${newCaseId}`;
+      if (ackDisplay) ackDisplay.textContent = `Cybercrime Acknowledgment: ${ackNumber}`;
+
+      // Enable Canary and Subpoena buttons now that case is registered
+      const btnCanary = document.getElementById('btnDeployCanary');
+      const btnSubpoena = document.getElementById('btnSubpoena');
+      if (btnCanary) btnCanary.style.display = 'block';
+      if (btnSubpoena) btnSubpoena.style.display = 'block';
+
+      // Update cockpit button link to specific registered case ID
+      const btnOpenCase = document.getElementById('btnOpenCaseDashboard');
+      if (btnOpenCase) {
+        btnOpenCase.onclick = () => {
+          chrome.tabs.create({ url: `http://localhost:5173/case/${newCaseId}` });
+        };
+      }
+    }
+  );
+}
+
+// ===================================================================
 // Canary Trap Deployment
 // ===================================================================
 function deployCanaryTrap() {
   if (!currentCaseId) {
-    alert('No active case. Run a scan first.');
+    alert('No active case registered. Click "Report Incident" first.');
     return;
   }
 
@@ -328,7 +427,7 @@ function deployCanaryTrap() {
 // ===================================================================
 function openSubpoenaPackage() {
   if (!currentCaseId) {
-    alert('No active case. Run a scan first.');
+    alert('No active case registered. Click "Report Incident" first.');
     return;
   }
   chrome.tabs.create({

@@ -90,7 +90,7 @@ export const ADMIN_PROFILE = {
   badgeNumber: 'IPS-CYB-001',
   role: 'Chief Cybercrime Administrator',
   clearanceLevel: 'LEVEL 5 - SUPREME CYBER ENCLAVE',
-  headquarters: 'State Cyber Crime Investigation Wing (CCIW), HQ',
+  headquarters: 'Central Cyber Crime Investigation Directorate (I4C), New Delhi',
   keyId: '0xAD-9921-E810-F002-33AC',
   joinedDate: '15-Aug-2018',
   email: 'admin.cybercrime@police.gov.in',
@@ -130,291 +130,27 @@ export function createSaltPepper() {
   return { salt, pepper }
 }
 
-// Seed initial cases for realistic demonstration
-const INITIAL_CASES = [
-  {
-    caseId: 'TT-2026-F80E1E7B',
-    reportingEmail: 'victor.finance@apex-enterprise.corp',
-    reportingName: 'Victor Sterling (CFO Office)',
-    reportingPhone: '+91 98451 88201',
-    reportedAt: new Date(Date.now() - 3600000 * 3).toISOString(),
-    status: 'QUEUE', // 'QUEUE', 'REJECTED', 'PROCESS', 'COMPLETED'
-    subject: 'URGENT: Urgent Wire Instruction - Vendor Bank Update Request',
-    sender: 'billing-update@global-logistics-supporrt.com',
-    recipient: 'victor.finance@apex-enterprise.corp',
-    riskScore: 92,
-    riskLevel: 'HIGH',
-    recommendation: 'QUARANTINE',
-    rawHeaders: `Received: from mail.global-logistics-supporrt.com (mail.global-logistics-supporrt.com [185.220.101.44])
-  by mx.apex-enterprise.corp with ESMTP id 9B81A02;
-  Authentication-Results: spf=fail (sender IP 185.220.101.44) smtp.mailfrom=billing-update@global-logistics-supporrt.com;
-  dkim=neutral (bad signature);
-  dmarc=fail (p=reject sp=reject) header.from=global-logistics-supporrt.com
-Subject: URGENT: Urgent Wire Instruction - Vendor Bank Update Request
-From: "Accounts Payables Global" <billing-update@global-logistics-supporrt.com>
-To: victor.finance@apex-enterprise.corp
-Reply-To: exec-offshore-settlement@cryptosmtp.xyz`,
-    bodyText: `Dear Victor,
-Please immediately divert today's pending wire batch of $428,500.00 USD to our new secondary escrow account due to audit compliance.
-Do not contact our regular line as phone systems are down for scheduled maintenance.
-Confirm once transaction receipt is transmitted.
-Failure to wire immediately will suspend supply shipments.`,
-    urls: ['https://global-logistics-supporrt.com/settlement-verification.php?id=992'],
-    domains: ['global-logistics-supporrt.com', 'cryptosmtp.xyz'],
-    ips: ['185.220.101.44', '194.147.140.22'],
-    geoLocations: [
-      { ip: '185.220.101.44', city: 'Bucharest', country: 'Romania', isp: 'HostSailor Bulletproof Hosting', lat: 44.4268, lon: 26.1025 }
-    ],
-    riskFactors: [
-      'Spoofed lookalike vendor domain (typosquatting)',
-      'SPF & DMARC strict alignment failure',
-      'Urgency & coercive financial transaction pressure',
-      'High-risk bulletproof hosting IP origin'
-    ],
-    assignedOfficer: null,
-    rejectionReason: null,
-    dailyLogs: [],
-    firData: null,
-    threeLayerKeys: null
-  },
-  {
-    caseId: 'TT-2026-B819A21C',
-    reportingEmail: 'priya.hr@technova-solutions.in',
-    reportingName: 'Priya Sundaram (Talent Acquisition Lead)',
-    reportingPhone: '+91 97110 44923',
-    reportedAt: new Date(Date.now() - 3600000 * 28).toISOString(),
-    status: 'PROCESS',
-    subject: 'Application & Resume: Senior Software Architect (Attached Macro File)',
-    sender: 'candidate-portfolio@protonmail.me',
-    recipient: 'priya.hr@technova-solutions.in',
-    riskScore: 84,
-    riskLevel: 'HIGH',
-    recommendation: 'QUARANTINE',
-    rawHeaders: `Received: from mail4.protonmail.ch (mail4.protonmail.ch [185.70.40.104])
-Subject: Application & Resume: Senior Software Architect
-From: candidate-portfolio@protonmail.me
-To: priya.hr@technova-solutions.in`,
-    bodyText: `Hello HR Team,
-Attached please find my updated curriculum vitae and security credentials dossier in the enclosed .docm document.
-Please enable editing macros to view verified certifications.`,
-    urls: ['http://c2-stage-deployer.duckdns.org/payload.bin'],
-    domains: ['c2-stage-deployer.duckdns.org'],
-    ips: ['45.154.255.89'],
-    geoLocations: [
-      { ip: '45.154.255.89', city: 'Moscow', country: 'Russian Federation', isp: 'Selectel ASN 49505', lat: 55.7558, lon: 37.6173 }
-    ],
-    riskFactors: [
-      'Embedded VBA Malicious Macro Downloader',
-      'C2 Command & Control callback to Dynamic DNS',
-      'High-risk Trojan dropper payload'
-    ],
-    assignedOfficer: INITIAL_OFFICERS[1], // Sr. Analyst Neha Verma
-    rejectionReason: null,
-    threeLayerKeys: {
-      layer1AdminKey: 'K1-ADM-941A-770B',
-      layer2OfficerKey: 'K2-OFF1193-4122-C891',
-      layer3EnclaveKey: 'K3-ENC-8812-FA03',
-      masterCombinedHash: '0x8b19a21cefa9402138401aa89104c810',
-      algorithm: 'ECDSA-SECP256R1 + AES-256-GCM (3-Layer Multi-Key Split)',
-      sealedAt: new Date(Date.now() - 3600000 * 24).toISOString()
-    },
-    dailyLogs: [
-      {
-        day: 1,
-        date: new Date(Date.now() - 3600000 * 24).toISOString(),
-        officerName: 'Sr. Analyst Neha Verma',
-        officerBadge: 'DF-ANL-1193',
-        notes: 'Extracted macro strings in sandbox. Found PowerShell downloader calling c2-stage-deployer.duckdns.org. Issued emergency domain takedown request to DuckDNS abuse desk.',
-        salt: 'S_9F81',
-        pepper: 'P_3C20',
-        blockchainTx: '0x992b10ae4478129a00b127419e9184ad',
-        sealedStatus: '100% Cryptographically Sealed'
-      },
-      {
-        day: 2,
-        date: new Date(Date.now() - 3600000 * 4).toISOString(),
-        officerName: 'Sr. Analyst Neha Verma',
-        officerBadge: 'DF-ANL-1193',
-        notes: 'Target C2 server seized by partner CERT. Retrieved beacon list of 43 infected endpoints in Karnataka. Isolating internal infected machines and collecting memory dumps.',
-        salt: 'S_7A12',
-        pepper: 'P_9E84',
-        blockchainTx: '0x77c4819ad001bfa284910248ad8194ba',
-        sealedStatus: '100% Cryptographically Sealed'
-      }
-    ],
-    firData: null
-  },
-  {
-    caseId: 'TT-2026-9C44E109',
-    reportingEmail: 'user.suresh@statebank-services.net',
-    reportingName: 'Suresh Menon',
-    reportingPhone: '+91 94441 20911',
-    reportedAt: new Date(Date.now() - 3600000 * 50).toISOString(),
-    status: 'REJECTED',
-    subject: 'Newsletter: Monthly Security Awareness Digest',
-    sender: 'internal-sec@company-corp.com',
-    recipient: 'user.suresh@statebank-services.net',
-    riskScore: 22,
-    riskLevel: 'LOW',
-    recommendation: 'ALLOW',
-    rawHeaders: `Received: from corp-smtp.internal (corp-smtp [10.0.1.20])
-Subject: Newsletter: Monthly Security Awareness Digest`,
-    bodyText: `Dear Employee,
-Please review the internal security awareness guidelines for October 2026.
-No actions or password resets are required.`,
-    urls: ['https://intranet.company-corp.com/security'],
-    domains: ['intranet.company-corp.com'],
-    ips: ['10.0.1.20'],
-    geoLocations: [{ ip: '10.0.1.20', city: 'Internal LAN', country: 'Private Subnet' }],
-    riskFactors: ['Normal internal broadcast'],
-    assignedOfficer: null,
-    rejectionReason: 'Legitimate internal corporate security awareness digest sent from verified company SMTP relay. No phishing indicators, spoofed headers, or malicious payloads detected.',
-    rejectionDate: new Date(Date.now() - 3600000 * 46).toISOString(),
-    rejectedBy: 'Shri K. Varma, IPS',
-    dailyLogs: [],
-    firData: null,
-    threeLayerKeys: null
-  },
-  {
-    caseId: 'TT-2026-4401AA9F',
-    reportingEmail: 'anita.accounts@karnataka-infra.gov.in',
-    reportingName: 'Anita Krishnan (Accounts Officer)',
-    reportingPhone: '+91 80 2200 1199',
-    reportedAt: new Date(Date.now() - 3600000 * 120).toISOString(),
-    status: 'COMPLETED',
-    subject: 'Immediate Account Freeze Notice: Reserve Bank Directive',
-    sender: 'compliance-audit@rbi-digital-gateway.org',
-    recipient: 'anita.accounts@karnataka-infra.gov.in',
-    riskScore: 98,
-    riskLevel: 'HIGH',
-    recommendation: 'QUARANTINE',
-    rawHeaders: `Received: from rbi-gateway.spoofed-server.net [103.251.167.20]
-Subject: Immediate Account Freeze Notice: Reserve Bank Directive`,
-    bodyText: `Government Accounts Division:
-Failure to input your Treasury Digital Token on the gateway portal within 2 hours will freeze all departmental disbursements under PMLA directives.`,
-    urls: ['https://rbi-digital-gateway.org/treasury-auth'],
-    domains: ['rbi-digital-gateway.org'],
-    ips: ['103.251.167.20'],
-    geoLocations: [
-      { ip: '103.251.167.20', city: 'Kolkata', country: 'India', isp: 'Alliance Broadband Relay', lat: 22.5726, lon: 88.3639 }
-    ],
-    riskFactors: [
-      'Government Regulator impersonation (RBI spoofing)',
-      'Phishing credential harvest targeting Treasury e-Tokens',
-      'Known syndicate IP range linked to Jamtara / Mewat cyber gangs'
-    ],
-    assignedOfficer: INITIAL_OFFICERS[2], // Det. Vikram Malhotra
-    rejectionReason: null,
-    threeLayerKeys: {
-      layer1AdminKey: 'K1-ADM-1109-88C1',
-      layer2OfficerKey: 'K2-OFF0527-991A-22B0',
-      layer3EnclaveKey: 'K3-ENC-4401-AA9F',
-      masterCombinedHash: '0x4401aa9fe8199201a0841289bca88109',
-      algorithm: 'ECDSA-SECP256R1 + AES-256-GCM (3-Layer Multi-Key Split)',
-      sealedAt: new Date(Date.now() - 3600000 * 110).toISOString()
-    },
-    dailyLogs: [
-      {
-        day: 1,
-        date: new Date(Date.now() - 3600000 * 110).toISOString(),
-        officerName: 'Det. Vikram Malhotra',
-        officerBadge: 'CC-DET-0527',
-        notes: 'Traced fake RBI phishing domain hosting. Server IP 103.251.167.20 geolocated to residential fiber connection in Kolkata. Requested ISP subscriber logs under Sec 91 CrPC.',
-        salt: 'S_1109',
-        pepper: 'P_4481',
-        blockchainTx: '0x44819ad00192831849102948ad8194ff',
-        sealedStatus: '100% Cryptographically Sealed'
-      },
-      {
-        day: 2,
-        date: new Date(Date.now() - 3600000 * 85).toISOString(),
-        officerName: 'Det. Vikram Malhotra',
-        officerBadge: 'CC-DET-0527',
-        notes: 'Subscriber log analysis identified suspect SIM cards activated with forged Aadhaar. Mapped bank account linked to payment gateway; frozen ₹18,40,000 in mule account at Yes Bank.',
-        salt: 'S_8819',
-        pepper: 'P_2201',
-        blockchainTx: '0x88219abf0029314810293819aa91024b',
-        sealedStatus: '100% Cryptographically Sealed'
-      },
-      {
-        day: 3,
-        date: new Date(Date.now() - 3600000 * 60).toISOString(),
-        officerName: 'Det. Vikram Malhotra',
-        officerBadge: 'CC-DET-0527',
-        notes: 'Coordinated raid with local police in Salt Lake, Kolkata. Apprehended 2 kingpins (Subhash Mondal & Tariq Aziz). Seized 14 laptops, 38 smartphones, and 85 debit cards.',
-        salt: 'S_9934',
-        pepper: 'P_1120',
-        blockchainTx: '0x33910abf1129384910293819aa910299',
-        sealedStatus: '100% Cryptographically Sealed'
-      }
-    ],
-    criminalData: {
-      syndicateName: 'Bengal-Jharkhand Shadow Payment Phishing Syndicate',
-      primarySuspects: ['Subhash Mondal (31)', 'Tariq Aziz (28)'],
-      accusedLocation: 'Salt Lake Sector V, Kolkata, West Bengal',
-      originIp: '103.251.167.20',
-      hardwareSeized: '14 Laptops, 38 burner smartphones, 85 mule bank ATM cards, 4 GSM SIM boxes',
-      recoveredAssets: '₹18,40,000 INR frozen in mule accounts; 1.42 BTC seized in cold ledger',
-      modusOperandi: 'Mass spear-phishing government treasury officers with forged RBI freeze warnings, harvesting 2FA tokens via reverse-proxy kits.'
-    },
-    firData: {
-      firNumber: 'FIR-2026-KA-CYB-00892',
-      policeStation: 'Cyber Crime Police Station, CID Headquarters, Bengaluru',
-      district: 'Bengaluru City',
-      dateOfFiling: new Date(Date.now() - 3600000 * 55).toISOString(),
-      complainantName: 'Anita Krishnan (Accounts Officer, Karnataka Infra)',
-      investigatingOfficer: 'Det. Vikram Malhotra, CC-DET-0527',
-      applicableActs: [
-        'Information Technology Act, 2000 — Section 66C (Identity Theft)',
-        'Information Technology Act, 2000 — Section 66D (Cheating by Personation using Computer Resource)',
-        'Indian Penal Code, 1860 — Section 419 (Punishment for Cheating by Personation)',
-        'Indian Penal Code, 1860 — Section 420 (Cheating and Dishonestly Inducing Delivery of Property)',
-        'Indian Penal Code, 1860 — Section 120B (Criminal Conspiracy)'
-      ],
-      digitalSealHash: '0x4401aa9fe8199201a0841289bca8810933910abf1129384910293819aa910299',
-      blockchainBlockHeight: 'Polygon Amoy #48,192,044',
-      firStatus: 'REGISTERED & CHARGESHEET PENDING'
-    },
-    completedDate: new Date(Date.now() - 3600000 * 50).toISOString()
-  }
-]
+// Primary Cases Dataset — dynamically populated exclusively from live reported threat cases
+const INITIAL_CASES = []
 
 // Notifications state
-const INITIAL_NOTIFICATIONS = [
-  {
-    id: 'NOTIF-1',
-    title: 'New Threat Report Queued',
-    message: 'Complainant victor.finance@apex-enterprise.corp filed Case TT-2026-F80E1E7B.',
-    time: '3 hours ago',
-    type: 'ALERT',
-    caseId: 'TT-2026-F80E1E7B',
-    read: false
-  },
-  {
-    id: 'NOTIF-2',
-    title: 'Daily Investigation Log Filed',
-    message: 'Sr. Analyst Neha Verma logged Day 2 report for Case TT-2026-B819A21C.',
-    time: '4 hours ago',
-    type: 'LOG',
-    caseId: 'TT-2026-B819A21C',
-    read: false
-  },
-  {
-    id: 'NOTIF-3',
-    title: 'Investigation Concluded & FIR Issued',
-    message: 'Det. Vikram Malhotra closed Case TT-2026-4401AA9F. FIR #FIR-2026-KA-CYB-00892 generated.',
-    time: '2 days ago',
-    type: 'FIR',
-    caseId: 'TT-2026-4401AA9F',
-    read: true
-  }
-]
+const INITIAL_NOTIFICATIONS = []
+
+const TEST_CASE_IDS = new Set()
+
+function isTestCase(c) {
+  if (!c) return false
+  const id = c.caseId || c.case_id || ''
+  if (id.startsWith('TT-DUMMY-') || id.startsWith('INC-DUMMY-')) return true
+  return false
+}
+
 
 // Service Class
-class CybercrimeService {
+export class CybercrimeService {
   constructor() {
     this.cases = []
-    this.officers = INITIAL_OFFICERS
+    this.officers = []
     this.notifications = []
     this.adminProfile = ADMIN_PROFILE
     this._load()
@@ -422,21 +158,59 @@ class CybercrimeService {
 
   _load() {
     try {
+      const getActiveComplainant = () => {
+        try {
+          const direct = localStorage.getItem('tt_mailbox_email') || localStorage.getItem('tt_active_user') || localStorage.getItem('tt_auth_user_email')
+          if (direct && !direct.includes('corp.net') && !direct.includes('enterprise.corp') && !direct.includes('citizen.user@')) return direct
+          const sessionRaw = localStorage.getItem('tt_auth_session')
+          if (sessionRaw) {
+            const parsed = JSON.parse(sessionRaw)
+            if (parsed?.boundEmail && !parsed.boundEmail.includes('corp.net') && !parsed.boundEmail.includes('citizen.user@')) return parsed.boundEmail
+            if (parsed?.userEmail && !parsed.userEmail.includes('corp.net') && !parsed.userEmail.includes('citizen.user@')) return parsed.userEmail
+          }
+        } catch (_) {}
+        return 'muniswami1112@gmail.com'
+      }
+
+      const activeEmail = getActiveComplainant()
+      const defaultUserPart = activeEmail.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+
       const raw = localStorage.getItem(STORAGE_KEY)
       if (raw) {
         const parsed = JSON.parse(raw)
-        this.cases = parsed.cases || INITIAL_CASES
+        const loadedCases = Array.isArray(parsed) ? parsed : (parsed.cases || [])
+        this.cases = loadedCases
+          .filter(c => !isTestCase(c))
+          .map(c => {
+            let repEmail = c.reportingEmail || c.recipient || ''
+            if (!repEmail || repEmail.includes('corp.net') || repEmail.includes('victim@enterprise.corp') || repEmail.includes('threattrace.user@') || repEmail.includes('citizen.user@')) {
+              repEmail = activeEmail
+            }
+            let compName = c.complainantName || c.reportingName || ''
+            if (!compName || compName.includes('ThreatTrace') || compName.includes('Citizen') || compName === 'Complainant') {
+              const uPart = repEmail.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+              compName = `${uPart || defaultUserPart} (Complainant)`
+            }
+            return {
+              ...c,
+              reportingEmail: repEmail,
+              recipient: (c.recipient && !c.recipient.includes('corp.net') && !c.recipient.includes('enterprise.corp')) ? c.recipient : repEmail,
+              complainantName: compName,
+              reportingName: compName
+            }
+          })
         this.officers = parsed.officers || INITIAL_OFFICERS
-        this.notifications = parsed.notifications || INITIAL_NOTIFICATIONS
+        this.notifications = (parsed.notifications || []).filter(n => !TEST_CASE_IDS.has(n.caseId))
         this.adminProfile = parsed.adminProfile || ADMIN_PROFILE
+        this._save()
         return
       }
     } catch (e) {
       console.warn('Failed to parse cybercrime storage, resetting to initial state:', e)
     }
-    this.cases = INITIAL_CASES
+    this.cases = []
     this.officers = INITIAL_OFFICERS
-    this.notifications = INITIAL_NOTIFICATIONS
+    this.notifications = []
     this.adminProfile = ADMIN_PROFILE
     this._save()
   }
@@ -504,9 +278,67 @@ class CybercrimeService {
     this._save()
   }
 
+  // Public entry point for reporting incident from Cockpit
+  async reportIncident(incidentData) {
+    const localCase = this.reportIncidentFromCockpit(incidentData)
+    
+    // Also sync to backend API if available
+    try {
+      const backendPayload = {
+        case_id: localCase.caseId,
+        reporter_email: localCase.reportingEmail,
+        reporter_name: localCase.complainantName,
+        reporter_phone: localCase.reportingPhone,
+        subject: localCase.subject,
+        body_text: localCase.bodyText,
+        raw_headers: localCase.rawHeaders,
+        sender: localCase.sender,
+        recipient: localCase.recipient,
+        risk_score: localCase.riskScore,
+        risk_level: localCase.riskLevel,
+        urls: localCase.urls,
+        domains: localCase.domains,
+        ips: localCase.ips
+      }
+
+      await fetch('http://127.0.0.1:8000/api/cybercrime/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(backendPayload)
+      }).catch(() => null)
+    } catch (_) {}
+
+    // Dispatch custom storage event / message for instant multi-window sync
+    if (typeof window !== 'undefined') {
+      try {
+        window.dispatchEvent(new StorageEvent('storage', {
+          key: STORAGE_KEY,
+          newValue: localStorage.getItem(STORAGE_KEY)
+        }))
+        window.postMessage({
+          type: 'THREAT_TRACE_INCIDENT_REPORTED',
+          caseId: localCase.caseId
+        }, '*')
+      } catch (_) {}
+    }
+
+    return {
+      success: true,
+      case: localCase,
+      case_id: localCase.caseId,
+      cybercrime_acknowledgement: {
+        ack_number: `NCRP-IN-2026-${localCase.caseId.replace(/[^A-Za-z0-9]/g, '').slice(-8)}`,
+        status: 'RECEIVED_IN_QUEUE',
+        jurisdiction: 'National Cyber Crime Police Station, Central Command, New Delhi',
+        head_of_department: 'Shri K. Varma, IPS'
+      }
+    }
+  }
+
   // Reporting from ThreatTrace Cockpit into Queue
   reportIncidentFromCockpit(incidentData) {
-    const rawId = incidentData.case_id || incidentData.incidentId || ''
+    const rawId = incidentData.case_id || incidentData.incidentId || incidentData.caseId || ''
+
     const caseId = (function (id) {
       if (!id) return `TT-${new Date().getFullYear()}-${genHex(8)}`
       const match = id.match(/(?:TT|INC)-\d{4}-[A-Fa-f0-9]{6,10}/i) || id.match(/(?:TT|INC)-\d{4}-[A-Za-z0-9]+/i)
@@ -519,29 +351,56 @@ class CybercrimeService {
       return `TT-${new Date().getFullYear()}-${(clean.substring(0, 8) || genHex(8)).toUpperCase()}`
     })(rawId)
     
+    let effectiveEmail = incidentData.reporterEmail || incidentData.recipient || ''
+    if (!effectiveEmail || effectiveEmail.includes('corp.net') || effectiveEmail.includes('enterprise.corp')) {
+      try {
+        const direct = localStorage.getItem('tt_mailbox_email') || localStorage.getItem('tt_active_user') || localStorage.getItem('tt_auth_user_email')
+        if (direct && !direct.includes('corp.net') && !direct.includes('enterprise.corp')) {
+          effectiveEmail = direct
+        } else {
+          const sessionRaw = localStorage.getItem('tt_auth_session')
+          if (sessionRaw) {
+            const parsed = JSON.parse(sessionRaw)
+            if (parsed?.boundEmail && !parsed.boundEmail.includes('corp.net')) effectiveEmail = parsed.boundEmail
+            else if (parsed?.userEmail && !parsed.userEmail.includes('corp.net')) effectiveEmail = parsed.userEmail
+          }
+        }
+      } catch (_) {}
+    }
+    if (!effectiveEmail) effectiveEmail = 'citizen.user@threattrace.ai'
+
+    const userPart = effectiveEmail.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+    let effectiveName = incidentData.reporterName || incidentData.complainantName
+    if (!effectiveName || effectiveName.includes('ThreatTrace') || effectiveName === 'Complainant') {
+      effectiveName = `${userPart} (Complainant)`
+    }
+
     // Check if case already exists
     let c = this.cases.find(x => x.caseId === caseId)
     if (c) {
       c.status = 'QUEUE'
       c.reportedAt = new Date().toISOString()
-      c.reportingEmail = incidentData.reporterEmail || c.reportingEmail || 'threattrace.analyst@internal.net'
+      c.reportingEmail = effectiveEmail
+      c.recipient = effectiveEmail
+      c.complainantName = effectiveName
+      c.reportingName = effectiveName
       this._save()
       return c
     }
 
     const newCase = {
       caseId,
-      reportingEmail: incidentData.reporterEmail || 'threattrace.user@enterprise.corp',
-      reportingName: incidentData.reporterName || 'ThreatTrace Certified User',
-      complainantName: incidentData.reporterName || 'ThreatTrace Certified User',
+      reportingEmail: effectiveEmail,
+      reportingName: effectiveName,
+      complainantName: effectiveName,
       reportingPhone: incidentData.reporterPhone || '+91 80 4000 8899',
       reportedAt: new Date().toISOString(),
       status: 'QUEUE',
       subject: incidentData.subject || incidentData.title || 'Reported Email Threat',
       sender: incidentData.sender || incidentData.from || 'suspicious@external-source.net',
-      recipient: incidentData.recipient || incidentData.to || 'victim@corp.net',
-      riskScore: Math.round(incidentData.risk_score || incidentData.riskScore || 75),
-      riskLevel: incidentData.risk_level || incidentData.riskLevel || 'HIGH',
+      recipient: effectiveEmail,
+      riskScore: Math.round(Number(incidentData.risk_score !== undefined ? incidentData.risk_score : (incidentData.riskScore !== undefined ? incidentData.riskScore : (incidentData.threat_score !== undefined ? incidentData.threat_score : 0))) || 0),
+      riskLevel: incidentData.risk_level || incidentData.riskLevel || (Number(incidentData.risk_score || incidentData.riskScore || 0) >= 70 ? 'HIGH' : (Number(incidentData.risk_score || incidentData.riskScore || 0) >= 40 ? 'MEDIUM' : 'LOW')),
       recommendation: incidentData.recommendation || 'QUARANTINE',
       rawHeaders: incidentData.raw_headers || incidentData.rawHeaders || 'Received: from external-node by ThreatTrace-Shield',
       bodyText: incidentData.body_text || incidentData.rawText || incidentData.subject || 'Threat detected by ThreatTrace AI in-page sensor.',
@@ -741,7 +600,7 @@ class CybercrimeService {
     // Generate Official FIR
     c.firData = {
       firNumber: firNum,
-      policeStation: 'State Cyber Crime Police Station, CID Headquarters, Bengaluru',
+      policeStation: 'National Cyber Crime Police Station, Central Command, New Delhi',
       district: 'Cyber Command Zone',
       dateOfFiling: new Date().toISOString(),
       complainantName: `${c.reportingName || 'Complainant'} (${c.reportingEmail})`,

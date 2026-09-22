@@ -1,7 +1,5 @@
 # THREAT TRACE AI
 
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/muniswami-y/threat.trace.ai)
-
 **Blockchain + Cybersecurity**  
 Intelligent email forensics & threat attribution platform (Gmail extension + backend + dashboard).
 
@@ -62,13 +60,6 @@ Open http://127.0.0.1:5173
   1. Edge or Chrome → `edge://extensions` or `chrome://extensions` → Enable **Developer mode**  
   2. Click **Load unpacked** → select the `extension` folder (or download `ThreatTraceAI-Extension.zip`)  
   3. Open Gmail → you will see the blue **“THREAT TRACE”** forensic shield button  
-
-
-### 4. 24/7 Cloud Backend (Render - Free)
-1. Click the **[Deploy to Render](https://render.com/deploy?repo=https://github.com/muniswami-y/threat.trace.ai)** button or connect `muniswami-y/threat.trace.ai` on [Render.com](https://render.com).
-2. It auto-builds using `render.yaml` with Python 3.11 and uvicorn.
-3. Every `git push origin main` auto-updates your live cloud server with zero downtime.
-4. Keep alive 24/7 using a free ping from [cron-job.org](https://cron-job.org) targeting `/health`.
 
 ## Live data notes
 

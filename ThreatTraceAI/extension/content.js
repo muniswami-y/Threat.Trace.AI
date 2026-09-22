@@ -1,9 +1,15 @@
 // Threat Trace AI – Gmail In-Page Forensic Inspector with Automatic In-Mail Risk Scoring & Account Locking
 (function () {
+  if (window.__threatTraceContentInjected) {
+    return;
+  }
+  window.__threatTraceContentInjected = true;
+
   let isContextInvalidated = false;
   let scanDebounceTimer = null;
   let fallbackInterval = null;
   let observer = null;
+  let isOpeningDashboard = false;
 
   // Verify extension runtime context before calling any Chrome extension APIs
   function isContextValid() {
@@ -258,9 +264,16 @@
       } catch (e) {}
     }
 
+    const effectiveUser = activeGmailUser || bound;
+    try {
+      localStorage.setItem('tt_mailbox_email', effectiveUser);
+      localStorage.setItem('tt_active_user', effectiveUser);
+      localStorage.setItem('tt_auth_user_email', effectiveUser);
+    } catch (e) {}
+
     return {
       status: 'AUTHORIZED',
-      activeGmailUser: activeGmailUser || bound,
+      activeGmailUser: effectiveUser,
       boundEmail: bound,
       message: `Forensic Shield verified for [${bound}]. (30-day session active)`
     };
@@ -271,10 +284,16 @@
     if (isContextValid() && typeof chrome !== 'undefined' && chrome.storage && chrome.storage.onChanged) {
       chrome.storage.onChanged.addListener((changes, areaName) => {
         if (!isContextValid()) return;
-        if (areaName === 'local' && changes.tt_auth_session) {
-          authSession = changes.tt_auth_session.newValue || null;
-          updateSecurityUI();
-          autoScanActiveEmail();
+        if (areaName === 'local') {
+          if (changes.tt_auth_session) {
+            authSession = changes.tt_auth_session.newValue || null;
+            updateSecurityUI();
+            autoScanActiveEmail();
+          }
+          if (changes.tt_quarantine_folders || changes.tt_dismissed_folders) {
+            renderQuarantineFoldersInGmailSidebar(true);
+            enforceInboxQuarantineSuppression();
+          }
         }
       });
     }
@@ -306,6 +325,18 @@
           return false; // Synchronous — channel can close immediately
         }
 
+        if (msg.type === 'EXECUTE_QUARANTINE_ACTION' || msg.type === 'QUARANTINE_EMAIL') {
+          try {
+            const cleanEmail = (msg.suspicious_email || '').toLowerCase();
+            const folder = msg.folder_name || `Quarantine/${cleanEmail}`;
+            executeQuarantineInGmail(cleanEmail, msg.subject || '', msg.quarantined_count || 1);
+            sendResponse({ ok: true, folder_name: folder });
+          } catch (err) {
+            sendResponse({ ok: false, error: String(err) });
+          }
+          return false;
+        }
+
         // Default: unknown message type — respond to close the channel
         sendResponse({ ok: false, error: 'unknown_message_type' });
         return false;
@@ -314,6 +345,756 @@
   } catch (e) {
     console.warn('[ThreatTrace AI] runtime.onMessage setup warning:', e);
   }
+
+  // Listen for window postMessages (e.g. from ThreatTrace Cockpit / React app)
+  window.addEventListener('message', (event) => {
+    if (!event.data || typeof event.data !== 'object') return;
+    if (event.data.type === 'THREAT_TRACE_QUARANTINE_EXECUTED') {
+      const sender = event.data.suspicious_email || 'attacker@threat.net';
+      const count = event.data.quarantined_count || 1;
+      executeQuarantineInGmail(sender, '', count);
+    }
+  });
+
+  // ===================================================================
+  // GMAIL SIDEBAR QUARANTINE FOLDER CREATION & MAIL RELOCATION
+  // ===================================================================
+
+  // Execute Quarantine: Creates folder, moves email from Inbox, updates sidebar
+  function executeQuarantineInGmail(suspiciousEmail, subject = '', count = 1) {
+    const cleanMatch = (suspiciousEmail || '').match(/([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)/);
+    const cleanEmail = cleanMatch ? cleanMatch[1].toLowerCase() : (suspiciousEmail || 'suspicious@threat.net').toLowerCase();
+    const folderName = `Quarantine/${cleanEmail}`;
+
+    // 1. Remove from dismissed list if it was previously dismissed
+    try {
+      let localDismissed = JSON.parse(localStorage.getItem('tt_dismissed_folders') || '[]');
+      localDismissed = localDismissed.filter(s => String(s).toLowerCase() !== cleanEmail);
+      localStorage.setItem('tt_dismissed_folders', JSON.stringify(localDismissed));
+    } catch (e) {}
+
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.get(['tt_dismissed_folders'], (res) => {
+        let dismissed = (res && res.tt_dismissed_folders) || [];
+        dismissed = dismissed.filter(s => String(s).toLowerCase() !== cleanEmail);
+        chrome.storage.local.set({ tt_dismissed_folders: dismissed });
+      });
+    }
+
+    // 2. Read and update local folders
+    let localFolders = [];
+    try {
+      localFolders = JSON.parse(localStorage.getItem('tt_quarantine_folders') || '[]');
+      if (!Array.isArray(localFolders)) localFolders = [];
+    } catch (e) {}
+
+    const existingLocal = localFolders.find(f => f.sender && f.sender.toLowerCase() === cleanEmail);
+    if (existingLocal) {
+      existingLocal.count = count || existingLocal.count || 1;
+      existingLocal.last_updated = Date.now();
+    } else {
+      localFolders.unshift({
+        folder_name: folderName,
+        sender: cleanEmail,
+        count: count || 1,
+        created_at: Date.now()
+      });
+    }
+
+    try {
+      localStorage.setItem('tt_quarantine_folders', JSON.stringify(localFolders));
+    } catch (e) {}
+
+    // 3. Immediately update in-memory cache and re-render sidebar synchronously
+    cachedQuarantineFolders = getNormalizedQuarantineList(localFolders);
+    injectSidebarUI(cachedQuarantineFolders);
+
+    // 4. Save to chrome storage
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.get(['tt_quarantine_folders'], (result) => {
+        let folders = (result && result.tt_quarantine_folders) || [];
+        const existing = folders.find(f => f.sender && f.sender.toLowerCase() === cleanEmail);
+        if (existing) {
+          existing.count = count || existing.count || 1;
+          existing.last_updated = Date.now();
+        } else {
+          folders.unshift({
+            folder_name: folderName,
+            sender: cleanEmail,
+            count: count || 1,
+            created_at: Date.now()
+          });
+        }
+        chrome.storage.local.set({ tt_quarantine_folders: folders }, () => {
+          cachedQuarantineFolders = getNormalizedQuarantineList(folders);
+          injectSidebarUI(cachedQuarantineFolders);
+        });
+      });
+    }
+
+    // 5. Dispatch quarantine execution to backend API
+    safeSendMessage({
+      type: 'EXECUTE_QUARANTINE',
+      payload: {
+        suspicious_email: cleanEmail,
+        subject: subject || 'Isolated Threat Email',
+        mailbox_email: extractActiveGmailUserEmail() || ''
+      }
+    }, () => {});
+
+    // 6. Apply Quarantined Label Tag in Email Subject header
+    applyQuarantineLabelTagToEmail(cleanEmail);
+
+    // 7. Displace / Move email out of Inbox (Click Archive / Move)
+    moveEmailOutOfInbox();
+
+    // 8. Show rich in-page toast notification
+    showQuarantineToast(folderName, cleanEmail, count);
+  }
+
+  // Inject & Maintain Quarantine Folders in Gmail's Left Navigation Sidebar
+  let cachedQuarantineFolders = null;
+
+  function getNormalizedQuarantineList(rawList, dismissedList = []) {
+    const map = new Map();
+    for (const item of (rawList || [])) {
+      if (!item || !item.sender) continue;
+      const s = String(item.sender).trim().toLowerCase();
+      if (dismissedList.includes(s)) continue;
+      const cnt = Math.max(1, parseInt(item.count, 10) || 1);
+      if (map.has(s)) {
+        const prev = map.get(s);
+        prev.count = Math.max(prev.count, cnt);
+      } else {
+        map.set(s, {
+          folder_name: item.folder_name || `Quarantine/${s}`,
+          sender: s,
+          count: cnt,
+          created_at: item.created_at || Date.now()
+        });
+      }
+    }
+    return Array.from(map.values()).sort((a, b) => a.sender.localeCompare(b.sender));
+  }
+
+  let lastQuarantineFetchTime = 0;
+
+  function renderQuarantineFoldersInGmailSidebar(force = false) {
+    let dismissedList = [];
+    try {
+      dismissedList = JSON.parse(localStorage.getItem('tt_dismissed_folders') || '[]').map(s => String(s).toLowerCase());
+    } catch (e) {}
+
+    // 1. Load from localStorage synchronously for instantaneous DOM display
+    let localFolders = [];
+    try {
+      localFolders = JSON.parse(localStorage.getItem('tt_quarantine_folders') || '[]');
+      if (!Array.isArray(localFolders)) localFolders = [];
+    } catch (e) {}
+
+    cachedQuarantineFolders = getNormalizedQuarantineList(localFolders, dismissedList);
+    injectSidebarUI(cachedQuarantineFolders);
+
+    const now = Date.now();
+    if (!force && (now - lastQuarantineFetchTime < 4000)) {
+      return;
+    }
+    lastQuarantineFetchTime = now;
+
+    // 2. Fetch live & previous quarantine folders from backend API and chrome.storage
+    safeSendMessage({ type: 'GET_QUARANTINE_FOLDERS' }, (res) => {
+      let backendFolders = [];
+      if (res && res.ok && Array.isArray(res.data)) {
+        backendFolders = res.data.map(f => ({
+          folder_name: f.folder_name || `Quarantine/${f.sender_email}`,
+          sender: f.sender_email,
+          count: f.total_emails || (f.emails && f.emails.length) || 1,
+          created_at: f.created_at || Date.now()
+        }));
+      }
+
+      if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+        chrome.storage.local.get(['tt_quarantine_folders', 'tt_dismissed_folders'], (sRes) => {
+          const sDismissed = ((sRes && sRes.tt_dismissed_folders) || []).map(s => String(s).toLowerCase());
+          const allDismissed = new Set([...dismissedList, ...sDismissed]);
+          const sFolders = (sRes && sRes.tt_quarantine_folders) || [];
+          const merged = getNormalizedQuarantineList([...localFolders, ...sFolders, ...backendFolders], Array.from(allDismissed));
+
+          cachedQuarantineFolders = merged;
+          try {
+            localStorage.setItem('tt_quarantine_folders', JSON.stringify(merged));
+          } catch (e) {}
+          chrome.storage.local.set({ tt_quarantine_folders: merged }, () => {
+            injectSidebarUI(cachedQuarantineFolders);
+          });
+        });
+      } else {
+        const merged = getNormalizedQuarantineList([...localFolders, ...backendFolders], dismissedList);
+        cachedQuarantineFolders = merged;
+        try {
+          localStorage.setItem('tt_quarantine_folders', JSON.stringify(merged));
+        } catch (e) {}
+        injectSidebarUI(cachedQuarantineFolders);
+      }
+    });
+  }
+
+  function injectSidebarUI(folders = []) {
+    // Locate Gmail left sidebar navigation
+    const navSelectors = [
+      'div.TK',
+      'div[role="navigation"] div.TK',
+      'div.aeN div.TK',
+      'div[role="navigation"] div.wT',
+      'div.aeN div.ajl',
+      'div[role="navigation"] div.ajl',
+      'div.ajl',
+      'div[role="navigation"]',
+      'div.aeN'
+    ];
+
+    let navContainer = null;
+    for (const sel of navSelectors) {
+      const el = document.querySelector(sel);
+      if (el && el.offsetParent !== null) {
+        navContainer = el;
+        break;
+      }
+    }
+    if (!navContainer) {
+      for (const sel of navSelectors) {
+        const el = document.querySelector(sel);
+        if (el) {
+          navContainer = el;
+          break;
+        }
+      }
+    }
+
+    if (!navContainer) return;
+
+    let section = document.getElementById('tt-quarantine-sidebar-section');
+    if (!section) {
+      section = document.createElement('div');
+      section.id = 'tt-quarantine-sidebar-section';
+      section.className = 'tt-quarantine-sidebar-section';
+    }
+
+    // Ensure section is attached in Gmail's left rail
+    if (!section.isConnected || !section.parentElement) {
+      const labelsSection = navContainer.querySelector('div.CL, div.Y7, div.ah9') ||
+                            document.querySelector('div.CL') ||
+                            document.querySelector('div[role="navigation"] div.CL');
+
+      if (labelsSection && labelsSection.parentElement) {
+        labelsSection.parentElement.insertBefore(section, labelsSection);
+      } else if (navContainer.classList.contains('TK') || navContainer.querySelector('div.TK')) {
+        const tk = navContainer.classList.contains('TK') ? navContainer : navContainer.querySelector('div.TK');
+        tk.appendChild(section);
+      } else {
+        navContainer.appendChild(section);
+      }
+    }
+
+    // Stable deterministic renderKey to completely prevent UI flickering
+    const totalCount = folders.reduce((sum, f) => sum + (Number(f.count) || 1), 0);
+    const renderKey = folders.map(f => `${f.sender}:${f.count}`).join('__') + `_tot${totalCount}`;
+    if (section.dataset.renderKey === renderKey) {
+      return; // ZERO DOM mutation if state is unchanged
+    }
+    section.dataset.renderKey = renderKey;
+
+    // Attach persistent delegated click & mousedown listener only once
+    if (!section.dataset.hasClickListener) {
+      section.dataset.hasClickListener = 'true';
+
+      const handleAction = (e) => {
+        const delBtn = e.target.closest('.tt-quarantine-del-btn');
+        if (delBtn) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          const delSender = delBtn.getAttribute('data-del-sender');
+          if (delSender) {
+            deleteQuarantineFolder(delSender);
+          }
+          return;
+        }
+
+        const item = e.target.closest('.tt-quarantine-sidebar-item');
+        if (item) {
+          e.preventDefault();
+          e.stopPropagation();
+          const sender = item.getAttribute('data-sender');
+          if (sender) {
+            filterGmailBySender(sender);
+          }
+          return;
+        }
+
+        const header = e.target.closest('.tt-quarantine-sidebar-header');
+        if (header) {
+          e.preventDefault();
+          e.stopPropagation();
+          const allSenders = Array.from(section.querySelectorAll('.tt-quarantine-sidebar-item[data-sender]'))
+            .map(el => el.getAttribute('data-sender'))
+            .filter(Boolean);
+          if (allSenders.length > 0) {
+            const query = allSenders.map(s => `from:${s}`).join(' OR ');
+            window.location.hash = `#search/${encodeURIComponent(query)}`;
+          } else {
+            window.location.hash = `#search/${encodeURIComponent('label:quarantine OR "ThreatTrace Quarantine"')}`;
+          }
+        }
+      };
+
+      section.addEventListener('click', handleAction, true);
+      section.addEventListener('mousedown', (e) => {
+        if (e.target.closest('.tt-quarantine-del-btn')) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+        }
+      }, true);
+    }
+
+    section.innerHTML = `
+      <div class="tt-quarantine-sidebar-header" title="Click to view all quarantined emails">
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span style="font-size: 13px;">🛡️</span>
+          <span style="letter-spacing: 0.5px;">QUARANTINE VAULT</span>
+        </div>
+        <span class="tt-quarantine-total-badge">${totalCount}</span>
+      </div>
+      <div id="tt-quarantine-folder-list">
+        ${folders.length > 0 ? folders.map(f => `
+          <div class="tt-quarantine-sidebar-item" data-sender="${f.sender}" title="Click to view all quarantined emails from ${f.sender}">
+            <div style="display: flex; align-items: center; gap: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">
+              <span style="font-size: 13px;">📁</span>
+              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12.5px;">${f.sender}</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 4px;">
+              <span class="tt-quarantine-count-badge">${f.count || 1}</span>
+              <button class="tt-quarantine-del-btn" data-del-sender="${f.sender}" title="Release & remove this quarantine folder" type="button">×</button>
+            </div>
+          </div>
+        `).join('') : `
+          <div class="tt-quarantine-sidebar-empty" title="Click 'Quarantine Email' on any email to isolate threats">
+            <span style="opacity: 0.7; font-size: 11.5px;">🔒 0 active threats quarantined</span>
+          </div>
+        `}
+      </div>
+    `;
+  }
+
+  // Delete / Release a specific quarantine folder
+  function deleteQuarantineFolder(senderEmail) {
+    if (!senderEmail) return;
+    const cleanSender = senderEmail.trim().toLowerCase();
+
+    // 1. Instant DOM update: remove element immediately for smooth feedback
+    const section = document.getElementById('tt-quarantine-sidebar-section');
+    if (section) {
+      section.dataset.renderKey = '';
+      const matchingItems = section.querySelectorAll(`.tt-quarantine-sidebar-item`);
+      matchingItems.forEach(el => {
+        const s = (el.getAttribute('data-sender') || '').toLowerCase();
+        if (s === cleanSender || s.includes(cleanSender) || cleanSender.includes(s)) {
+          el.remove();
+        }
+      });
+      const remaining = section.querySelectorAll('.tt-quarantine-sidebar-item');
+      const countHeader = section.querySelector('.tt-quarantine-total-badge');
+      if (countHeader) countHeader.textContent = `${remaining.length}`;
+      if (remaining.length === 0) {
+        const list = section.querySelector('#tt-quarantine-folder-list');
+        if (list) {
+          list.innerHTML = `
+            <div class="tt-quarantine-sidebar-empty" title="Click 'Quarantine Email' on any email to isolate threats">
+              <span style="opacity: 0.7; font-size: 11.5px;">🔒 0 active threats quarantined</span>
+            </div>
+          `;
+        }
+      }
+    }
+
+    // 2. Persist dismissal locally
+    try {
+      let localDismissed = JSON.parse(localStorage.getItem('tt_dismissed_folders') || '[]');
+      if (!localDismissed.some(s => s.toLowerCase() === cleanSender)) {
+        localDismissed.push(cleanSender);
+        localStorage.setItem('tt_dismissed_folders', JSON.stringify(localDismissed));
+      }
+
+      let localFolders = JSON.parse(localStorage.getItem('tt_quarantine_folders') || '[]');
+      localFolders = localFolders.filter(f => f.sender && f.sender.toLowerCase() !== cleanSender);
+      localStorage.setItem('tt_quarantine_folders', JSON.stringify(localFolders));
+    } catch (e) {}
+
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.get(['tt_quarantine_folders', 'tt_dismissed_folders'], (res) => {
+        let folders = (res && res.tt_quarantine_folders) || [];
+        folders = folders.filter(f => f.sender && f.sender.toLowerCase() !== cleanSender);
+        let dismissed = (res && res.tt_dismissed_folders) || [];
+        if (!dismissed.some(s => s.toLowerCase() === cleanSender)) {
+          dismissed.push(cleanSender);
+        }
+        chrome.storage.local.set({ tt_quarantine_folders: folders, tt_dismissed_folders: dismissed });
+      });
+    }
+
+    // 3. Notify backend
+    safeSendMessage({ type: 'DELETE_QUARANTINE_FOLDER', sender_email: cleanSender }, () => {
+      renderQuarantineFoldersInGmailSidebar(true);
+    });
+  }
+
+  // Synchronize folder count with actual visible Gmail search results
+  function syncLiveSearchResultCount() {
+    let cleanSender = null;
+
+    // A. Check active search input
+    const searchInputs = document.querySelectorAll('input[name="q"], input.gb_Ie, input[aria-label*="Search" i]');
+    for (const input of searchInputs) {
+      if (input && input.value) {
+        const m = input.value.match(/from[:\s\(]*([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)/i);
+        if (m) {
+          cleanSender = m[1].toLowerCase();
+          break;
+        }
+      }
+    }
+
+    // B. Check URL hash if search input was not matched
+    if (!cleanSender && window.location.hash && window.location.hash.includes('search/')) {
+      const decoded = decodeURIComponent(window.location.hash);
+      const m = decoded.match(/from[:\s\(]*([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)/i);
+      if (m) cleanSender = m[1].toLowerCase();
+    }
+
+    if (!cleanSender) return;
+
+    // Check if sender is dismissed
+    try {
+      const dismissed = JSON.parse(localStorage.getItem('tt_dismissed_folders') || '[]').map(s => String(s).toLowerCase());
+      if (dismissed.includes(cleanSender)) return;
+    } catch (e) {}
+
+    // Detect actual count in Gmail
+    let realCount = 0;
+
+    // 1. From Gmail's Pager text (e.g. "1-12 of 12", "1-50 of 120", "1-1 of 1", "1 of 1")
+    const pagerEls = document.querySelectorAll('span.Dj, div.ar5 span.Dj, span.ts, div[role="main"] span');
+    for (const el of pagerEls) {
+      const txt = (el.textContent || '').trim();
+      const pMatch = txt.match(/\bof\s+(\d+)\b/i) || txt.match(/1-\d+\s+of\s+(\d+)/i) || txt.match(/(\d+)\s*[-–—]\s*(\d+)\s+of\s+(\d+)/i);
+      if (pMatch) {
+        const num = parseInt(pMatch[1] || pMatch[3], 10);
+        if (num > 0) {
+          realCount = num;
+          break;
+        }
+      }
+    }
+
+    // 2. From visible email rows in search results table
+    if (realCount === 0) {
+      const rows = document.querySelectorAll('div[role="main"] tr.zA, table.F.cf.zt tr.zA');
+      if (rows.length > 0) realCount = rows.length;
+    }
+
+    if (realCount > 0) {
+      // 1. Instantly update badge in DOM
+      const itemEl = document.querySelector(`.tt-quarantine-sidebar-item[data-sender="${cleanSender}"]`);
+      if (itemEl) {
+        const badge = itemEl.querySelector('.tt-quarantine-count-badge');
+        if (badge && badge.textContent !== String(realCount)) {
+          badge.textContent = realCount;
+        }
+      }
+
+      // 2. Update in-memory cache and total badge
+      if (cachedQuarantineFolders) {
+        const item = cachedQuarantineFolders.find(f => f.sender && f.sender.toLowerCase() === cleanSender);
+        if (item && item.count !== realCount) {
+          item.count = realCount;
+          const totalCount = cachedQuarantineFolders.reduce((sum, f) => sum + (Number(f.count) || 1), 0);
+          const totalBadge = document.querySelector('.tt-quarantine-total-badge');
+          if (totalBadge) totalBadge.textContent = totalCount;
+        }
+      }
+
+      // 3. Update localStorage
+      try {
+        let localFolders = JSON.parse(localStorage.getItem('tt_quarantine_folders') || '[]');
+        const existing = localFolders.find(f => f.sender && f.sender.toLowerCase() === cleanSender);
+        if (existing && existing.count !== realCount) {
+          existing.count = realCount;
+          localStorage.setItem('tt_quarantine_folders', JSON.stringify(localFolders));
+        }
+      } catch (e) {}
+
+      // 4. Update chrome.storage.local
+      if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+        chrome.storage.local.get(['tt_quarantine_folders', 'tt_dismissed_folders'], (res) => {
+          const dismissed = ((res && res.tt_dismissed_folders) || []).map(s => String(s).toLowerCase());
+          if (dismissed.includes(cleanSender)) return;
+
+          let sFolders = (res && res.tt_quarantine_folders) || [];
+          const existing = sFolders.find(f => f.sender && f.sender.toLowerCase() === cleanSender);
+          if (existing && existing.count !== realCount) {
+            existing.count = realCount;
+            chrome.storage.local.set({ tt_quarantine_folders: sFolders });
+          }
+        });
+      }
+
+      // 5. Dispatch count sync to backend
+      safeSendMessage({ type: 'SYNC_QUARANTINE_COUNT', sender_email: cleanSender, count: realCount });
+    }
+  }
+
+  // Filter Gmail search to display only quarantined emails from this sender
+  function filterGmailBySender(sender) {
+    if (!sender) return;
+
+    const cleanSender = sender.trim().replace(/^[<"']|[>"']$/g, '');
+
+    // 1. Visual active highlight on clicked folder
+    document.querySelectorAll('.tt-quarantine-sidebar-item').forEach(el => {
+      if (el.getAttribute('data-sender') === sender) {
+        el.classList.add('active');
+        el.style.background = '#fee2e2';
+        el.style.color = '#991b1b';
+      } else {
+        el.classList.remove('active');
+        el.style.background = 'transparent';
+        el.style.color = '#202124';
+      }
+    });
+
+    const query = `from:${cleanSender}`;
+
+    // 2. Direct Gmail hash navigation
+    const targetHash = `#search/${encodeURIComponent(query)}`;
+    window.location.hash = targetHash;
+
+    // 3. Populate Gmail search bar
+    const searchInputs = [
+      'input[name="q"]',
+      'input.gb_Ie',
+      'input[aria-label*="Search" i]',
+      'input[placeholder*="Search" i]'
+    ];
+
+    for (const sel of searchInputs) {
+      const input = document.querySelector(sel);
+      if (input) {
+        input.value = query;
+        input.focus();
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+        const form = input.closest('form');
+        if (form) {
+          form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+        }
+        break;
+      }
+    }
+
+    // 4. Trigger search button click after brief delay
+    setTimeout(() => {
+      const searchBtn = document.querySelector('button[aria-label*="Search mail" i], button[aria-label*="Search" i], button.gb_q, div[role="search"] button');
+      if (searchBtn) {
+        searchBtn.click();
+      }
+      setTimeout(syncLiveSearchResultCount, 400);
+      setTimeout(syncLiveSearchResultCount, 1200);
+    }, 80);
+  }
+
+  // Apply Quarantined Label Tag next to Subject in Gmail
+  function applyQuarantineLabelTagToEmail(senderEmail) {
+    const existingPill = document.getElementById('tt-quarantine-label-pill');
+    if (existingPill) existingPill.remove();
+
+    const h2 = document.querySelector('h2.hP') || document.querySelector('div[role="main"] h2');
+    if (h2) {
+      const pill = document.createElement('span');
+      pill.id = 'tt-quarantine-label-pill';
+      pill.className = 'tt-quarantined-label-pill';
+      pill.innerHTML = `<span>📁 Quarantine: ${senderEmail}</span>`;
+      h2.insertAdjacentElement('afterend', pill);
+    }
+  }
+
+  // Move / Archive email out of Inbox
+  function moveEmailOutOfInbox() {
+    // 1. Try clicking Gmail's native Toolbar Archive / Move button
+    const archiveBtnSelectors = [
+      'div[role="toolbar"] div[aria-label*="Archive" i]',
+      'div[role="toolbar"] div[data-tooltip*="Archive" i]',
+      'div[role="toolbar"] div[act="7"]',
+      'div[aria-label*="Archive" i]',
+      'div[data-tooltip*="Archive" i]',
+      'div[act="7"]',
+      'div[role="button"][aria-label*="Archive" i]',
+      'div[role="toolbar"] div[aria-label*="Move" i]',
+      'div[aria-label*="Move to" i]'
+    ];
+
+    let archived = false;
+    for (const sel of archiveBtnSelectors) {
+      const btn = document.querySelector(sel);
+      if (btn && btn.offsetParent !== null) {
+        try {
+          btn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+          btn.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true }));
+          btn.click();
+          archived = true;
+          console.log('[ThreatTrace AI] Email archived & moved out of Inbox via toolbar button.');
+          break;
+        } catch (e) {}
+      }
+    }
+
+    // 2. Keyboard shortcut fallback for Gmail ('e' key)
+    try {
+      const activeEl = document.activeElement;
+      if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA')) {
+        activeEl.blur();
+      }
+      document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'e', code: 'KeyE', keyCode: 69, which: 69, bubbles: true, cancelable: true }));
+      document.body.dispatchEvent(new KeyboardEvent('keypress', { key: 'e', code: 'KeyE', keyCode: 69, which: 69, bubbles: true, cancelable: true }));
+      document.body.dispatchEvent(new KeyboardEvent('keyup', { key: 'e', code: 'KeyE', keyCode: 69, which: 69, bubbles: true, cancelable: true }));
+    } catch (e) {}
+
+    // Immediately trigger inbox row suppression
+    enforceInboxQuarantineSuppression();
+  }
+
+  // ===================================================================
+  // ENFORCE INBOX QUARANTINE SUPPRESSION (HIDES QUARANTINED ROWS FROM INBOX)
+  // ===================================================================
+  function enforceInboxQuarantineSuppression() {
+    if (!isContextValid()) return;
+
+    // Resolve active quarantine senders
+    let activeSenders = [];
+    try {
+      const local = JSON.parse(localStorage.getItem('tt_quarantine_folders') || '[]');
+      const dismissed = JSON.parse(localStorage.getItem('tt_dismissed_folders') || '[]').map(s => String(s).toLowerCase());
+      activeSenders = (local || []).map(f => (f.sender || '').trim().toLowerCase()).filter(s => s && !dismissed.includes(s));
+    } catch (e) {}
+
+    if (cachedQuarantineFolders && Array.isArray(cachedQuarantineFolders)) {
+      for (const f of cachedQuarantineFolders) {
+        const s = (f.sender || '').trim().toLowerCase();
+        if (s && !activeSenders.includes(s)) activeSenders.push(s);
+      }
+    }
+
+    if (activeSenders.length === 0) return;
+
+    const hash = window.location.hash || '';
+    const isSearchOrVault = hash.includes('#search/') || hash.includes('quarantine');
+
+    const rows = document.querySelectorAll('div[role="main"] tr[role="row"], table.F.cf.zt tr.zA, div[role="main"] tr.zA, tr.zA');
+    for (const row of rows) {
+      const emailAttr = (row.querySelector('[email]')?.getAttribute('email') || '').toLowerCase();
+      const hovercard = (row.querySelector('[data-hovercard-id]')?.getAttribute('data-hovercard-id') || '').toLowerCase();
+      const senderSpan = (row.querySelector('span.zF, span.bA4, span.yP, span[email]')?.innerText || '').toLowerCase();
+      const senderCell = (row.querySelector('td.yX, div.yW, td.oZ-x3')?.innerText || '').toLowerCase();
+      const rowFullText = (row.innerText || '').toLowerCase();
+
+      const isQuarantined = activeSenders.some(sender => {
+        const s = sender.toLowerCase();
+        const userPart = s.split('@')[0];
+        const domainPart = s.split('@')[1];
+        return (emailAttr && emailAttr === s) ||
+               (hovercard && hovercard === s) ||
+               (senderSpan && senderSpan.includes(s)) ||
+               (senderCell && (senderCell.includes(s) || (userPart.length > 3 && senderCell.includes(userPart)))) ||
+               (rowFullText.includes(s)) ||
+               (domainPart && domainPart.length > 5 && (emailAttr.includes(domainPart) || hovercard.includes(domainPart) || rowFullText.includes(domainPart)));
+      });
+
+      if (isQuarantined) {
+        if (!isSearchOrVault) {
+          // In Main Inbox -> HIDE row so it does not appear in main inbox table
+          row.style.setProperty('display', 'none', 'important');
+          row.setAttribute('data-tt-quarantined', 'true');
+        } else {
+          // In Search/Vault -> Show row and attach visual Quarantined Badge
+          row.style.display = '';
+          if (!row.querySelector('.tt-row-quarantine-tag')) {
+            const subjectCol = row.querySelector('td.xY, div.xS, span.bog, div.y6');
+            if (subjectCol) {
+              const tag = document.createElement('span');
+              tag.className = 'tt-row-quarantine-tag';
+              tag.style.cssText = 'background: #dc2626; color: #fff; font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 4px; margin-right: 6px; display: inline-block; vertical-align: middle;';
+              tag.textContent = '📁 QUARANTINED';
+              subjectCol.insertAdjacentElement('afterbegin', tag);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Display rich in-page quarantine containment toast inside Gmail
+  function showQuarantineToast(folderName, suspiciousEmail, count = 1) {
+    const existing = document.getElementById('tt-quarantine-toast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.id = 'tt-quarantine-toast';
+    toast.style.cssText = `
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: linear-gradient(135deg, #1e1b4b 0%, #31104b 100%);
+      border: 1px solid #dc2626;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 24px rgba(220, 38, 38, 0.4);
+      border-radius: 12px;
+      padding: 16px 20px;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      z-index: 999999;
+      max-width: 440px;
+      animation: ttSlideUp 0.3s ease-out;
+    `;
+
+    toast.innerHTML = `
+      <div style="display: flex; align-items: flex-start; gap: 12px;">
+        <div style="font-size: 26px; line-height: 1;">🛡️</div>
+        <div style="flex: 1;">
+          <div style="font-size: 12px; font-weight: 800; color: #f87171; text-transform: uppercase; letter-spacing: 0.5px;">
+            Quarantine Initialized & Relocated
+          </div>
+          <div style="font-size: 14px; font-weight: 700; color: #ffffff; margin-top: 2px;">
+            Created Sidebar Folder: <span style="color: #38bdf8;">📁 ${suspiciousEmail}</span>
+          </div>
+          <div style="font-size: 12px; color: #cbd5e1; margin-top: 4px; line-height: 1.4;">
+            All <strong>${count}</strong> related email thread(s) from <code>${suspiciousEmail}</code> have been moved out of Inbox into this folder.
+          </div>
+        </div>
+        <button id="tt-close-toast-btn" style="background: none; border: none; color: #94a3b8; font-size: 20px; cursor: pointer; padding: 0 4px;">×</button>
+      </div>
+    `;
+
+    document.body.appendChild(toast);
+
+    document.getElementById('tt-close-toast-btn')?.addEventListener('click', () => {
+      toast.remove();
+    });
+
+    setTimeout(() => {
+      if (toast.parentElement) toast.remove();
+    }, 9000);
+  }
+
+
 
   // Load session initially
   try {
@@ -329,7 +1110,19 @@
   }
 
   // Helper to open full-fledged site (Cockpit)
+  let lastCockpitOpenTime = 0;
   function openFullFledgedSite() {
+    const now = Date.now();
+    if (now - lastCockpitOpenTime < 2500) {
+      return;
+    }
+    lastCockpitOpenTime = now;
+    if (isOpeningDashboard) return;
+    isOpeningDashboard = true;
+    setTimeout(() => {
+      isOpeningDashboard = false;
+    }, 2500);
+
     let targetUrl = 'http://localhost:5173/';
     try {
       const emailData = extractGmailEmailData();
@@ -340,8 +1133,35 @@
       ).trim();
 
       const cached = scanCache[curId];
-      if (cached && cached.case_id) {
-        targetUrl = `http://localhost:5173/case/${cached.case_id}`;
+      if (cached) {
+        const compact = { ...cached };
+        // Decoupled: do NOT assign or assume Case ID until user reports
+        compact.case_id = null;
+        if (compact.raw_text && compact.raw_text.length > 3500) {
+          compact.raw_text = compact.raw_text.slice(0, 3500);
+        }
+        if (compact.body_text && compact.body_text.length > 3500) {
+          compact.body_text = compact.body_text.slice(0, 3500);
+        }
+        try {
+          localStorage.setItem('tt_active_case', JSON.stringify(compact));
+        } catch (_) {}
+        const payloadStr = encodeURIComponent(JSON.stringify(compact));
+        targetUrl = `http://localhost:5173/case/unreported#payload=${payloadStr}`;
+      } else if (emailData.subject || emailData.sender) {
+        const synthetic = {
+          case_id: null,
+          subject: emailData.subject || 'Scanned Email Incident',
+          sender: emailData.sender || 'unknown@sender',
+          body_text: (emailData.body || '').slice(0, 3000),
+          risk_score: 0,
+          risk_level: 'LOW'
+        };
+        try {
+          localStorage.setItem('tt_active_case', JSON.stringify(synthetic));
+        } catch (_) {}
+        const payloadStr = encodeURIComponent(JSON.stringify(synthetic));
+        targetUrl = `http://localhost:5173/case/unreported#payload=${payloadStr}`;
       }
     } catch (e) {
       console.warn('[ThreatTrace AI] Error resolving case target url:', e);
@@ -349,31 +1169,18 @@
 
     console.log('[ThreatTrace AI] Opening site at:', targetUrl);
 
-    // Try sending OPEN_DASHBOARD to background service worker
-    let messageSent = false;
+    // Send OPEN_DASHBOARD to background service worker
     try {
       if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
-        chrome.runtime.sendMessage({ type: 'OPEN_DASHBOARD', url: targetUrl }, (resp) => {
-          if (chrome.runtime.lastError) {
-            console.warn('[ThreatTrace AI] Background tab open failed, falling back to window.open');
-            window.open(targetUrl, '_blank');
-          }
-        });
-        messageSent = true;
+        chrome.runtime.sendMessage({ type: 'OPEN_DASHBOARD', url: targetUrl });
+      } else {
+        window.open(targetUrl, '_blank');
       }
     } catch (err) {
-      messageSent = false;
-    }
-
-    // Direct window.open fallback if sendMessage was not available
-    if (!messageSent) {
-      try {
-        window.open(targetUrl, '_blank');
-      } catch (err) {
-        console.warn('[ThreatTrace AI] window.open error:', err);
-      }
+      window.open(targetUrl, '_blank');
     }
   }
+
 
   // ===================================================================
   // DOM INITIALIZATION
@@ -386,9 +1193,16 @@
     removeResidualDrawer();
     removeResidualFloatingBtn();
 
+    // Render & maintain Quarantine folders in Gmail's left sidebar
+    renderQuarantineFoldersInGmailSidebar();
+
+    // Enforce quarantine containment by hiding quarantined rows from Main Inbox
+    enforceInboxQuarantineSuppression();
+
     // Automatic Inline Risk Score Badge & Background Scan
     autoScanActiveEmail();
   }
+
 
   // ===================================================================
   // AUTOMATIC IN-MAIL RISK SCORE BADGE INJECTION & SCANNING
@@ -413,12 +1227,12 @@
     if (!badge) {
       badge = document.createElement('div');
       badge.id = 'tt-subject-risk-badge';
-      badge.className = 'tt-subject-risk-badge analyzing';
       badge.innerHTML = `
         <span class="tt-spinner-icon"></span>
-        <span>ThreatTrace: Analyzing…</span>
+        <span class="tt-brand-pill">TTA</span>
+        <span style="color: #BAE6FD; font-size: 11px; font-weight: 600;">Scanning Telemetry…</span>
       `;
-      badge.title = 'ThreatTrace AI Automated Threat Assessment – Click to open full site';
+      badge.title = 'TTA Automated Threat Assessment – Click to open full site';
     }
 
     // Always ensure click handler is freshly bound to the badge
@@ -457,6 +1271,8 @@
   // Automatically check open email, analyze in background, and render score
   function autoScanActiveEmail() {
     removeResidualDrawer();
+    const existingQBtn = document.getElementById('tt-inline-quarantine-btn');
+    if (existingQBtn) existingQBtn.remove();
 
     const emailData = extractGmailEmailData();
     const badge = ensureInlineSubjectRiskBadge();
@@ -476,7 +1292,7 @@
         badge.className = 'tt-subject-risk-badge locked';
         badge.innerHTML = `
           <span class="threat-trace-dot locked"></span>
-          <span>🔒 ThreatTrace: Login / OTP Required ↗</span>
+          <span>🔒 TTA: Login / OTP Required ↗</span>
         `;
         badge.title = secState.status === 'EXPIRED'
           ? 'Your 1-month session has expired. Click to open OTP verification tab.'
@@ -520,9 +1336,10 @@
         badge.className = 'tt-subject-risk-badge analyzing';
         badge.innerHTML = `
           <span class="tt-spinner-icon"></span>
-          <span>ThreatTrace: Analyzing email…</span>
+          <span class="tt-brand-pill">TTA</span>
+          <span style="color: #BAE6FD; font-size: 11px; font-weight: 600;">Analyzing Threat Vectors…</span>
         `;
-        badge.title = 'Analyzing email headers, body content, and embedded URLs with ThreatTrace AI…';
+        badge.title = 'Analyzing email headers, body content, and embedded URLs with TTA…';
       }
 
       // Format email text
@@ -545,14 +1362,17 @@
           return;
         }
 
+        const currentMailbox = secState.activeGmailUser || secState.boundEmail || '';
         safeSendMessage(
           {
             type: 'ANALYZE_EMAIL',
             email_text: formattedText,
             subject: emailData.subject || '',
             from_header: emailData.sender || '',
+            recipient: currentMailbox,
+            mailbox_email: currentMailbox,
             links: emailData.links || [],
-            mailbox_email: secState.activeGmailUser || secState.boundEmail,
+            save_case: false,
             client_digest_sha256: clientDigest,
             client_timestamp: new Date().toISOString()
           },
@@ -561,17 +1381,29 @@
             if (!isContextValid()) return;
 
             if (resp && resp.ok && resp.data) {
+              if (currentMailbox) {
+                resp.data.recipient = currentMailbox;
+                resp.data.mailbox_email = currentMailbox;
+              }
               scanCache[currentEmailId] = resp.data;
+              try {
+                localStorage.setItem('tt_active_case', JSON.stringify(resp.data));
+                if (resp.data.case_id) {
+                  localStorage.setItem('tt_case_' + resp.data.case_id, JSON.stringify(resp.data));
+                }
+                localStorage.setItem('tt_scan_cache', JSON.stringify(scanCache));
+              } catch (e) {}
               const activeBadge = ensureInlineSubjectRiskBadge();
               if (activeBadge) {
                 renderInlineRiskScore(activeBadge, resp.data);
               }
             } else {
+
               lastScannedEmailId = null; // Allow immediate retry
               const activeBadge = ensureInlineSubjectRiskBadge();
               if (activeBadge) {
                 activeBadge.className = 'tt-subject-risk-badge locked';
-                activeBadge.innerHTML = `<span>⚠️ ThreatTrace: Scan Error (Click to retry)</span>`;
+                activeBadge.innerHTML = `<span>⚠️ TTA: Scan Error (Click to retry)</span>`;
                 activeBadge.onclick = (e) => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -601,30 +1433,30 @@
     if (score >= 70) {
       badgeEl.className = 'tt-subject-risk-badge danger';
       badgeEl.innerHTML = `
-        <span class="threat-trace-dot" style="background:#fff; box-shadow: 0 0 6px #fff;"></span>
-        <span>ThreatTrace:</span>
-        <span class="tt-badge-score-pill">${score}/100 ${riskLevel}</span>
-        <span class="tt-badge-expand-arrow">↗ Open Full Site</span>
+        <span class="threat-trace-dot" style="background:#EF4444; box-shadow: 0 0 8px #EF4444;"></span>
+        <span class="tt-brand-pill">TTA</span>
+        <span class="tt-badge-score-pill" style="color: #F87171; border-color: rgba(239, 68, 68, 0.4);">🚨 ${score}/100 CRITICAL</span>
+        <span class="tt-badge-expand-arrow">Cockpit ↗</span>
       `;
-      badgeEl.title = `ThreatTrace Alert: Risk Score ${score}/100. Phishing detected! Click to open full forensic cockpit in dashboard →`;
+      badgeEl.title = `TTA Alert: Risk Score ${score}/100. Phishing detected! Click to open full forensic cockpit in dashboard →`;
     } else if (score >= 40) {
       badgeEl.className = 'tt-subject-risk-badge warning';
       badgeEl.innerHTML = `
-        <span class="threat-trace-dot" style="background:#fff; box-shadow: 0 0 6px #fff;"></span>
-        <span>ThreatTrace:</span>
-        <span class="tt-badge-score-pill">${score}/100 ${riskLevel}</span>
-        <span class="tt-badge-expand-arrow">↗ Open Full Site</span>
+        <span class="threat-trace-dot" style="background:#F59E0B; box-shadow: 0 0 8px #F59E0B;"></span>
+        <span class="tt-brand-pill">TTA</span>
+        <span class="tt-badge-score-pill" style="color: #FBBF24; border-color: rgba(245, 158, 11, 0.4);">⚠️ ${score}/100 SUSPICIOUS</span>
+        <span class="tt-badge-expand-arrow">Cockpit ↗</span>
       `;
-      badgeEl.title = `ThreatTrace Warning: Risk Score ${score}/100. Suspicious signals detected. Click to open full forensic cockpit →`;
+      badgeEl.title = `TTA Warning: Risk Score ${score}/100. Suspicious signals detected. Click to open full forensic cockpit →`;
     } else {
       badgeEl.className = 'tt-subject-risk-badge success';
       badgeEl.innerHTML = `
-        <span class="threat-trace-dot" style="background:#fff; box-shadow: 0 0 6px #fff;"></span>
-        <span>ThreatTrace:</span>
-        <span class="tt-badge-score-pill">${score}/100 ${riskLevel}</span>
-        <span class="tt-badge-expand-arrow">↗ Open Full Site</span>
+        <span class="threat-trace-dot" style="background:#10B981; box-shadow: 0 0 8px #10B981;"></span>
+        <span class="tt-brand-pill">TTA</span>
+        <span class="tt-badge-score-pill" style="color: #34D399; border-color: rgba(16, 185, 129, 0.4);">✓ ${score}/100 VERIFIED</span>
+        <span class="tt-badge-expand-arrow">Cockpit ↗</span>
       `;
-      badgeEl.title = `ThreatTrace Verified: Risk Score ${score}/100. Safe email. Click to open full forensic cockpit →`;
+      badgeEl.title = `TTA Verified: Risk Score ${score}/100. Safe email. Click to open full forensic cockpit →`;
     }
 
     // Ensure click always triggers dashboard launch
@@ -633,7 +1465,12 @@
       e.stopPropagation();
       openFullFledgedSite();
     };
+
+    // Clean up any residual inline quarantine button
+    const existingQBtn = document.getElementById('tt-inline-quarantine-btn');
+    if (existingQBtn) existingQBtn.remove();
   }
+
 
   // ===================================================================
   // SYNCHRONIZE SECURITY UI
@@ -659,7 +1496,7 @@
     for (const sel of subjectSelectors) {
       const el = document.querySelector(sel);
       if (el && el.innerText.trim()) {
-        subject = el.innerText.replace(/ThreatTrace AI/gi, '').trim();
+        subject = el.innerText.replace(/(ThreatTrace\s*AI|ThreatTrace|TTA)/gi, '').trim();
         break;
       }
     }
@@ -669,16 +1506,22 @@
     const senderSelectors = [
       'div[role="main"] span.gD[email]',
       'div[role="main"] span[email]',
+      'div[role="main"] span.gD',
+      'div[role="main"] span.go',
       'span.gD',
       'span.go',
-      'span[data-hovercard-id]'
+      'span[email]',
+      'span[data-hovercard-id]',
+      'div[role="main"] .gE',
+      'div[role="main"] .iw'
     ];
     for (const sel of senderSelectors) {
       const el = document.querySelector(sel);
       if (el) {
         const val = el.getAttribute('email') || el.getAttribute('data-hovercard-id') || el.innerText.trim();
-        if (val && val.includes('@')) {
-          sender = val.replace(/<|>/g, '').trim();
+        const m = val.match(/([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)/);
+        if (m) {
+          sender = m[1].toLowerCase();
           break;
         }
       }
@@ -766,7 +1609,7 @@
     }
   }
 
-  // Immediate trigger when opening emails in Gmail SPA (150ms debounce)
+  // Immediate trigger when opening emails in Gmail SPA (300ms debounce)
   try {
     observer = new MutationObserver(() => {
       if (!isContextValid()) return;
@@ -774,10 +1617,11 @@
       scanDebounceTimer = setTimeout(() => {
         scanDebounceTimer = null;
         if (!isContextValid()) return;
+        enforceInboxQuarantineSuppression();
         if (document.querySelector('h2.hP, div[role="main"] .ha, div[role="main"]')) {
-          initThreatTrace();
+          autoScanActiveEmail();
         }
-      }, 150);
+      }, 300);
     });
 
     if (document.body) {
@@ -787,14 +1631,37 @@
     console.warn('[ThreatTrace AI] MutationObserver setup warning:', e);
   }
 
-  // Periodic fallback check (1 second) with context check
+  // Instant navigation listeners for Gmail SPA tab changes
+  window.addEventListener('hashchange', () => {
+    setTimeout(enforceInboxQuarantineSuppression, 50);
+    setTimeout(enforceInboxQuarantineSuppression, 300);
+  });
+  window.addEventListener('popstate', () => {
+    setTimeout(enforceInboxQuarantineSuppression, 50);
+    setTimeout(enforceInboxQuarantineSuppression, 300);
+  });
+
+  // Master periodic loop & init trigger
+  function initThreatTrace() {
+    if (!isContextValid()) return;
+    renderQuarantineFoldersInGmailSidebar();
+    enforceInboxQuarantineSuppression();
+    if (document.querySelector('h2.hP, div[role="main"] .ha, div[role="main"]')) {
+      autoScanActiveEmail();
+    }
+  }
+
+  // Run initial setup immediately
+  initThreatTrace();
+
+  // Polite periodic fallback check (3.5 seconds)
   fallbackInterval = setInterval(() => {
     if (!isContextValid()) {
       if (fallbackInterval) clearInterval(fallbackInterval);
       return;
     }
     initThreatTrace();
-  }, 1000);
+  }, 3500);
 
 })();
 

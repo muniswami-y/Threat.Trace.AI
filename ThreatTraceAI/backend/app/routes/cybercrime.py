@@ -70,16 +70,16 @@ def generate_3_layer_keys(case_id: str, officer_id: str = "OFF-0842"):
 
 class ReportIncidentRequest(BaseModel):
     case_id: Optional[str] = None
-    reporter_email: str
+    reporter_email: Optional[str] = "muniswami1112@gmail.com"
     reporter_name: Optional[str] = "Complainant"
     reporter_phone: Optional[str] = "+91 80 4000 8899"
-    subject: str
-    body_text: str
+    subject: Optional[str] = "Reported Threat Incident"
+    body_text: Optional[str] = ""
     raw_headers: Optional[str] = ""
-    sender: str
+    sender: Optional[str] = "threat-origin@unknown.com"
     recipient: Optional[str] = ""
-    risk_score: Optional[float] = 75.0
-    risk_level: Optional[str] = "HIGH"
+    risk_score: Optional[float] = 0.0
+    risk_level: Optional[str] = "LOW"
     urls: Optional[List[str]] = []
     domains: Optional[List[str]] = []
     ips: Optional[List[str]] = []
@@ -98,7 +98,7 @@ class OfficerAddRequest(BaseModel):
     name: str
     badge: str
     rank: str
-    station: Optional[str] = "CID Cyber Police Station, Bengaluru"
+    station: Optional[str] = "National Cyber Crime Police Station, Central Command, New Delhi"
     specialization: str
     mail: str
     phone: Optional[str] = ""
@@ -141,7 +141,7 @@ async def add_officer(req: OfficerAddRequest):
         "transferHistory": [
             {
                 "date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
-                "from": "State Police Academy / Induction Board",
+                "from": "National Cyber Directorate / Induction Board",
                 "to": req.station,
                 "ref": f"INDUCT-CYB-{_gen_hex(4)}",
                 "reason": "Official Induction into Cyber Crime Investigation Cadre"
@@ -157,7 +157,7 @@ async def transfer_officer(req: OfficerTransferRequest):
     if not officer:
         raise HTTPException(status_code=404, detail="Officer not found")
     
-    prev_station = officer.get("station", "CID Cyber Police Station, Bengaluru")
+    prev_station = officer.get("station", "National Cyber Crime Police Station, Central Command, New Delhi")
     officer["station"] = req.new_station
     if "transferHistory" not in officer:
         officer["transferHistory"] = []
@@ -183,12 +183,22 @@ async def fire_officer(req: OfficerFireRequest):
     
     officer["transferHistory"].insert(0, {
         "date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
-        "from": officer.get("station", "CID Cyber Police Station, Bengaluru"),
+        "from": officer.get("station", "National Cyber Crime Police Station, Central Command, New Delhi"),
         "to": "RELIEVED FROM SERVICE",
         "ref": req.order_ref,
         "reason": f"{req.reason_category}: {req.notes or 'Service relieved by Head of Department'}"
     })
     return {"success": True, "officer": officer}
+
+TEST_CASE_IDS = set()
+
+def is_test_case(cid: str, subject: str = "") -> bool:
+    if not cid:
+        return False
+    if cid.startswith("TT-DUMMY-") or cid.startswith("INC-DUMMY-"):
+        return True
+    return False
+
 
 @router.get("/cases")
 async def list_cybercrime_cases(db: AsyncSession = Depends(get_db)):
@@ -201,27 +211,57 @@ async def list_cybercrime_cases(db: AsyncSession = Depends(get_db)):
     seen = set()
     for m in mem_cases:
         cid = m.get("caseId")
-        if cid:
+        if cid and not is_test_case(cid, m.get("subject", "")):
+            # Clean legacy fake placeholder emails if present
+            rep_email = m.get("reportingEmail") or m.get("recipient") or "muniswami1112@gmail.com"
+            if "corp.net" in rep_email or "enterprise.corp" in rep_email or "citizen.user@" in rep_email or "victim@" in rep_email:
+                rep_email = "muniswami1112@gmail.com"
+                m["reportingEmail"] = rep_email
+                m["recipient"] = rep_email
+            
+            comp_name = m.get("complainantName") or m.get("reportingName")
+            if not comp_name or "ThreatTrace" in comp_name or "Citizen" in comp_name or comp_name == "Complainant":
+                user_part = rep_email.split("@")[0].replace(".", " ").replace("_", " ").title() if "@" in rep_email else "Muniswami"
+                comp_name = f"{user_part} (Complainant)"
+                m["complainantName"] = comp_name
+                m["reportingName"] = comp_name
+
             out.append(m)
             seen.add(cid)
 
     for c in reported_cases:
-        if c.case_id and c.case_id not in seen:
+        if c.case_id and c.case_id not in seen and not is_test_case(c.case_id, c.subject or ""):
+            # If case_id contains salt prefix/suffix, clean it
+            clean_cid = c.case_id
+            if "_" in clean_cid and "TT-2026-" in clean_cid:
+                match = __import__('re').search(r'TT-2026-[A-Fa-f0-9]{8}', clean_cid)
+                if match:
+                    clean_cid = match.group(0)
+            if clean_cid in seen:
+                continue
+
+            rep_email = c.recipient or c.sender or "muniswami1112@gmail.com"
+            if "corp.net" in rep_email or "enterprise.corp" in rep_email or "citizen.user@" in rep_email or "victim@" in rep_email:
+                rep_email = "muniswami1112@gmail.com"
+
+            user_part = rep_email.split("@")[0].replace(".", " ").replace("_", " ").title() if "@" in rep_email else "Muniswami"
+            complainant_name = f"{user_part} (Complainant)"
+
             out.append({
-                "caseId": c.case_id,
-                "complainantName": "ThreatTrace Forensic User",
-                "reportingEmail": c.recipient or c.sender or "victim@enterprise.corp",
+                "caseId": clean_cid,
+                "complainantName": complainant_name,
+                "reportingEmail": rep_email,
                 "reportedAt": c.created_at.isoformat() if c.created_at else datetime.now(timezone.utc).isoformat(),
                 "status": "QUEUE",
                 "subject": c.subject or "Reported Threat Incident",
-                "riskScore": int(c.risk_score or 75),
+                "riskScore": int(round(c.risk_score)) if c.risk_score is not None else 0,
                 "bodyText": c.body_text or "",
                 "assignedOfficer": None,
                 "diaryEntries": [],
                 "firData": None,
                 "rejectionReason": None
             })
-            seen.add(c.case_id)
+            seen.add(clean_cid)
             
     return {"cases": out}
 
@@ -234,7 +274,18 @@ async def sync_cybercrime_cases(data: Dict[str, Any]):
 @router.post("/report")
 async def report_incident(req: ReportIncidentRequest, db: AsyncSession = Depends(get_db)):
     case_id = req.case_id or f"TT-{datetime.now(timezone.utc).year}-{_gen_hex(8)}"
+    score_val = int(round(req.risk_score)) if req.risk_score is not None else 0
+    level_val = req.risk_level or ("CRITICAL" if score_val >= 85 else "HIGH" if score_val >= 70 else "MEDIUM" if score_val >= 40 else "LOW")
     
+    effective_reporter_email = req.reporter_email or req.recipient or "muniswami1112@gmail.com"
+    if "corp.net" in effective_reporter_email or "enterprise.corp" in effective_reporter_email or "citizen.user@" in effective_reporter_email:
+        effective_reporter_email = "muniswami1112@gmail.com"
+
+    user_part = effective_reporter_email.split("@")[0].replace(".", " ").replace("_", " ").title() if "@" in effective_reporter_email else "Muniswami"
+    effective_reporter_name = req.reporter_name
+    if not effective_reporter_name or "ThreatTrace" in effective_reporter_name or "Citizen" in effective_reporter_name or effective_reporter_name == "Complainant":
+        effective_reporter_name = f"{user_part} (Complainant)"
+
     # Check if case exists in DB
     result = await db.execute(select(Case).where(Case.case_id == case_id))
     c = result.scalar_one_or_none()
@@ -244,11 +295,11 @@ async def report_incident(req: ReportIncidentRequest, db: AsyncSession = Depends
             case_id=case_id,
             subject=req.subject,
             sender=req.sender,
-            recipient=req.recipient or req.reporter_email,
+            recipient=effective_reporter_email,
             body_text=req.body_text,
             raw_headers=req.raw_headers,
-            risk_score=req.risk_score,
-            risk_level=req.risk_level,
+            risk_score=float(score_val),
+            risk_level=level_val,
             urls=req.urls,
             domains=req.domains,
             ips=req.ips,
@@ -257,22 +308,25 @@ async def report_incident(req: ReportIncidentRequest, db: AsyncSession = Depends
         db.add(c)
     else:
         c.is_reported = True
+        c.risk_score = float(score_val)
+        c.risk_level = level_val
+        c.recipient = effective_reporter_email
         
     await db.commit()
 
     # Store in memory list as QUEUE
     new_case_dict = {
         "caseId": case_id,
-        "complainantName": req.reporter_name or "ThreatTrace Certified User",
-        "reportingEmail": req.reporter_email,
+        "complainantName": effective_reporter_name,
+        "reportingEmail": effective_reporter_email,
         "reportingPhone": req.reporter_phone or "+91 80 4000 8899",
         "reportedAt": datetime.now(timezone.utc).isoformat(),
         "status": "QUEUE",
         "subject": req.subject,
         "sender": req.sender,
-        "recipient": req.recipient or req.reporter_email,
-        "riskScore": int(req.risk_score or 75),
-        "riskLevel": req.risk_level or "HIGH",
+        "recipient": effective_reporter_email,
+        "riskScore": score_val,
+        "riskLevel": level_val,
         "bodyText": req.body_text,
         "rawHeaders": req.raw_headers or "",
         "urls": req.urls or [],
@@ -283,7 +337,7 @@ async def report_incident(req: ReportIncidentRequest, db: AsyncSession = Depends
         ] if req.ips else [],
         "riskFactors": [
             "Reported from ThreatTrace AI Real-Time Ingestion Sensor",
-            f"Risk Level classified as {req.risk_level or 'HIGH'} with score {int(req.risk_score or 75)}/100"
+            f"Risk Level classified as {level_val} with score {score_val}/100"
         ],
         "assignedOfficer": None,
         "diaryEntries": [],

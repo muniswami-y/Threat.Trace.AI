@@ -13,7 +13,11 @@ router = APIRouter(prefix="/api/cases", tags=["Cases"])
 @router.get("/")
 async def list_cases(limit: int = 50, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
-        select(Case).order_by(desc(Case.created_at)).limit(limit)
+        select(Case).where(
+            ~Case.case_id.like("TT-DEMO%"),
+            ~Case.case_id.like("INC-DEMO%"),
+            ~Case.case_id.in_({"TT-2026-F80E1E7B", "TT-2026-B819A21C", "TT-2026-4401AA9F", "TT-2026-C90288EA", "TT-2026-9C44E109"})
+        ).order_by(desc(Case.created_at)).limit(limit)
     )
     cases = result.scalars().all()
     return [
@@ -113,10 +117,37 @@ async def seed_demo_cases(db: AsyncSession = Depends(get_db)):
 
 @router.get("/{case_id}")
 async def get_case(case_id: str, db: AsyncSession = Depends(get_db)):
+    import re
+    # 1. Direct match
     result = await db.execute(select(Case).where(Case.case_id == case_id))
     c = result.scalar_one_or_none()
+
+    # 2. Extract standard pattern TT-2026-XXXXXXXX or INC-2026-XXXXXXXX
+    if not c:
+        match = re.search(r'(?:TT|INC)-\d{4}-[A-Fa-f0-9]{6,12}', case_id, re.IGNORECASE)
+        if match:
+            clean_id = match.group(0).upper()
+            result = await db.execute(select(Case).where(Case.case_id.ilike(f"%{clean_id}%")))
+            c = result.scalar_one_or_none()
+
+    # 3. Extract any 8-char hex chunk
+    if not c:
+        hex_match = re.search(r'[A-Fa-f0-9]{8}', case_id)
+        if hex_match:
+            hex_part = hex_match.group(0).upper()
+            result = await db.execute(select(Case).where(Case.case_id.ilike(f"%{hex_part}%")))
+            c = result.scalar_one_or_none()
+
+    # 4. Fallback search anywhere in string
+    if not c:
+        clean_str = re.sub(r'[^A-Za-z0-9]', '', case_id)
+        if len(clean_str) >= 6:
+            result = await db.execute(select(Case).where(Case.case_id.ilike(f"%{clean_str[:8]}%")))
+            c = result.scalar_one_or_none()
+
     if not c:
         raise HTTPException(status_code=404, detail="Case not found")
+
     return {
         "case_id": c.case_id,
         "subject": c.subject,
@@ -175,3 +206,27 @@ async def get_subpoena_package(case_id: str, db: AsyncSession = Depends(get_db))
 
     package = build_subpoena_package(case_dict, canary_hits=canary_hits)
     return {"ok": True, **package}
+
+
+@router.delete("/reset-all")
+@router.post("/reset-all")
+async def reset_all_data(db: AsyncSession = Depends(get_db)):
+    """Wipes all cases, intel caches, cybercrime store, and quarantine records."""
+    from sqlalchemy import delete
+    from app.models import ThreatIntelCache
+    from app.routes.cybercrime import CYBER_STORE
+    from app.routes.soc import QUARANTINE_STORE, DISMISSED_QUARANTINE_SENDERS
+
+    await db.execute(delete(Case))
+    await db.execute(delete(ThreatIntelCache))
+    await db.commit()
+
+    CYBER_STORE["cases"] = []
+    QUARANTINE_STORE.clear()
+    DISMISSED_QUARANTINE_SENDERS.clear()
+
+    return {
+        "success": True,
+        "message": "All threat trace cases, intel cache, cybercrime queue, and quarantine data completely deleted."
+    }
+

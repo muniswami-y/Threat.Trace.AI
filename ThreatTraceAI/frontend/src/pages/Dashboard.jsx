@@ -5,7 +5,6 @@ import { api } from '../services/api'
 export default function Dashboard() {
   const [cases, setCases] = useState([])
   const [loading, setLoading] = useState(true)
-  const [seeding, setSeeding] = useState(false)
   const [error, setError] = useState(null)
   const [search, setSearch] = useState('')
   const [filterSeverity, setFilterSeverity] = useState('ALL')
@@ -24,18 +23,6 @@ export default function Dashboard() {
   useEffect(() => {
     fetchCases()
   }, [])
-
-  const handleSeed = async () => {
-    setSeeding(true)
-    try {
-      await api.seedCases()
-      fetchCases()
-    } catch (e) {
-      setError('Seed failed: ' + e.message)
-    } finally {
-      setSeeding(false)
-    }
-  }
 
   // Stats calculation
   const totalCount = cases.length
@@ -169,9 +156,6 @@ export default function Dashboard() {
 
           {/* Action CTAs */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <button className="secondary" onClick={handleSeed} disabled={seeding}>
-              {seeding ? 'Seeding Data…' : '⚡ Load Demo Threats'}
-            </button>
             <Link to="/investigate">
               <button>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -201,14 +185,11 @@ export default function Dashboard() {
       ) : filteredCases.length === 0 ? (
         <div className="card" style={{ textAlign: 'center', padding: '3.5rem 1rem' }}>
           <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🛡️</div>
-          <h3 style={{ marginBottom: '0.5rem' }}>No incident cases matching criteria</h3>
+          <h3 style={{ marginBottom: '0.5rem' }}>No incident cases found</h3>
           <p style={{ color: 'var(--text-muted)', maxWidth: '440px', margin: '0 auto 1.5rem auto', fontSize: '0.9rem' }}>
-            Click &ldquo;Load Demo Threats&rdquo; to populate realistic sample cases, or paste a phishing email into the Forensic Studio.
+            ThreatTrace AI is listening for live email threat detections from the Chrome Extension and Forensic Studio.
           </p>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
-            <button className="secondary" onClick={handleSeed} disabled={seeding}>
-              ⚡ Load Demo Threats
-            </button>
             <Link to="/investigate"><button>Start Investigation</button></Link>
           </div>
         </div>

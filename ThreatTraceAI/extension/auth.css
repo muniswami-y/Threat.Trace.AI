@@ -14,6 +14,51 @@
   --warning-amber: #f59e0b;
 }
 
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg-dark: #f1f5f9;
+    --bg-card: #ffffff;
+    --panel-bg: rgba(255, 255, 255, 0.9);
+    --border-color: rgba(2, 132, 199, 0.25);
+    --primary-blue: #0284c7;
+    --primary-glow: #0284c7;
+    --accent-cyan: #0284c7;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --danger-red: #dc2626;
+    --success-green: #059669;
+    --warning-amber: #d97706;
+  }
+  
+  body {
+    background: radial-gradient(circle at 10% 20%, #e2e8f0 0%, #f8fafc 90%) !important;
+  }
+
+  .brand-panel {
+    background: linear-gradient(145deg, #f1f5f9 0%, #e2e8f0 100%) !important;
+    border-right: 1px solid #cbd5e1 !important;
+  }
+
+  .brand-text h1 {
+    background: linear-gradient(90deg, #0f172a, #0284c7) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+  }
+
+  .feature-content h3 {
+    color: #0f172a !important;
+  }
+
+  .feature-icon {
+    background: rgba(0, 0, 0, 0.04) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  }
+
+  .top-status-bar {
+    border-bottom: 1px solid #e2e8f0 !important;
+  }
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -73,20 +118,22 @@ body {
 }
 
 .brand-logo-wrap {
-  width: 48px;
-  height: 48px;
+  width: 76px;
+  height: 76px;
   background: rgba(2, 132, 199, 0.2);
-  border: 1px solid rgba(56, 189, 248, 0.4);
-  border-radius: 12px;
+  border: 2px solid rgba(56, 189, 248, 0.5);
+  border-radius: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
+  padding: 6px;
+  box-shadow: 0 0 28px rgba(56, 189, 248, 0.45);
+  flex-shrink: 0;
 }
 
 .brand-logo {
-  width: 32px;
-  height: 32px;
+  width: 64px;
+  height: 64px;
   object-fit: contain;
 }
 

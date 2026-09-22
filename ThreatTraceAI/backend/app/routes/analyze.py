@@ -3,6 +3,7 @@ from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 from datetime import datetime, timezone
 import uuid
+import hashlib
 
 from app.utils.salting import apply_salt_pepper
 
@@ -39,12 +40,16 @@ class AnalyzeRequest(BaseModel):
     email_text: str = Field(..., description="Raw email body or full .eml content")
     subject: Optional[str] = None
     from_header: Optional[str] = None
+    recipient: Optional[str] = None
+    mailbox_email: Optional[str] = None
+    analyst_email: Optional[str] = None
+    client_digest_sha256: Optional[str] = None
     links: Optional[List[Any]] = Field(
         default=None,
         description="Structured links from extension: [{display, href, unwrapped}]"
     )
     resolve_domain_ip: Optional[bool] = False
-    save_case: bool = True
+    save_case: bool = False
 
 
 @router.post("/analyze")
@@ -145,9 +150,16 @@ async def analyze_email(payload: AnalyzeRequest, db: AsyncSession = Depends(get_
     all_factors = header_factors + content_factors + extra_factors
 
     now_utc = datetime.now(timezone.utc)
-    # Generate base ID then wrap with cryptographic salt + pepper
-    _base_case_id = f"TT-{now_utc.year}-{uuid.uuid4().hex[:8].upper()}"
-    case_id, _case_salt, _case_pepper = apply_salt_pepper(_base_case_id)
+    _base_case_id = None
+    _salted_id = None
+    _case_salt = None
+    _case_pepper = None
+
+    if payload.save_case:
+        raw_fingerprint = payload.client_digest_sha256 or f"{payload.subject or ''}::{payload.from_header or ''}::{(parsed.get('body_text') or '')[:160]}"
+        hash_seed = hashlib.sha256(raw_fingerprint.encode("utf-8")).hexdigest()[:8].upper()
+        _base_case_id = f"TT-{now_utc.year}-{hash_seed}"
+        _salted_id, _case_salt, _case_pepper = apply_salt_pepper(_base_case_id)
 
     # Match origin_geo and payload_geo from resolved geo list
     origin_ip = iocs.get("origin_ip")
@@ -169,17 +181,22 @@ async def analyze_email(payload: AnalyzeRequest, db: AsyncSession = Depends(get_
         if not origin_geo and geos:
             origin_geo = geos[0]
 
+    effective_recipient = payload.recipient or payload.mailbox_email or payload.analyst_email or parsed.get("to_header") or "citizen.user@threattrace.ai"
+
     case_data = {
-        "case_id": case_id,
+        "case_id": _base_case_id,
+        "salted_case_id": _salted_id,
         "subject": parsed.get("subject"),
         "sender": parsed.get("sender_email") or parsed.get("from_header") or "unknown",
-        "recipient": parsed.get("to_header"),
+        "recipient": effective_recipient,
+        "mailbox_email": effective_recipient,
         "body_text": (parsed.get("body_text") or payload.email_text or "")[:5000],
         "risk_score": risk_score,
         "risk_level": risk_level,
         "risk_factors": all_factors,
         "urls": unmasked,
         "domains": iocs["domains"],
+        "payload_domain": iocs.get("payload_domain"),
         "origin_ip": origin_ip,
         "origin_geo": origin_geo,
         "payload_ip": payload_ip,
@@ -187,6 +204,8 @@ async def analyze_email(payload: AnalyzeRequest, db: AsyncSession = Depends(get_
         "ips": iocs["ips"],
         "header_ips": iocs.get("header_ips", []),
         "resolved_ips": iocs.get("resolved_ips", {}),
+        "phones": iocs.get("phones", []),
+        "telephony_intelligence": iocs.get("telephony_intelligence", []),
         "geo_locations": geos,
         "recommendation": recommendation,
         "created_at": now_utc.isoformat()
@@ -196,12 +215,12 @@ async def analyze_email(payload: AnalyzeRequest, db: AsyncSession = Depends(get_
     graph = build_infrastructure_graph(case_data)
 
     # Optional: persist
-    if payload.save_case:
+    if payload.save_case and _base_case_id:
         db_case = Case(
-            case_id=case_id,
+            case_id=_base_case_id,
             subject=case_data["subject"],
             sender=case_data["sender"],
-            recipient=case_data["recipient"],
+            recipient=effective_recipient,
             body_text=case_data["body_text"],
             risk_score=risk_score,
             risk_level=risk_level,
@@ -211,12 +230,12 @@ async def analyze_email(payload: AnalyzeRequest, db: AsyncSession = Depends(get_
             ips=iocs["ips"],
             geo_locations=geos,
             recommendation=recommendation,
-            # Persist salt + pepper for forensic ID recovery
             case_salt=_case_salt,
             case_pepper=_case_pepper,
         )
         db.add(db_case)
         await db.commit()
+
 
     return {
         **case_data,

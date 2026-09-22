@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Forensic Incident Report - sdAP_RPT-2026-AA837193_MAH3</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0b0f19; color: #e2e8f0; margin: 0; padding: 40px; }
+  .container { max-width: 860px; margin: 0 auto; background: #131b2e; border: 1px solid #2d3748; border-radius: 12px; padding: 32px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+  .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #2d3748; padding-bottom: 20px; }
+  .logo { font-size: 24px; font-weight: 800; background: linear-gradient(135deg, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .score-badge { background: #10b98122; border: 2px solid #10b981; color: #10b981; padding: 12px 24px; border-radius: 12px; text-align: center; }
+  .score-num { font-size: 36px; font-weight: 900; line-height: 1; }
+  .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0; background: #0b0f19; padding: 16px; border-radius: 8px; border: 1px solid #1e293b; }
+  .meta-item { font-size: 14px; }
+  .meta-label { color: #94a3b8; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+  .meta-val { font-weight: 600; word-break: break-all; }
+  .section-title { font-size: 16px; font-weight: 700; color: #38bdf8; margin-top: 24px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+  ul { margin: 0; padding-left: 20px; }
+  li { margin-bottom: 6px; font-size: 14px; color: #cbd5e1; }
+  code { background: #1e293b; padding: 2px 6px; border-radius: 4px; font-family: monospace; color: #38bdf8; }
+  .badge { display: inline-block; background: #1e293b; color: #e2e8f0; padding: 4px 10px; border-radius: 6px; font-size: 13px; margin: 3px; font-family: monospace; }
+  .chain-box { background: linear-gradient(135deg, #1e1b4b, #0f172a); border: 1px solid #6366f1; border-radius: 8px; padding: 16px; margin-top: 24px; }
+  .hash { font-family: monospace; color: #a5b4fc; word-break: break-all; font-size: 12px; }
+  .footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid #1e293b; font-size: 12px; color: #64748b; text-align: center; }
+  @media print { body { background: white; color: black; padding: 0; } .container { border: none; box-shadow: none; } }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <img src="https://res.cloudinary.com/dfnoy78m8/image/upload/v1788969898/kc3gaetw67dwqmn426p9.png" alt="ThreatTrace AI Logo" width="36" height="36" style="border-radius: 8px;" />
+        <div class="logo">THREAT TRACE AI</div>
+      </div>
+      <div style="color: #94a3b8; font-size: 13px; margin-top: 4px;">Forensic Threat Attribution &amp; Chain-of-Custody Report</div>
+    </div>
+    <div class="score-badge">
+      <div class="score-num">15</div>
+      <div style="font-weight: 700; font-size: 12px; letter-spacing: 1px;">LOW RISK</div>
+    </div>
+  </div>
+
+  <div class="meta-grid">
+    <div class="meta-item"><div class="meta-label">Report ID</div><div class="meta-val">sdAP_RPT-2026-AA837193_MAH3</div></div>
+    <div class="meta-item"><div class="meta-label">Case ID</div><div class="meta-val">8hWB_TT-2026-6CC7CED4_6ZBM</div></div>
+    <div class="meta-item"><div class="meta-label">Sender Attribution</div><div class="meta-val">noreply@mail2.sider.ai</div></div>
+    <div class="meta-item"><div class="meta-label">Recommended Action</div><div class="meta-val" style="color: #10b981;">ALLOW</div></div>
+    <div class="meta-item" style="grid-column: 1 / -1;"><div class="meta-label">Subject</div><div class="meta-val">Build Slides with Sider in Few Minutes.</div></div>
+    <div class="meta-item" style="grid-column: 1 / -1;"><div class="meta-label">Timestamp (UTC)</div><div class="meta-val">2026-09-19T14:33:32.878717+00:00</div></div>
+  </div>
+
+  <div class="section-title">Forensic Indicators of Compromise (IOCs)</div>
+  <div style="margin-bottom: 12px;"><strong>Domains:</strong> <span class='badge'>r.mail2.sider.ai</span><span class='badge'>sider.ai</span><span class='badge'>mail2.sider.ai</span></div>
+  <div style="margin-bottom: 12px;"><strong>IP Addresses:</strong> <span class='badge'>104.20.26.158</span><span class='badge'>172.246.243.65</span></div>
+  <div style="margin-bottom: 12px;"><strong>Extracted URLs:</strong><ul><li><code>https://r.mail2.sider.ai/tr/cl/R3fpaJjxwH0A4D7V6PqTEcGpZGlyvanRPxEF6fEnapr_lkTk-AXgGLRJhRSTcYgHlyhjc6gpBLOF84sucDQxDLEO6BwaIzUYO_wCogQk90Hfti-EH76qvcm9JEZvSXXQWtKo7KBsPSRVo4UHw3k0cWsgNWF1cfCWtBcGB6kMhSOT31wpQMEll4sU4rrwEtnfBSQvWfph_e8XjHrvqM9ATeSih3D8cIiW6rxvmlwbEFAApQOwVJF2PA7uF_dnTerQN1X76I4YvKExpHnKSGijargG8D_oHQ</code></li><li><code>https://r.mail2.sider.ai/tr/cl/xT_5v8my2ihVBXOeAW8Tya3i4EfpInZIbTpexbwFIRFEh-1Xmqp4YQ1VTYYoPlYNysfXuhYBT7jb4wwrHsGge43NTD6U_QplMlY57RMxs1hbtFqvcQiSGqiqLBFBoZIgl_VAco45Aqz6jKFi10YC-rmBDcX7o4HniolyA1ONfrPR-CCHEPeJ6tacVIuD-_Kq9z666eQI29JMFdn-sJqJ82QjH7w-Gng0UGgy6MNqrUrS9D38OD_6pYlPMVWR7T2Y4BpWiSp-S6WhB5Uqc7tq</code></li></ul></div>
+
+  <div class="section-title">Explainable Threat Rubric Factors</div>
+  <ul><li>Email headers not available (web client analysis)</li><li>Sender domain: mail2.sider.ai</li><li>Sender appears to be a service/notification address</li><li>Excessive subdomains (3 levels) — obfuscation technique</li><li>Abnormally long URL (317 chars) — possible obfuscation</li></ul>
+
+  <div class="chain-box">
+    <div style="font-weight: 700; color: #818cf8; margin-bottom: 6px; font-size: 13px; text-transform: uppercase;">
+      🛡️ Chain-of-Custody Cryptographic Seal (End-to-End Signed)
+    </div>
+    <div style="font-size: 12px; color: #cbd5e1; margin-bottom: 4px;">
+      SHA-256 Canonical Forensic Digest:
+    </div>
+    <div class="hash">0x64427e0c027d6b9967608a5c5be8fc28ecab913c4d65cf878a88d4090d481e7c</div>
+    
+    <div style="font-size: 12px; color: #cbd5e1; margin-top: 10px; margin-bottom: 4px;">
+      ECDSA (SECP256R1) Digital Signature:
+    </div>
+    <div class="hash" style="color: #38bdf8;">0x3045022100f85e62646b560fdb90169146ad7040fbb11a22c3bec7865d14f325526d61964e02205c1eb0249cac329c89ec09bdb05821c03efb2de7bb23a67fa81b7e3579afedc3</div>
+
+    <div style="display: flex; justify-content: space-between; margin-top: 12px; font-size: 11px; color: #94a3b8; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 8px;">
+      <span><strong>Key Fingerprint:</strong> TT-SECP256R1-14B6:1DE7:CEE4:E003</span>
+      <span><strong>Ledger Proof:</strong> Polygon Amoy Testnet</span>
+      <span style="color: #10b981; font-weight: 700;">✓ VERIFIED UNTAMPERED</span>
+    </div>
+  </div>
+
+  <div class="footer">
+    Threat Trace AI Automated Cyber Forensics Engine<br>
+    End-to-End Cryptographically Sealed &amp; Signed for Law Enforcement and SOC Judicial Presentation.
+  </div>
+</div>
+</body>
+</html>
