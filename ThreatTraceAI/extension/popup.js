@@ -1,6 +1,7 @@
 // Threat Trace AI – Popup Controller v1.3.1 (Zero-Login / Frictionless Mode)
 const LIVE_DASHBOARD_URL = 'https://threat-trace-ai.vercel.app';
 const LIVE_BACKEND_URL = 'https://threat-trace-ai.onrender.com';
+const LIVE_CYBERCRIME_URL = 'https://threattrace-cybercrime.vercel.app';
 
 let currentCaseId = null; // tracks the active case for canary/subpoena
 let lastScannedData = null;
@@ -297,6 +298,11 @@ function reportIncidentToCybercrime() {
       if (reportSuccessBox) reportSuccessBox.style.display = 'block';
       if (caseIdDisplay) caseIdDisplay.textContent = `CASE ID: ${newCaseId}`;
       if (ackDisplay) ackDisplay.textContent = `Cybercrime Acknowledgment: ${ackNumber}`;
+
+      const cybercrimeLink = document.getElementById('popupCybercrimeLink');
+      if (cybercrimeLink) {
+        cybercrimeLink.href = `${LIVE_CYBERCRIME_URL}/?caseId=${newCaseId}&tab=queue`;
+      }
 
       // Enable Canary and Subpoena buttons now that case is registered
       const btnCanary = document.getElementById('btnDeployCanary');

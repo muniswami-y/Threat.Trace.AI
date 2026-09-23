@@ -70,6 +70,9 @@
           </div>
           <div id="popupCaseIdDisplay" style="font-family: monospace; font-size: 11px; margin-top: 4px; color: #ffffff; font-weight: 700;"></div>
           <div id="popupAckDisplay" style="font-size: 10.5px; opacity: 0.9; margin-top: 2px; color: #a7f3d0;"></div>
+          <a id="popupCybercrimeLink" href="https://threattrace-cybercrime.vercel.app/" target="_blank" style="display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; color: #38bdf8; font-size: 10.5px; text-decoration: none; font-weight: 600;">
+            🏛️ View in Cybercrime Officer Command Center →
+          </a>
         </div>
 
         <button id="btnOpenCaseDashboard" type="button" class="primary-btn" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); margin-top: 10px; width: 100%; display: none;">
@@ -95,11 +98,18 @@
       </div>
     </main>
 
-    <!-- Bottom Footer -->
-    <footer class="popup-footer">
-      <a href="https://threat-trace-ai.vercel.app/" target="_blank" class="footer-link" id="footerDashboardLink">
-        🌐 Open Full Forensic Dashboard →
+    <!-- Bottom Footer with Full Suite Links -->
+    <footer class="popup-footer" style="display: flex; flex-direction: column; gap: 6px; align-items: center; padding: 10px 14px; background: #030712; border-top: 1px solid #1e293b;">
+      <a href="https://threat-trace-ai.vercel.app/" target="_blank" class="footer-link" id="footerDashboardLink" style="font-size: 11.5px; font-weight: 700; color: #38bdf8; text-decoration: none;">
+        🌐 Open Full Forensic Cockpit →
       </a>
+      <div style="display: flex; gap: 8px; font-size: 9.5px; color: #64748b;">
+        <a href="https://threat-trace-ai.vercel.app/privacy" target="_blank" style="color: #94a3b8; text-decoration: none;">Privacy Policy</a>
+        <span>•</span>
+        <a href="https://threat-trace-ai.vercel.app/terms" target="_blank" style="color: #94a3b8; text-decoration: none;">Terms</a>
+        <span>•</span>
+        <a href="https://threattrace-cybercrime.vercel.app/" target="_blank" style="color: #f59e0b; text-decoration: none; font-weight: 600;">Officer Portal</a>
+      </div>
     </footer>
 
   </div>
