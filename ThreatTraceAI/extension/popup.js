@@ -1,82 +1,37 @@
-// Threat Trace AI – Popup Controller v1.3.1 (Live Production Mode)
+// Threat Trace AI – Popup Controller v1.3.1 (Zero-Login / Frictionless Mode)
 const LIVE_DASHBOARD_URL = 'https://threat-trace-ai.vercel.app';
 const LIVE_BACKEND_URL = 'https://threat-trace-ai.onrender.com';
 
-let currentSession = null;
-let currentCaseId = null; // tracks the last analyzed case for canary/subpoena
+let currentCaseId = null; // tracks the active case for canary/subpoena
+let lastScannedData = null;
+let lastScannedText = '';
 
 // DOM Elements
-const authSection = document.getElementById('authSection');
 const scannerSection = document.getElementById('scannerSection');
-const authAlert = document.getElementById('authAlert');
-const openOnboardingBtn = document.getElementById('openOnboardingBtn');
-const boundEmailDisplay = document.getElementById('boundEmailDisplay');
-const sessionDaysRemaining = document.getElementById('sessionDaysRemaining');
-const logoutBtn = document.getElementById('logoutBtn');
 const tabStatusBanner = document.getElementById('tabStatusBanner');
 const tabStatusText = document.getElementById('tabStatusText');
 const topStatusIndicator = document.getElementById('topStatusIndicator');
 const topStatusText = document.getElementById('topStatusText');
 
 // ===================================================================
-// Initialization & Session Check
+// Initialization
 // ===================================================================
 document.addEventListener('DOMContentLoaded', () => {
-  initSession();
+  initUI();
   setupEventListeners();
+  checkActiveTabMailbox();
 });
 
-function initSession() {
-  chrome.runtime.sendMessage({ type: 'GET_SESSION' }, (resp) => {
-    if (chrome.runtime.lastError) {
-      console.warn('[ThreatTrace AI]', chrome.runtime.lastError.message);
-      return;
-    }
-    const session = resp && resp.session;
-    if (session && session.isAuthenticated && !session.isExpired && session.boundEmail) {
-      currentSession = session;
-      renderAuthenticatedView(session);
-    } else {
-      currentSession = null;
-      renderLoginView(session && session.isExpired);
-    }
-  });
-}
-
-function renderLoginView(isExpired) {
-  authSection.style.display = 'flex';
-  scannerSection.style.display = 'none';
-
-  topStatusIndicator.className = 'status-indicator locked';
-  topStatusText.textContent = isExpired ? 'EXPIRED' : 'LOCKED';
-
-  if (isExpired) {
-    showAuthAlert('Your 1-month session has expired. Please complete OTP verification to re-bind.', 'error');
-  }
-}
-
-function renderAuthenticatedView(session) {
-  authSection.style.display = 'none';
-  scannerSection.style.display = 'flex';
-
-  topStatusIndicator.className = 'status-indicator ready';
-  topStatusText.textContent = 'READY';
-
-  boundEmailDisplay.textContent = session.boundEmail;
-  boundEmailDisplay.title = session.boundEmail;
-
-  if (sessionDaysRemaining) {
-    const days = session.daysRemaining !== undefined ? session.daysRemaining : 30;
-    sessionDaysRemaining.textContent = `${days} days remaining`;
-  }
-
-  checkActiveTabMailbox(session.boundEmail);
+function initUI() {
+  if (topStatusIndicator) topStatusIndicator.className = 'status-indicator ready';
+  if (topStatusText) topStatusText.textContent = 'ACTIVE';
+  if (scannerSection) scannerSection.style.display = 'flex';
 }
 
 // ===================================================================
-// Active Tab Gmail Mailbox Verification
+// Active Tab Gmail Mailbox Check
 // ===================================================================
-function checkActiveTabMailbox(boundEmail) {
+function checkActiveTabMailbox() {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     if (!tabs || tabs.length === 0) {
       setTabStatus('neutral', 'ℹ️ Paste email text below to scan forensic threat');
@@ -91,49 +46,32 @@ function checkActiveTabMailbox(boundEmail) {
       return;
     }
 
-    // Try communicating with content script on active tab
+    // Communicate with content script on active Gmail tab
     chrome.tabs.sendMessage(currentTab.id, { type: 'GET_ACTIVE_GMAIL_USER' }, (response) => {
       if (chrome.runtime.lastError || !response) {
-        setTabStatus('checking', `🛡️ Gmail open. Shield strictly bound to: ${boundEmail}`);
+        setTabStatus('matched', '🛡️ Gmail Shield Active • In-Mail Scanning Enabled');
         return;
       }
 
-      const activeGmailUser = (response.activeUser || '').trim().toLowerCase();
-      const bound = boundEmail.trim().toLowerCase();
-
-      if (!activeGmailUser) {
-        setTabStatus('checking', `🛡️ Gmail open. Verifying mailbox ownership for ${bound}…`);
-      } else if (activeGmailUser === bound) {
-        setTabStatus('matched', `✓ Verified: Active Gmail matches bound account (${bound})`);
+      const activeGmailUser = (response.activeUser || '').trim();
+      if (activeGmailUser) {
+        setTabStatus('matched', `✓ Active Gmail: ${activeGmailUser} • Forensic Shield Live`);
       } else {
-        setTabStatus('mismatched', `⛔ Mismatch: Gmail is [${activeGmailUser}], but extension locked to [${bound}]`);
+        setTabStatus('matched', '🛡️ Gmail Shield Active • In-Mail Scanning Enabled');
       }
     });
   });
 }
 
 function setTabStatus(statusClass, message) {
-  tabStatusBanner.className = `tab-status-card ${statusClass}`;
-  tabStatusText.textContent = message;
+  if (tabStatusBanner) tabStatusBanner.className = `tab-status-card ${statusClass}`;
+  if (tabStatusText) tabStatusText.textContent = message;
 }
 
 // ===================================================================
 // Event Listeners
 // ===================================================================
 function setupEventListeners() {
-  // Open Onboarding & OTP Page
-  if (openOnboardingBtn) {
-    openOnboardingBtn.addEventListener('click', () => {
-      chrome.runtime.sendMessage({ type: 'OPEN_AUTH_PAGE' });
-      window.close();
-    });
-  }
-
-  // Logout Click
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', handleLogout);
-  }
-
   // Scan Button
   const analyzeBtn = document.getElementById('analyzeBtn');
   if (analyzeBtn) {
@@ -166,145 +104,135 @@ function setupEventListeners() {
   if (btnReport) {
     btnReport.addEventListener('click', reportIncidentToCybercrime);
   }
-
-  // Catch-all link handler for popup
-  document.addEventListener('click', (e) => {
-    const link = e.target.closest('a');
-    if (link && link.href && !link.href.startsWith('javascript:')) {
-      e.preventDefault();
-      chrome.tabs.create({ url: link.href });
-    }
-  });
 }
 
 // ===================================================================
-// Authentication Handlers
+// Forensic Scan Execution (In-Memory, Zero Login Required)
 // ===================================================================
-
-function handleLogout() {
-  if (!confirm('Are you sure you want to sign out? This extension will be locked until re-authenticated.')) {
-    return;
-  }
-
-  chrome.runtime.sendMessage({ type: 'LOGOUT' }, () => {
-    currentSession = null;
-    document.getElementById('resultBox').style.display = 'none';
-    document.getElementById('emailText').value = '';
-    renderLoginView(false);
-  });
-}
-
-function showAuthAlert(msg, type) {
-  authAlert.textContent = msg;
-  authAlert.className = `auth-alert ${type}`;
-  authAlert.style.display = 'block';
-}
-
-function hideAuthAlert() {
-  authAlert.style.display = 'none';
-}
-
-// ===================================================================
-// Forensic Scan Execution (In-Memory, No Case ID Created on Init)
-// ===================================================================
-let lastScannedData = null;
-let lastScannedText = '';
-
 function runScan() {
-  if (!currentSession || !currentSession.isAuthenticated) {
-    alert('Extension is locked. Please authenticate with your email first.');
-    renderLoginView(false);
-    return;
-  }
+  const text = (document.getElementById('emailText')?.value || '').trim();
+  const analyzeBtn = document.getElementById('analyzeBtn');
+  const scanSpinner = document.getElementById('scanSpinner');
+  const scanBtnText = document.getElementById('scanBtnText');
 
-  const text = document.getElementById('emailText').value.trim();
-  if (!text) return;
-  lastScannedText = text;
-
-  const btn = document.getElementById('analyzeBtn');
-  btn.textContent = 'Analyzing Forensic Threat…';
-  btn.disabled = true;
+  if (analyzeBtn) analyzeBtn.disabled = true;
+  if (scanSpinner) scanSpinner.style.display = 'inline-block';
+  if (scanBtnText) scanBtnText.textContent = 'Analyzing…';
 
   // Reset reporting state for new scan
   currentCaseId = null;
   const reportSuccessBox = document.getElementById('popupReportSuccess');
   if (reportSuccessBox) reportSuccessBox.style.display = 'none';
 
-  chrome.runtime.sendMessage(
-    {
-      type: 'ANALYZE_EMAIL',
-      email_text: text,
-      mailbox_email: currentSession.boundEmail,
-      save_case: false
-    },
-    (resp) => {
-      btn.textContent = '⚡ Scan Forensic Threat';
-      btn.disabled = false;
-
-      if (!resp || !resp.ok) {
-        alert('ThreatTrace Error: ' + (resp && resp.error ? resp.error : 'Failed to reach forensic analyzer.'));
-        return;
+  // If text is provided in textarea, analyze that; otherwise analyze active tab email
+  const messagePayload = text 
+    ? {
+        type: 'ANALYZE_EMAIL',
+        email_text: text,
+        mailbox_email: 'analyst@threattrace.ai',
+        save_case: false
       }
+    : {
+        type: 'ANALYZE_CURRENT_TAB',
+        client_timestamp: new Date().toISOString()
+      };
 
-      const d = resp.data;
-      lastScannedData = d;
-      const score = Math.round(d.risk_score || 0);
-      const isHigh = d.risk_level === 'HIGH' || score >= 70;
-      const isMed = (d.risk_level === 'MEDIUM' || (score >= 40 && score < 70)) && !isHigh;
+  lastScannedText = text;
 
-      const resultBox = document.getElementById('resultBox');
-      resultBox.style.display = 'block';
+  chrome.runtime.sendMessage(messagePayload, (resp) => {
+    if (analyzeBtn) analyzeBtn.disabled = false;
+    if (scanSpinner) scanSpinner.style.display = 'none';
+    if (scanBtnText) scanBtnText.textContent = '⚡ Scan Forensic Threat';
 
-      const scoreNum = document.getElementById('scoreVal');
-      scoreNum.textContent = score;
-      scoreNum.style.color = isHigh ? '#f43f5e' : isMed ? '#f59e0b' : '#10b981';
-
-      const scoreBadge = document.getElementById('scoreBadge');
-      scoreBadge.textContent = d.risk_level || (isHigh ? 'CRITICAL' : isMed ? 'MEDIUM' : 'SAFE');
-      scoreBadge.className = `score-badge ${isHigh ? 'danger' : isMed ? 'warning' : 'success'}`;
-
-      document.getElementById('recLine').innerHTML = `Action: <strong>${d.recommendation || 'REVIEW'}</strong>`;
-
-      const listEl = document.getElementById('factorList');
-      listEl.innerHTML = '';
-      (d.risk_factors || []).slice(0, 4).forEach((f) => {
-        const li = document.createElement('li');
-        li.textContent = f;
-        listEl.appendChild(li);
-      });
-
-      // Show the Report Incident button prominently
-      const btnReport = document.getElementById('btnReportCybercrime');
-      if (btnReport) {
-        btnReport.style.display = 'block';
-        btnReport.disabled = false;
-        btnReport.innerHTML = '<span>🚨 Report Incident to Cybercrime</span>';
-        btnReport.style.background = 'linear-gradient(135deg, #dc2626 0%, #991b1b 100%)';
-      }
-
-      const btnOpenCase = document.getElementById('btnOpenCaseDashboard');
-      if (btnOpenCase) {
-        btnOpenCase.style.display = 'block';
-        btnOpenCase.onclick = () => {
-          const payloadStr = encodeURIComponent(JSON.stringify(d));
-          const targetUrl = currentCaseId 
-            ? `${LIVE_DASHBOARD_URL}/case/${currentCaseId}` 
-            : `${LIVE_DASHBOARD_URL}/#payload=${payloadStr}`;
-          chrome.tabs.create({ url: targetUrl });
-        };
-      }
-
-      // Hide canary & subpoena buttons until case is explicitly reported/created
-      const btnCanary = document.getElementById('btnDeployCanary');
-      const btnSubpoena = document.getElementById('btnSubpoena');
-      if (btnCanary) btnCanary.style.display = 'none';
-      if (btnSubpoena) btnSubpoena.style.display = 'none';
-
-      // Reset canary result panel
-      const canaryResult = document.getElementById('canaryResult');
-      if (canaryResult) canaryResult.style.display = 'none';
+    if (!resp || !resp.ok) {
+      alert('ThreatTrace Error: ' + (resp && resp.error ? resp.error : 'Failed to reach forensic analyzer.'));
+      return;
     }
-  );
+
+    const d = resp.data;
+    lastScannedData = d;
+    renderScanResults(d);
+  });
+}
+
+function renderScanResults(d) {
+  const score = Math.round(d.risk_score || 0);
+  const isHigh = d.risk_level === 'HIGH' || score >= 70;
+  const isMed = (d.risk_level === 'MEDIUM' || (score >= 40 && score < 70)) && !isHigh;
+
+  const resultBox = document.getElementById('scanResults');
+  if (resultBox) resultBox.style.display = 'block';
+
+  const scoreNum = document.getElementById('riskScore');
+  if (scoreNum) {
+    scoreNum.textContent = `${score}/100`;
+    scoreNum.style.color = isHigh ? '#f43f5e' : isMed ? '#f59e0b' : '#10b981';
+  }
+
+  const scoreBadge = document.getElementById('riskLevel');
+  if (scoreBadge) {
+    scoreBadge.textContent = d.risk_level || (isHigh ? 'CRITICAL' : isMed ? 'MEDIUM' : 'SAFE');
+    scoreBadge.className = `risk-badge ${isHigh ? 'danger' : isMed ? 'warning' : 'low'}`;
+  }
+
+  // Populate Indicators
+  const listEl = document.getElementById('indicatorsList');
+  if (listEl) {
+    listEl.innerHTML = '';
+    const indicators = [];
+    if (d.spf_status && d.spf_status !== 'PASS') indicators.push(`SPF: ${d.spf_status}`);
+    if (d.dkim_status && d.dkim_status !== 'PASS') indicators.push(`DKIM: ${d.dkim_status}`);
+    if (d.dmarc_status && d.dmarc_status !== 'PASS') indicators.push(`DMARC: ${d.dmarc_status}`);
+    if (d.is_lookalike) indicators.push('Lookalike Domain Detected');
+    if (d.has_urgency_cues) indicators.push('Urgency / Threat Language');
+    if (d.threat_categories && d.threat_categories.length) {
+      d.threat_categories.forEach(tc => indicators.push(tc.replace('_', ' ')));
+    }
+    if (d.origin_ip) indicators.push(`Origin IP: ${d.origin_ip}`);
+    if (d.geo_country) indicators.push(`Origin Geo: ${d.geo_country}`);
+    if (d.phones && d.phones.length > 0) indicators.push(`Phone Detected: ${d.phones[0]}`);
+
+    if (indicators.length === 0) {
+      indicators.push('No critical malicious indicators flagged');
+    }
+
+    indicators.forEach((ind) => {
+      const li = document.createElement('li');
+      li.textContent = ind;
+      listEl.appendChild(li);
+    });
+  }
+
+  // Show the Report Incident button
+  const btnReport = document.getElementById('btnReportCybercrime');
+  if (btnReport) {
+    btnReport.style.display = 'block';
+    btnReport.disabled = false;
+    btnReport.innerHTML = '<span>🚨 Report Incident to Cybercrime</span>';
+    btnReport.style.background = 'linear-gradient(135deg, #dc2626 0%, #991b1b 100%)';
+  }
+
+  const btnOpenCase = document.getElementById('btnOpenCaseDashboard');
+  if (btnOpenCase) {
+    btnOpenCase.style.display = 'block';
+    btnOpenCase.onclick = () => {
+      const payloadStr = encodeURIComponent(JSON.stringify(d));
+      const targetUrl = currentCaseId 
+        ? `${LIVE_DASHBOARD_URL}/case/${currentCaseId}` 
+        : `${LIVE_DASHBOARD_URL}/#payload=${payloadStr}`;
+      chrome.tabs.create({ url: targetUrl });
+    };
+  }
+
+  // Hide canary & subpoena buttons until case is explicitly reported/created
+  const btnCanary = document.getElementById('btnDeployCanary');
+  const btnSubpoena = document.getElementById('btnSubpoena');
+  if (btnCanary) btnCanary.style.display = 'none';
+  if (btnSubpoena) btnSubpoena.style.display = 'none';
+
+  // Reset canary result panel
+  const canaryResult = document.getElementById('canaryResult');
+  if (canaryResult) canaryResult.style.display = 'none';
 }
 
 // ===================================================================
@@ -328,14 +256,14 @@ function reportIncidentToCybercrime() {
   currentCaseId = newCaseId;
 
   // 2. Extract and compile incident context
-  const bound = currentSession?.boundEmail || 'analyst@threattrace.ai';
+  const reporterEmail = 'analyst@threattrace.ai';
   const reportPayload = {
     case_id: newCaseId,
     subject: lastScannedData.subject || 'Reported Phishing Incident',
     sender: lastScannedData.sender || 'unknown@threat.origin',
-    recipient: bound,
-    reporter_email: bound,
-    reporter_name: bound.split('@')[0].replace('.', ' ').toUpperCase(),
+    recipient: reporterEmail,
+    reporter_email: reporterEmail,
+    reporter_name: 'THREATTRACE ANALYST',
     body_text: lastScannedData.body_text || lastScannedText || '',
     raw_headers: lastScannedData.raw_headers || '',
     risk_score: lastScannedData.risk_score || 0,
@@ -404,7 +332,7 @@ function deployCanaryTrap() {
     {
       type: 'GENERATE_CANARY',
       case_id: currentCaseId,
-      analyst_email: currentSession && currentSession.boundEmail
+      analyst_email: 'analyst@threattrace.ai'
     },
     (resp) => {
       btn.textContent = '🪤 Deploy Canary Trap';

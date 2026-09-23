@@ -19,17 +19,7 @@ chrome.alarms.onAlarm.addListener((alarm) => {
   }
 });
 
-// ── Automated Installation & Onboarding Trigger ──────────────────────────────
-chrome.runtime.onInstalled.addListener((details) => {
-  if (details.reason === 'install') {
-    console.log('[ThreatTrace AI] Fresh install detected. Initializing authentication & server-side quarantine setup...');
-    try {
-      chrome.tabs.create({ url: chrome.runtime.getURL('auth.html') });
-    } catch (e) {
-      console.warn('[ThreatTrace AI] Onboarding tab open error:', e);
-    }
-  }
-});
+// ── Automated Tab Injection & MV3 Keepalive ─────────────────────────────────
 
 // ────────────────────────────────────────────────────────────────────────────
 
@@ -318,66 +308,26 @@ function runLocalForensicScan(msg, session) {
   };
 }
 
-// Get active stored session and check 1-month expiration
+// Get active session (Zero-Login frictionless mode: always active)
 async function getStoredSession() {
-  return new Promise((resolve) => {
-    chrome.storage.local.get(['tt_auth_session'], async (result) => {
-      let session = result.tt_auth_session || null;
-      if (!session) {
-        return resolve(null);
-      }
-
-      const now = Date.now();
-      // Check if session has expired (after 1 month)
-      if (session.expiresAt && now > session.expiresAt) {
-        console.warn('[ThreatTrace AI] Session expired after 1 month. Invalidate active session.');
-        await saveSession(null);
-        return resolve({ isExpired: true, boundEmail: session.boundEmail });
-      }
-
-      // Calculate days remaining
-      const msLeft = (session.expiresAt || (now + ONE_MONTH_MS)) - now;
-      session.daysRemaining = Math.max(0, Math.ceil(msLeft / (24 * 60 * 60 * 1000)));
-
-      resolve(session);
-    });
-  });
+  return {
+    isAuthenticated: true,
+    isExpired: false,
+    userEmail: 'analyst@threattrace.ai',
+    boundEmail: 'analyst@threattrace.ai',
+    token: 'tt_active_session',
+    durationDays: 365,
+    daysRemaining: 365
+  };
 }
 
-// Save session with 1-month expiry
+// Save session helper
 async function saveSession(session) {
   return new Promise((resolve) => {
-    if (session) {
-      if (!session.expiresAt) {
-        session.expiresAt = Date.now() + ONE_MONTH_MS;
-      }
-      session.durationDays = 30;
-    }
     chrome.storage.local.set({ tt_auth_session: session }, () => {
       resolve();
     });
   });
-}
-
-// Open auth side / tab safely without match pattern scheme errors
-function openAuthPage() {
-  const authUrl = chrome.runtime.getURL('auth.html');
-  try {
-    chrome.tabs.query({}, (tabs) => {
-      if (chrome.runtime.lastError) {
-        chrome.tabs.create({ url: authUrl });
-        return;
-      }
-      const existing = (tabs || []).find((t) => t.url && t.url.includes('auth.html'));
-      if (existing && existing.id) {
-        chrome.tabs.update(existing.id, { active: true });
-      } else {
-        chrome.tabs.create({ url: authUrl });
-      }
-    });
-  } catch (e) {
-    chrome.tabs.create({ url: authUrl });
-  }
 }
 
 // Automatically inject content scripts into existing Gmail tabs
@@ -401,17 +351,10 @@ function injectIntoExistingGmailTabs() {
   } catch (e) {}
 }
 
-// Extension Lifecycle: When extension is added/installed, open onboarding side/tab and inject into existing tabs
+// Extension Lifecycle: Inject into existing tabs on install/update
 chrome.runtime.onInstalled.addListener(async (details) => {
   console.log('[ThreatTrace AI] Extension installed/updated. Reason:', details.reason);
   injectIntoExistingGmailTabs();
-
-  const session = await getStoredSession();
-  if (!session || !session.isAuthenticated || session.isExpired) {
-    setTimeout(() => {
-      openAuthPage();
-    }, 400);
-  }
 });
 
 chrome.runtime.onStartup.addListener(() => {
