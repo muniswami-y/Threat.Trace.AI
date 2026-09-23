@@ -1,5 +1,6 @@
 // Service Worker – Authentication & Secure Email Forensic Dispatcher with 1-Month Session Lifespan
-// v1.2.0 – MV3 keepalive + canary trap support + local resilient heuristic fallback
+// v1.3.1 – MV3 keepalive + canary trap support + local resilient heuristic fallback + Live Render Backend
+const LIVE_BASE_URL = 'https://threat-trace-ai.onrender.com';
 const LOCAL_BASE_URL_1 = 'http://127.0.0.1:8000';
 const LOCAL_BASE_URL_2 = 'http://localhost:8000';
 
@@ -47,7 +48,7 @@ async function fetchWithTimeout(url, options, timeoutMs = 8000) {
   }
 }
 
-// Multi-target fetch with endpoint caching and local priority
+// Multi-target fetch with endpoint caching and priority (Live Backend -> Local)
 async function tryFetchMulti(endpoint, options, isHeavyAnalysis = false) {
   const localTimeout = isHeavyAnalysis ? 15000 : 8000;
 
@@ -63,9 +64,9 @@ async function tryFetchMulti(endpoint, options, isHeavyAnalysis = false) {
     }
   }
 
-  // 2. Try local endpoints (instant if running locally)
-  const localCandidates = [LOCAL_BASE_URL_1, LOCAL_BASE_URL_2];
-  for (const base of localCandidates) {
+  // 2. Try candidate endpoints (Live Backend -> Localhost fallback)
+  const candidateUrls = [LIVE_BASE_URL, LOCAL_BASE_URL_1, LOCAL_BASE_URL_2];
+  for (const base of candidateUrls) {
     try {
       const url = `${base}${endpoint}`;
       const resp = await fetchWithTimeout(url, options, 4000);
@@ -78,7 +79,7 @@ async function tryFetchMulti(endpoint, options, isHeavyAnalysis = false) {
     }
   }
 
-  throw new Error('Local ThreatTrace AI backend not reachable on port 8000.');
+  throw new Error('ThreatTrace AI backend not reachable.');
 }
 
 // Resilient In-Extension Heuristic Forensics Fallback
