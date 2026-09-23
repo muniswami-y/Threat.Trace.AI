@@ -1,16 +1,16 @@
 import os
 import sys
-from reportlab.lib.pagesizes import letter, A4
+from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, KeepTogether, HRFlowable
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, KeepTogether, HRFlowable
 from reportlab.pdfgen import canvas
 
 # Ensure output directory exists
 OUTPUT_DIR = r"d:\Threat.Trace.AI\Daily_Reports_PDFs"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-# Team Member Profiles from Provided Specification
+# Team Member Profiles from User Allocation Matrix
 TEAM_MEMBERS = [
     {
         "name": "Muniswami.Y",
@@ -127,7 +127,7 @@ DAILY_DATA = {
         "milestone": "Cross-Incident Campaign Correlation Engine",
         "tasks": {
             "Muniswami.Y": "Constructed the Explainable AI rationale generator producing natural language reasoning for why an email is flagged as malicious.",
-            "Jeevan reddy.G": "Engineered multi-tier fallback DNS resolver (Subdomain -> Parent Domain -> Root Domain -> Payload Host) for resilient origin IP recovery.",
+            "Jeevan reddy.G": "Engineered multi-tier fallback DNS resolver (Subdomain to Parent Domain to Root Domain to Payload Host) for resilient origin IP recovery.",
             "Lahari.K": "Added Phone Number OSINT extractor using international E.164 and localized Indian/US phone patterns; linked to telecom intelligence records.",
             "Hemanth.P": "Finalized bipartite graph linking suspect phone numbers, crypto wallet addresses, and phishing URLs to past known cyber syndicates.",
             "Abbas.N": "Implemented automated case prioritization queue: auto-assigning critical incidents to priority investigative queues.",
@@ -145,7 +145,7 @@ DAILY_DATA = {
             "Lahari.K": "Integrated threat reputation caching to reduce external API latency; implemented domain age and WHOIS registration verification.",
             "Hemanth.P": "Built Similar Attack Recommendation Engine: surfacing the top 3 historical cases matching the active incident's IOC graph topology.",
             "Abbas.N": "Developed the Quarantine Vault data models and automated server-side mailbox relocation rule generator.",
-            "Moulaanbee.N": "Created the Evidence Locker modal and interactive Timeline component tracking the lifecycle of forensic artifacts.",
+            "Moulaanbee.N": "Created the Evidence Locker modal and interactive Timeline component tracking the lifecycle of forensic artifacts."
         },
         "integration": "Validated the 0-100 composite risk scoring engine across 150 benchmark test cases (clean, marketing, spear-phishing, BEC).",
         "deliverables": "Composite Risk Scoring Engine v1.0, Evidence Locker UI, Similar Attacks Recommender."
@@ -286,21 +286,22 @@ class NumberedCanvas(canvas.Canvas):
         self.setFont("Helvetica", 8)
         self.setFillColor(colors.HexColor("#64748B"))
         
-        # Header line (pages > 1)
+        # Running Top Header on page 2+
         if self._pageNumber > 1:
-            self.drawString(40, 805, "Threat Trace AI • Daily Project Execution & Milestone Report")
+            self.drawString(45, 755, "THREAT TRACE AI  |  Engineering Sprint Work Log")
+            self.drawRightString(565, 755, f"Sprint Day {self._pageNumber} • Confidential")
             self.setStrokeColor(colors.HexColor("#CBD5E1"))
-            self.setLineWidth(0.5)
-            self.line(40, 798, 555, 798)
+            self.setLineWidth(0.6)
+            self.line(45, 747, 565, 747)
             
-        # Footer
+        # Running Bottom Footer on all pages
         self.setStrokeColor(colors.HexColor("#CBD5E1"))
-        self.setLineWidth(0.5)
-        self.line(40, 45, 555, 45)
+        self.setLineWidth(0.6)
+        self.line(45, 45, 565, 45)
         
-        self.drawString(40, 32, "Confidential • Internal Project Documentation • AICTE & Cybercrime Submission")
+        self.drawString(45, 32, "Threat Trace AI • Cybersecurity Engineering Department • Official Work Log")
         page_str = f"Page {self._pageNumber} of {page_count}"
-        self.drawRightString(555, 32, page_str)
+        self.drawRightString(565, 32, page_str)
         self.restoreState()
 
 
@@ -309,206 +310,203 @@ def create_daily_pdf(day_num, data):
     doc = SimpleDocTemplate(
         filename,
         pagesize=letter,
-        leftMargin=36,
-        rightMargin=36,
-        topMargin=36,
-        bottomMargin=45
+        leftMargin=45,
+        rightMargin=45,
+        topMargin=45,
+        bottomMargin=55
     )
 
     styles = getSampleStyleSheet()
 
-    # Custom Clean Styles
-    primary_color = colors.HexColor("#0F172A")
-    accent_blue = colors.HexColor("#0284C7")
-    dark_slate = colors.HexColor("#1E293B")
-    border_color = colors.HexColor("#E2E8F0")
-    bg_light = colors.HexColor("#F8FAFC")
+    # Document Color Palette
+    c_primary = colors.HexColor("#0F172A")    # Slate 900
+    c_accent = colors.HexColor("#0369A1")     # Sky 700
+    c_dark = colors.HexColor("#1E293B")       # Slate 800
+    c_muted = colors.HexColor("#475569")      # Slate 600
+    c_body = colors.HexColor("#334155")       # Slate 700
+    c_line = colors.HexColor("#CBD5E1")       # Slate 300
+    c_success = colors.HexColor("#047857")    # Emerald 700
 
-    title_style = ParagraphStyle(
-        'DocTitle',
+    # Custom Typography Styles (No Tables)
+    project_banner = ParagraphStyle(
+        'ProjectBanner',
+        parent=styles['Normal'],
+        fontName='Helvetica-Bold',
+        fontSize=14,
+        leading=17,
+        textColor=c_primary
+    )
+
+    doc_type_badge = ParagraphStyle(
+        'DocTypeBadge',
+        parent=styles['Normal'],
+        fontName='Helvetica-Bold',
+        fontSize=9,
+        leading=12,
+        textColor=c_accent
+    )
+
+    h1_title = ParagraphStyle(
+        'H1Title',
         parent=styles['Heading1'],
         fontName='Helvetica-Bold',
-        fontSize=18,
-        leading=22,
-        textColor=primary_color,
+        fontSize=15,
+        leading=19,
+        textColor=c_primary,
+        spaceBefore=8,
         spaceAfter=4
     )
 
-    subtitle_style = ParagraphStyle(
-        'DocSubTitle',
+    milestone_lead = ParagraphStyle(
+        'MilestoneLead',
         parent=styles['Normal'],
         fontName='Helvetica',
-        fontSize=10,
+        fontSize=9.5,
         leading=14,
-        textColor=accent_blue,
-        spaceAfter=12
+        textColor=c_muted,
+        spaceAfter=10
     )
 
-    section_heading = ParagraphStyle(
-        'SectionHeading',
+    section_header = ParagraphStyle(
+        'SectionHeader',
         parent=styles['Heading2'],
         fontName='Helvetica-Bold',
-        fontSize=12,
-        leading=16,
-        textColor=dark_slate,
-        spaceBefore=10,
+        fontSize=11,
+        leading=15,
+        textColor=c_dark,
+        spaceBefore=12,
         spaceAfter=6
     )
 
-    body_style = ParagraphStyle(
-        'BodyTextCustom',
+    body_p = ParagraphStyle(
+        'BodyP',
         parent=styles['Normal'],
         fontName='Helvetica',
         fontSize=8.5,
-        leading=12,
-        textColor=colors.HexColor("#334155")
+        leading=12.5,
+        textColor=c_body,
+        spaceAfter=4
     )
 
-    bold_label = ParagraphStyle(
-        'BoldLabel',
+    callout_p = ParagraphStyle(
+        'CalloutP',
+        parent=styles['Normal'],
+        fontName='Helvetica',
+        fontSize=8.5,
+        leading=13,
+        textColor=c_dark,
+        leftIndent=10,
+        spaceAfter=4
+    )
+
+    member_name_style = ParagraphStyle(
+        'MemberName',
         parent=styles['Normal'],
         fontName='Helvetica-Bold',
-        fontSize=8.5,
-        leading=12,
-        textColor=primary_color
+        fontSize=10,
+        leading=13,
+        textColor=c_primary
     )
 
-    table_header_style = ParagraphStyle(
-        'TableHeader',
+    member_role_style = ParagraphStyle(
+        'MemberRole',
         parent=styles['Normal'],
         fontName='Helvetica-Bold',
         fontSize=8.5,
         leading=11,
-        textColor=colors.white
+        textColor=c_accent
+    )
+
+    member_resp_style = ParagraphStyle(
+        'MemberResp',
+        parent=styles['Normal'],
+        fontName='Helvetica-Oblique',
+        fontSize=8,
+        leading=11,
+        textColor=c_muted,
+        spaceAfter=3
+    )
+
+    member_task_style = ParagraphStyle(
+        'MemberTask',
+        parent=styles['Normal'],
+        fontName='Helvetica',
+        fontSize=8.5,
+        leading=12.5,
+        textColor=c_body,
+        leftIndent=12,
+        spaceAfter=8
+    )
+
+    signoff_style = ParagraphStyle(
+        'SignOff',
+        parent=styles['Normal'],
+        fontName='Helvetica-Bold',
+        fontSize=8.5,
+        leading=12,
+        textColor=c_success,
+        spaceBefore=6
     )
 
     story = []
 
-    # 1. Main Header Box
-    header_data = [
-        [
-            Paragraph("<b>THREAT TRACE AI</b><br/><font size=8 color='#94A3B8'>Gmail Forensic Shield & Cybercrime Investigation Platform</font>", ParagraphStyle('H1', fontName='Helvetica-Bold', fontSize=13, leading=16, textColor=colors.white)),
-            Paragraph(f"<para align=right><b>DAILY SPRINT REPORT</b><br/><font size=8 color='#BAE6FD'>DAY {day_num} OF 15</font></para>", ParagraphStyle('H2', fontName='Helvetica-Bold', fontSize=11, leading=15, textColor=colors.white))
-        ]
-    ]
-    header_table = Table(header_data, colWidths=[360, 180])
-    header_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor("#0F172A")),
-        ('PADDING', (0, 0), (-1, -1), 10),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
-    ]))
-    story.append(header_table)
-    story.append(Spacer(1, 10))
+    # 1. Header Banner & Document Identity
+    story.append(Paragraph("THREAT TRACE AI", project_banner))
+    story.append(Paragraph("Gmail Forensic Shield & Cybercrime Investigation Platform", doc_type_badge))
+    story.append(Spacer(1, 4))
+    story.append(HRFlowable(width="100%", thickness=1.5, color=c_primary, spaceBefore=2, spaceAfter=8))
 
-    # 2. Daily Milestone & Scope Summary
-    story.append(Paragraph(f"Day {day_num}: {data['title']}", title_style))
-    story.append(Paragraph(f"<b>Key Milestone:</b> {data['milestone']}", subtitle_style))
+    # 2. Daily Report Title & Milestone
+    story.append(Paragraph(f"DAILY SPRINT WORK LOG &bull; DAY {day_num:02d} OF 15", doc_type_badge))
+    story.append(Paragraph(f"Day {day_num}: {data['title']}", h1_title))
+    story.append(Paragraph(f"<b>Key Milestone:</b> {data['milestone']}", milestone_lead))
 
-    # Summary Box
-    summary_data = [
-        [
-            Paragraph(f"<b>Sprint Focus:</b> Execution of core deliverables for Day {day_num} across AI/NLP, Header Forensics, IOC Extraction, Graph Correlation, Case Management, and UI Integration.", body_style)
-        ],
-        [
-            Paragraph(f"<b>Daily Deliverables:</b> {data['deliverables']}", ParagraphStyle('Deliv', parent=body_style, textColor=colors.HexColor("#0369A1")))
-        ]
-    ]
-    summary_table = Table(summary_data, colWidths=[540])
-    summary_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor("#F0F9FF")),
-        ('BOX', (0, 0), (-1, -1), 1, colors.HexColor("#BAE6FD")),
-        ('PADDING', (0, 0), (-1, -1), 8),
-        ('TOPPADDING', (0, 0), (-1, -1), 6),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-    ]))
-    story.append(summary_table)
-    story.append(Spacer(1, 12))
+    # 3. Daily Executive Focus & Deliverables (Narrative block)
+    story.append(HRFlowable(width="100%", thickness=0.6, color=c_line, spaceBefore=2, spaceAfter=6))
+    story.append(Paragraph(f"<b>Sprint Focus:</b> Execution of core deliverables for Day {day_num} spanning AI/NLP Intent Classification, Email Header Forensics, IOC Intelligence, Relationship Graphing, Case Workflow, and Full-Stack Frontend.", callout_p))
+    story.append(Paragraph(f"<b>Key Deliverables Completed:</b> {data['deliverables']}", callout_p))
+    story.append(HRFlowable(width="100%", thickness=0.6, color=c_line, spaceBefore=4, spaceAfter=8))
 
-    # 3. Individual Member Tasks Table
-    story.append(Paragraph("Individual Team Member Task Breakdown & Contributions", section_heading))
-
-    table_rows = [
-        [
-            Paragraph("Team Member & Lead Role", table_header_style),
-            Paragraph("Domain & Ownership Area", table_header_style),
-            Paragraph(f"Tasks Executed & Deliverables on Day {day_num}", table_header_style)
-        ]
-    ]
+    # 4. Individual Team Member Tasks & Deliverables (No Tables)
+    story.append(Paragraph("Individual Team Member Task Logs & Technical Contributions", section_header))
 
     for member in TEAM_MEMBERS:
         name = member["name"]
         role = member["role"]
-        ownership = member["resp"]
+        resp = member["resp"]
+        modules = member["modules"]
         daily_task = data["tasks"].get(name, "Contributed to cross-functional integration, testing, and documentation.")
 
-        member_cell = Paragraph(f"<b>{name}</b><br/><font size=7.5 color='#0284C7'>{role}</font>", bold_label)
-        ownership_cell = Paragraph(f"<font size=7.5 color='#475569'>{ownership}</font>", body_style)
-        task_cell = Paragraph(f"{daily_task}", body_style)
+        # Structured member section without tables
+        member_story = []
+        member_story.append(Paragraph(f"&bull; <b>{name}</b> &mdash; <font color='#0369A1'><b>{role}</b></font>", member_name_style))
+        member_story.append(Paragraph(f"&nbsp;&nbsp;&nbsp;<b>Domain Ownership:</b> {resp} | <b>Key Modules:</b> {modules}", member_resp_style))
+        member_story.append(Paragraph(f"<b>Day {day_num} Execution:</b> {daily_task}", member_task_style))
+        member_story.append(HRFlowable(width="100%", thickness=0.3, color=colors.HexColor("#E2E8F0"), spaceBefore=2, spaceAfter=4))
 
-        table_rows.append([member_cell, ownership_cell, task_cell])
+        story.append(KeepTogether(member_story))
 
-    member_table = Table(table_rows, colWidths=[120, 130, 290])
-    member_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#1E293B")),
-        ('PADDING', (0, 0), (-1, -1), 6),
-        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor("#CBD5E1")),
-        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor("#F8FAFC")]),
-    ]))
-    story.append(member_table)
-    story.append(Spacer(1, 12))
+    # 5. Integration, Quality Assurance & System Verification
+    story.append(Spacer(1, 4))
+    story.append(Paragraph("System Integration & Quality Verification", section_header))
+    story.append(Paragraph(f"<b>Cross-Module Integration:</b> {data['integration']}", body_p))
+    story.append(Paragraph(f"<b>Quality Assurance & Verification:</b> All technical modules, automated unit test suites, and API contracts for Day {day_num} executed with 100% clean passes. Code reviewed and merged into main repository.", body_p))
 
-    # 4. Integration, Testing & Quality Verification
-    story.append(Paragraph("Integration, Verification & Quality Assessment", section_heading))
-    integration_data = [
-        [
-            Paragraph("<b>Cross-Module Integration:</b>", bold_label),
-            Paragraph(data["integration"], body_style)
-        ],
-        [
-            Paragraph("<b>Quality Assurance Status:</b>", bold_label),
-            Paragraph(f"All code unit tests and interface contracts for Day {day_num} verified clean. Git commit pushed with zero blocking errors.", body_style)
-        ]
-    ]
-    int_table = Table(integration_data, colWidths=[150, 390])
-    int_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor("#F8FAFC")),
-        ('BOX', (0, 0), (-1, -1), 1, colors.HexColor("#E2E8F0")),
-        ('PADDING', (0, 0), (-1, -1), 7),
-        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-        ('LINEBELOW', (0, 0), (-1, 0), 0.5, colors.HexColor("#E2E8F0")),
-    ]))
-    story.append(int_table)
-    story.append(Spacer(1, 14))
+    # 6. Formal Lead Sign-Off
+    story.append(Spacer(1, 4))
+    story.append(HRFlowable(width="100%", thickness=0.8, color=c_line, spaceBefore=4, spaceAfter=6))
+    story.append(Paragraph(f"<b>Prepared By:</b> Threat Trace AI Development Team &nbsp;&nbsp;|&nbsp;&nbsp; <b>Project Lead:</b> Muniswami.Y &nbsp;&nbsp;|&nbsp;&nbsp; <b>Status:</b> SPRINT DAY {day_num} MILESTONE SIGNED OFF", signoff_style))
 
-    # 5. Formal Sign-off Box
-    signoff_data = [
-        [
-            Paragraph(f"<b>Prepared By:</b> Threat Trace AI Engineering Team", ParagraphStyle('SO1', parent=body_style, fontSize=7.5)),
-            Paragraph(f"<b>Verified By Project Lead:</b> Muniswami.Y", ParagraphStyle('SO2', parent=body_style, fontSize=7.5)),
-            Paragraph(f"<b>Status:</b> SPRINT MILESTONE APPROVED", ParagraphStyle('SO3', parent=body_style, fontSize=7.5, fontName='Helvetica-Bold', textColor=colors.HexColor("#059669")))
-        ]
-    ]
-    signoff_table = Table(signoff_data, colWidths=[180, 180, 180])
-    signoff_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor("#F1F5F9")),
-        ('BOX', (0, 0), (-1, -1), 0.5, colors.HexColor("#CBD5E1")),
-        ('PADDING', (0, 0), (-1, -1), 6),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-    ]))
-    story.append(signoff_table)
-
-    # Build PDF with custom canvas for page numbers
+    # Build PDF
     doc.build(story, canvasmaker=NumberedCanvas)
-    print(f"Generated: {filename}")
+    print(f"Generated (No Tables): {filename}")
 
 
 def main():
-    print(f"Generating 15 Daily Project Progress PDF Reports in {OUTPUT_DIR}...")
+    print(f"Generating 15 Clean Narrative (Table-Free) Daily PDF Reports in {OUTPUT_DIR}...")
     for day in range(1, 16):
         create_daily_pdf(day, DAILY_DATA[day])
-    print("\nAll 15 Daily PDF documents generated successfully!")
+    print("\nAll 15 Daily Table-Free PDF documents generated successfully!")
 
 if __name__ == "__main__":
     main()
