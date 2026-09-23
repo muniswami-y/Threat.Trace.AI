@@ -846,7 +846,7 @@ Cryptographic Custody: ECDSA-SECP256R1 Sealed (Polygon Amoy)`
                 </button>
 
                 <a
-                  href={`/cybercrime?caseId=${ackReceipt?.caseId || ''}&tab=queue`}
+                  href={`https://threattrace-cybercrime.vercel.app/?caseId=${ackReceipt?.caseId || ''}&tab=queue`}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{

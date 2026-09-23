@@ -301,7 +301,7 @@ export class CybercrimeService {
         ips: localCase.ips
       }
 
-      await fetch('http://127.0.0.1:8000/api/cybercrime/report', {
+      await fetch('https://threat-trace-ai.onrender.com/api/cybercrime/report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(backendPayload)
