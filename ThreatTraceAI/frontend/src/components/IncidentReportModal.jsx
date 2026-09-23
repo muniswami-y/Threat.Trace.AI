@@ -4,6 +4,77 @@ import { api } from '../services/api'
 import { cyberService } from '../cybercrime/cybercrimeService'
 import EvidencePreviewModal from './EvidencePreviewModal'
 
+// Intelligent Attack Vector & Threat Category Auto-Classifier
+function detectThreatCategory(data) {
+  if (!data) return 'Phishing Attempt'
+
+  const rawText = (
+    (data.fullSubject || data.subject || data.title || '') + ' ' +
+    (data.body_text || data.raw_text || data.evidence_description || data.body || '') + ' ' +
+    (Array.isArray(data.threat_categories) ? data.threat_categories.join(' ') : '') + ' ' +
+    (Array.isArray(data.risk_factors) ? data.risk_factors.join(' ') : '') + ' ' +
+    (Array.isArray(data.tags) ? data.tags.join(' ') : '') + ' ' +
+    (Array.isArray(data.indicators) ? data.indicators.join(' ') : '')
+  ).toLowerCase()
+
+  // 1. Ransomware / Extortion / Cryptolocker / Blackmail
+  if (
+    rawText.includes('ransom') || rawText.includes('extortion') || rawText.includes('bitcoin') ||
+    rawText.includes('btc') || rawText.includes('wallet') || rawText.includes('encrypt') ||
+    rawText.includes('locked your files') || rawText.includes('blackmail') || rawText.includes('recorded video') ||
+    rawText.includes('pay within') || rawText.includes('decrypt') || rawText.includes('pornography') ||
+    rawText.includes('webcam')
+  ) {
+    return 'Ransomware'
+  }
+
+  // 2. Unauthorized Access / Account Takeover / 2FA Hijack / Suspicious Session / Suspicious Sign-in
+  if (
+    rawText.includes('unauthorized') || rawText.includes('compromised') || rawText.includes('security alert') ||
+    rawText.includes('sign-in attempt') || rawText.includes('login attempt') || rawText.includes('account suspended') ||
+    rawText.includes('2fa') || rawText.includes('mfa') || rawText.includes('otp bypass') || rawText.includes('password reset') ||
+    rawText.includes('access granted') || rawText.includes('new device') || rawText.includes('account access') ||
+    rawText.includes('session hijacked') || rawText.includes('suspicious login')
+  ) {
+    return 'Unauthorized Access'
+  }
+
+  // 3. Data Leak / Exfiltration / Database Dump / PII Exposure
+  if (
+    rawText.includes('data leak') || rawText.includes('exfiltrat') || rawText.includes('breach') ||
+    rawText.includes('database dumped') || rawText.includes('dumped') || rawText.includes('credentials leaked') ||
+    rawText.includes('customer records') || rawText.includes('ssn') || rawText.includes('credit card leaked') ||
+    rawText.includes('data exposure') || rawText.includes('confidential disclosure')
+  ) {
+    return 'Data Leak'
+  }
+
+  // 4. Phishing / Lookalike / Credential Harvesting / Fake Invoices / Impersonation
+  if (
+    data.is_lookalike || data.has_urgency_cues ||
+    rawText.includes('phish') || rawText.includes('verify your email') || rawText.includes('verify your account') ||
+    rawText.includes('click here') || rawText.includes('invoice') || rawText.includes('wire transfer') ||
+    rawText.includes('payment overdue') || rawText.includes('urgent action') || rawText.includes('bank') ||
+    rawText.includes('kyc') || rawText.includes('update payment') || rawText.includes('spoof') ||
+    rawText.includes('impersonat') || rawText.includes('gift card') || rawText.includes('parcel tracking')
+  ) {
+    return 'Phishing Attempt'
+  }
+
+  // 5. Backend classified threat categories inspection
+  if (Array.isArray(data.threat_categories)) {
+    for (const tc of data.threat_categories) {
+      const lower = tc.toLowerCase()
+      if (lower.includes('ransom') || lower.includes('extort')) return 'Ransomware'
+      if (lower.includes('access') || lower.includes('auth') || lower.includes('credential')) return 'Unauthorized Access'
+      if (lower.includes('leak') || lower.includes('breach') || lower.includes('exfiltrat')) return 'Data Leak'
+      if (lower.includes('phish') || lower.includes('spoof') || lower.includes('scam')) return 'Phishing Attempt'
+    }
+  }
+
+  return 'Phishing Attempt'
+}
+
 export default function IncidentReportModal({
   isOpen = true,
   onClose,
@@ -77,13 +148,17 @@ export default function IncidentReportModal({
       const userMail = caseData.to || caseData.recipient || caseData.mailbox_email || localStorage.getItem('tt_mailbox_email') || localStorage.getItem('tt_active_user') || 'muniswami1112@gmail.com'
       setReporterEmail(userMail)
 
-      // 3. Pre-fill incident description with actual screen context
+      // 3. Intelligent Threat Category Auto-Detection
+      const autoCategory = detectThreatCategory(caseData)
+      setThreatCategory(autoCategory)
+
+      // 4. Pre-fill incident description with actual screen context
       const subj = caseData.fullSubject || caseData.subject || caseData.title || 'Email Security Incident'
       const senderStr = suspect || 'External Sender'
       const scoreStr = `${safeScore}/100 (${displayLevel})`
-      setIncidentDescription(`Forensic inspection of email "${subj}" received from <${senderStr}>. Assessed with Composite Risk Score of ${scoreStr}. System detected 4 Bayesian signal vectors with actionable indicators.`)
+      setIncidentDescription(`Forensic inspection of email "${subj}" received from <${senderStr}>. Auto-classified as: ${autoCategory}. Assessed with Composite Risk Score of ${scoreStr}. System detected actionable Bayesian threat indicators and forensic network signals.`)
 
-      // 4. Pre-set urgency based on risk score
+      // 5. Pre-set urgency based on risk score
       if (safeScore >= 70) {
         setUrgencyLevel('Critical')
       } else if (safeScore >= 40) {
@@ -1031,9 +1106,14 @@ Cryptographic Custody: ECDSA-SECP256R1 Sealed (Polygon Amoy)`
 
                   {/* Threat Category */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <label style={{ fontSize: '0.82rem', fontWeight: 700, color: '#334155' }}>
-                      Threat Category <span style={{ color: '#DC2626' }}>*</span>
-                    </label>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <label style={{ fontSize: '0.82rem', fontWeight: 700, color: '#334155' }}>
+                        Threat Category <span style={{ color: '#DC2626' }}>*</span>
+                      </label>
+                      <span style={{ fontSize: '0.72rem', background: '#F0F9FF', border: '1px solid #BAE6FD', color: '#0284C7', padding: '1px 6px', borderRadius: '4px', fontWeight: 600 }}>
+                        ✨ AI Auto-Classified
+                      </span>
+                    </div>
                     <select
                       value={threatCategory}
                       onChange={(e) => setThreatCategory(e.target.value)}
