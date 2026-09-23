@@ -2,6 +2,8 @@ import React from 'react'
 import { Routes, Route } from 'react-router-dom'
 import ThreatTraceCockpit from './pages/ThreatTraceCockpit'
 import CybercrimeAdminDashboard from './cybercrime/CybercrimeAdminDashboard'
+import PrivacyPolicy from './pages/PrivacyPolicy'
+import TermsOfService from './pages/TermsOfService'
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -101,6 +103,8 @@ export default function App() {
         <Route path="/case/:caseId" element={<ThreatTraceCockpit />} />
         <Route path="/cybercrime" element={<CybercrimeAdminDashboard />} />
         <Route path="/cybercrime/admin" element={<CybercrimeAdminDashboard />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<TermsOfService />} />
         <Route path="*" element={<ThreatTraceCockpit />} />
       </Routes>
     </ErrorBoundary>
