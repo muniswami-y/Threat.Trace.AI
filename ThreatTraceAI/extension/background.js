@@ -1,6 +1,7 @@
 // Service Worker – Authentication & Secure Email Forensic Dispatcher with 1-Month Session Lifespan
-// v1.3.1 – MV3 keepalive + canary trap support + local resilient heuristic fallback + Live Render Backend
+// v1.3.1 – MV3 keepalive + canary trap support + local resilient heuristic fallback + Live Render Backend & Vercel
 const LIVE_BASE_URL = 'https://threat-trace-ai.onrender.com';
+const LIVE_DASHBOARD_URL = 'https://threat-trace-ai.vercel.app';
 const LOCAL_BASE_URL_1 = 'http://127.0.0.1:8000';
 const LOCAL_BASE_URL_2 = 'http://localhost:8000';
 
@@ -438,10 +439,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     }
     lastDashboardOpenTime = now;
 
-    const targetUrl = msg.url || 'http://localhost:5173/';
+    const targetUrl = msg.url || `${LIVE_DASHBOARD_URL}/`;
     try {
       chrome.tabs.query({}, (tabs) => {
-        const existingTab = (tabs || []).find(t => t.url && (t.url.includes('5173') || t.url.includes('localhost:5173') || t.url.includes('127.0.0.1:5173')));
+        const existingTab = (tabs || []).find(t => t.url && (t.url.includes('vercel.app') || t.url.includes('5173') || t.url.includes('localhost:5173') || t.url.includes('127.0.0.1:5173')));
         if (existingTab && existingTab.id) {
           chrome.tabs.update(existingTab.id, { url: targetUrl, active: true }, () => {
             if (existingTab.windowId) {
@@ -787,7 +788,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         data: {
           case_id: caseId,
           canary_id: token,
-          tracking_url: `http://127.0.0.1:8000/api/canary/track/${token}`,
+          tracking_url: `${LIVE_BASE_URL}/api/canary/track/${token}`,
           bait_payload: `CONFIDENTIAL-TOKEN-${token.toUpperCase()}`,
           status: 'ARMED'
         }
@@ -809,7 +810,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         data: {
           case_id: caseId,
           canary_id: token,
-          tracking_url: `http://127.0.0.1:8000/api/canary/track/${token}`,
+          tracking_url: `${LIVE_BASE_URL}/api/canary/track/${token}`,
           bait_payload: `CONFIDENTIAL-TOKEN-${token.toUpperCase()}`,
           status: 'ARMED'
         }

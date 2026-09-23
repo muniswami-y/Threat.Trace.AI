@@ -1,4 +1,7 @@
-// Threat Trace AI – Popup Controller v1.3.0
+// Threat Trace AI – Popup Controller v1.3.1 (Live Production Mode)
+const LIVE_DASHBOARD_URL = 'https://threat-trace-ai.vercel.app';
+const LIVE_BACKEND_URL = 'https://threat-trace-ai.onrender.com';
+
 let currentSession = null;
 let currentCaseId = null; // tracks the last analyzed case for canary/subpoena
 
@@ -142,7 +145,7 @@ function setupEventListeners() {
   if (footerLink) {
     footerLink.addEventListener('click', (e) => {
       e.preventDefault();
-      chrome.tabs.create({ url: 'http://localhost:5173/' });
+      chrome.tabs.create({ url: LIVE_DASHBOARD_URL });
     });
   }
 
@@ -285,8 +288,8 @@ function runScan() {
         btnOpenCase.onclick = () => {
           const payloadStr = encodeURIComponent(JSON.stringify(d));
           const targetUrl = currentCaseId 
-            ? `http://localhost:5173/case/${currentCaseId}` 
-            : `http://localhost:5173/#payload=${payloadStr}`;
+            ? `${LIVE_DASHBOARD_URL}/case/${currentCaseId}` 
+            : `${LIVE_DASHBOARD_URL}/#payload=${payloadStr}`;
           chrome.tabs.create({ url: targetUrl });
         };
       }
@@ -377,7 +380,7 @@ function reportIncidentToCybercrime() {
       const btnOpenCase = document.getElementById('btnOpenCaseDashboard');
       if (btnOpenCase) {
         btnOpenCase.onclick = () => {
-          chrome.tabs.create({ url: `http://localhost:5173/case/${newCaseId}` });
+          chrome.tabs.create({ url: `${LIVE_DASHBOARD_URL}/case/${newCaseId}` });
         };
       }
     }
@@ -418,7 +421,7 @@ function deployCanaryTrap() {
       const panel = document.getElementById('canaryResult');
 
       if (tokenEl) tokenEl.textContent = 'Token: ' + (data.token || '').slice(0, 20) + '…';
-      if (pingEl) pingEl.textContent = 'Bait URL: http://127.0.0.1:8000' + (data.ping_url || '');
+      if (pingEl) pingEl.textContent = `Bait URL: ${LIVE_BACKEND_URL}` + (data.ping_url || '');
       if (panel) panel.style.display = 'block';
     }
   );
@@ -433,6 +436,6 @@ function openSubpoenaPackage() {
     return;
   }
   chrome.tabs.create({
-    url: `http://localhost:5173/case/${currentCaseId}?tab=subpoena`
+    url: `${LIVE_DASHBOARD_URL}/case/${currentCaseId}?tab=subpoena`
   });
 }

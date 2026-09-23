@@ -360,7 +360,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnOpenDashboard = document.getElementById('btnOpenDashboard');
   if (btnOpenDashboard) {
     btnOpenDashboard.addEventListener('click', () => {
-      chrome.tabs.create({ url: 'http://localhost:5173/' });
+      chrome.tabs.create({ url: 'https://threat-trace-ai.vercel.app/' });
     });
   }
 

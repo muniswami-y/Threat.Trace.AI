@@ -10,6 +10,7 @@
   let fallbackInterval = null;
   let observer = null;
   let isOpeningDashboard = false;
+  const LIVE_DASHBOARD_URL = 'https://threat-trace-ai.vercel.app';
 
   // Verify extension runtime context before calling any Chrome extension APIs
   function isContextValid() {
@@ -1128,7 +1129,7 @@
       isOpeningDashboard = false;
     }, 2500);
 
-    let targetUrl = 'http://localhost:5173/';
+    let targetUrl = `${LIVE_DASHBOARD_URL}/`;
     try {
       const emailData = extractGmailEmailData();
       const curId = (
@@ -1152,7 +1153,7 @@
           localStorage.setItem('tt_active_case', JSON.stringify(compact));
         } catch (_) {}
         const payloadStr = encodeURIComponent(JSON.stringify(compact));
-        targetUrl = `http://localhost:5173/#payload=${payloadStr}`;
+        targetUrl = `${LIVE_DASHBOARD_URL}/#payload=${payloadStr}`;
       } else if (emailData.subject || emailData.sender) {
         const synthetic = {
           case_id: null,
@@ -1167,7 +1168,7 @@
           localStorage.setItem('tt_active_case', JSON.stringify(synthetic));
         } catch (_) {}
         const payloadStr = encodeURIComponent(JSON.stringify(synthetic));
-        targetUrl = `http://localhost:5173/#payload=${payloadStr}`;
+        targetUrl = `${LIVE_DASHBOARD_URL}/#payload=${payloadStr}`;
       }
     } catch (e) {
       console.warn('[ThreatTrace AI] Error resolving case target url:', e);
