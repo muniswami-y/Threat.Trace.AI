@@ -6,7 +6,7 @@ Payload IP (destination link hosting web server).
 import re
 import socket
 from urllib.parse import urlparse
-from typing import List, Optional, Dict, Tuple
+from typing import List, Optional, Dict, Tuple, Any
 import tldextract
 from app.utils.validators import extract_urls, extract_ips, extract_emails
 from app.services.url_unmasker import unwrap_google_redirect
