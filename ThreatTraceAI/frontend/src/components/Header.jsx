@@ -23,8 +23,17 @@ export default function Header() {
   return (
     <header className="site-header">
       <div className="site-brand">
-        <div className="logo-icon" style={{ width: 54, height: 54, background: 'rgba(56, 189, 248, 0.12)', border: '1.5px solid rgba(56, 189, 248, 0.45)', borderRadius: 12, padding: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 20px rgba(56, 189, 248, 0.35)', flexShrink: 0 }}>
-          <img src="/logo.png" alt="Threat Trace AI Logo" style={{ width: '100%', height: '100%', borderRadius: 8, objectFit: 'contain' }} />
+        <div className="logo-icon" style={{ width: 62, height: 62, background: 'transparent', border: 'none', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <img 
+            src="/logo.png" 
+            alt="Threat Trace AI Logo" 
+            style={{ 
+              width: '100%', 
+              height: '100%', 
+              objectFit: 'contain',
+              filter: 'drop-shadow(0 2px 8px rgba(14, 165, 233, 0.35))'
+            }} 
+          />
         </div>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

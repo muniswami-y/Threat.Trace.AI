@@ -1,4 +1,4 @@
-// Threat Trace AI – Popup Controller v1.2.0
+// Threat Trace AI – Popup Controller v1.3.0
 let currentSession = null;
 let currentCaseId = null; // tracks the last analyzed case for canary/subpoena
 
@@ -339,7 +339,9 @@ function reportIncidentToCybercrime() {
     risk_level: lastScannedData.risk_level || 'HIGH',
     urls: (lastScannedData.urls || []).map(u => typeof u === 'string' ? u : (u.original || u.final || '')).filter(Boolean),
     domains: lastScannedData.domains || [],
-    ips: lastScannedData.ips || [lastScannedData.origin_ip].filter(Boolean)
+    ips: lastScannedData.ips || [lastScannedData.origin_ip].filter(Boolean),
+    phones: lastScannedData.phones || [],
+    telephony_intelligence: lastScannedData.telephony_intelligence || []
   };
 
   // 3. Transmit compiled data directly to cybercrime department endpoint

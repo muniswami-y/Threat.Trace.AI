@@ -1,4 +1,4 @@
-const BASE = import.meta.env.VITE_API_URL !== undefined ? import.meta.env.VITE_API_URL : ''
+const envBase = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || ''
 
 let cachedWorkingBase = null
 
@@ -19,7 +19,7 @@ async function request(path, options = {}) {
   const reqHeaders = { 'Content-Type': 'application/json', ...(options.headers || {}) }
   const fetchOpts = { headers: reqHeaders, ...options }
 
-  // 1. If we already found a working active base, try it first with 3s timeout
+  // 1. If we already found a working active base, try it first
   if (cachedWorkingBase) {
     try {
       const res = await fetchWithTimeout(`${cachedWorkingBase}${path}`, fetchOpts, 3500)
@@ -29,11 +29,12 @@ async function request(path, options = {}) {
     }
   }
 
-  // 2. Try direct local endpoints
+  // 2. Try candidates (prioritizing production environment URL if provided)
   const localCandidates = [
+    envBase,
     'http://localhost:8000',
     'http://127.0.0.1:8000',
-    BASE
+    ''
   ].filter(Boolean)
 
   for (const base of localCandidates) {

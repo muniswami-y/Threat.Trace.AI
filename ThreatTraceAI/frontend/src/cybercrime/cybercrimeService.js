@@ -384,21 +384,28 @@ export class CybercrimeService {
       c.recipient = effectiveEmail
       c.complainantName = effectiveName
       c.reportingName = effectiveName
+      if (incidentData.ack_number || incidentData.ackNumber) c.ackNumber = incidentData.ack_number || incidentData.ackNumber
+      if (incidentData.evidence_files || incidentData.evidenceFiles) c.evidenceFiles = incidentData.evidence_files || incidentData.evidenceFiles
+      if (incidentData.threat_category || incidentData.threatCategory) c.threatCategory = incidentData.threat_category || incidentData.threatCategory
+      if (incidentData.urgency_level || incidentData.urgencyLevel) c.urgencyLevel = incidentData.urgency_level || incidentData.urgencyLevel
       this._save()
       return c
     }
 
     const newCase = {
       caseId,
+      ackNumber: incidentData.ack_number || incidentData.ackNumber || `NCRP-IN-2026-${caseId.replace(/[^A-Za-z0-9]/g, '').slice(-6)}`,
       reportingEmail: effectiveEmail,
       reportingName: effectiveName,
       complainantName: effectiveName,
-      reportingPhone: incidentData.reporterPhone || '+91 80 4000 8899',
+      reportingPhone: incidentData.reporter_contact || incidentData.reporterPhone || '+91 80 4000 8899',
       reportedAt: new Date().toISOString(),
       status: 'QUEUE',
       subject: incidentData.subject || incidentData.title || 'Reported Email Threat',
       sender: incidentData.sender || incidentData.from || 'suspicious@external-source.net',
       recipient: effectiveEmail,
+      threatCategory: incidentData.threat_category || incidentData.threatCategory || 'Phishing Attempt',
+      urgencyLevel: incidentData.urgency_level || incidentData.urgencyLevel || 'Medium',
       riskScore: Math.round(Number(incidentData.risk_score !== undefined ? incidentData.risk_score : (incidentData.riskScore !== undefined ? incidentData.riskScore : (incidentData.threat_score !== undefined ? incidentData.threat_score : 0))) || 0),
       riskLevel: incidentData.risk_level || incidentData.riskLevel || (Number(incidentData.risk_score || incidentData.riskScore || 0) >= 70 ? 'HIGH' : (Number(incidentData.risk_score || incidentData.riskScore || 0) >= 40 ? 'MEDIUM' : 'LOW')),
       recommendation: incidentData.recommendation || 'QUARANTINE',
@@ -407,6 +414,7 @@ export class CybercrimeService {
       urls: incidentData.urls || (incidentData.payloadUrl ? [incidentData.payloadUrl] : []),
       domains: incidentData.domains || (incidentData.payloadDomain ? [incidentData.payloadDomain] : []),
       ips: incidentData.ips || (incidentData.originIp ? [incidentData.originIp] : []),
+      evidenceFiles: incidentData.evidence_files || incidentData.evidenceFiles || [],
       geoLocations: incidentData.geo_locations || incidentData.geoLocations || [],
       riskFactors: incidentData.risk_factors || ['Reported by user from ThreatTrace Cockpit'],
       assignedOfficer: null,

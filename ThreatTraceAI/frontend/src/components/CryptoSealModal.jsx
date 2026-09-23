@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
 import { api } from '../services/api'
 
-export default function CryptoSealModal({ isOpen, onClose, caseData, cryptoSeal, onSealUpdated }) {
-  if (!isOpen) return null
+export default function CryptoSealModal({ isOpen = true, onClose, caseData, cryptoSeal, sealData, initialTab = 'seal', onSealUpdated }) {
+  if (isOpen === false) return null
 
-  const [activeTab, setActiveTab] = useState('seal') // 'seal' | 'verify' | 'tamper' | 'vault'
+  const [activeTab, setActiveTab] = useState(initialTab || 'seal') // 'seal' | 'verify' | 'tamper' | 'vault'
   const [verifying, setVerifying] = useState(false)
   const [verifyResult, setVerifyResult] = useState(null)
   const [tamperSim, setTamperSim] = useState(null)
@@ -18,7 +18,13 @@ export default function CryptoSealModal({ isOpen, onClose, caseData, cryptoSeal,
   const [decryptError, setDecryptError] = useState(null)
   const [copied, setCopied] = useState(false)
 
-  const seal = cryptoSeal || {
+  React.useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab)
+    }
+  }, [initialTab])
+
+  const seal = cryptoSeal || sealData || {
     canonical_hash: '0x7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069',
     signature: '0x3045022100d8e244b...[Forensic Authority Digital Seal]',
     algorithm: 'ECDSA-SECP256R1-SHA256',

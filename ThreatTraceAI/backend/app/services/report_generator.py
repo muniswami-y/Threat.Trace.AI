@@ -71,7 +71,7 @@ def generate_case_report(case: dict) -> Dict:
   <div class="header">
     <div>
       <div style="display: flex; align-items: center; gap: 12px;">
-        <img src="https://res.cloudinary.com/dfnoy78m8/image/upload/v1788969898/kc3gaetw67dwqmn426p9.png" alt="ThreatTrace AI Logo" width="36" height="36" style="border-radius: 8px;" />
+        <img src="https://res.cloudinary.com/dfnoy78m8/image/upload/v1790074185/f3buclvjh9ph5kytez1w.png" alt="ThreatTrace AI Logo" width="36" height="36" style="border-radius: 8px;" />
         <div class="logo">THREAT TRACE AI</div>
       </div>
       <div style="color: #94a3b8; font-size: 13px; margin-top: 4px;">Forensic Threat Attribution &amp; Chain-of-Custody Report</div>

@@ -28,43 +28,80 @@ ORIGIN_HEADER_KEYS = (
 )
 
 def resolve_domain_ip(domain: str) -> Optional[str]:
-    """Resolve a domain to its hosting IP address via DNS."""
-    try:
-        skip_domains = {
-            "google.com", "www.google.com", "mail.google.com",
-            "googleapis.com", "gstatic.com", "localhost",
-        }
-        if domain.lower() in skip_domains:
-            return None
-        # If domain is already an IP, return as-is
-        if IPV4_RE.fullmatch(domain):
-            return domain
-        ip = socket.gethostbyname(domain)
-    except (socket.gaierror, socket.timeout, OSError):
+    """Resolve a domain to its hosting IP address via DNS with multi-tier fallback."""
+    if not domain:
         return None
+    d_clean = domain.strip().lower()
+    if d_clean.startswith("www."):
+        d_clean = d_clean[4:]
+    skip_domains = {
+        "google.com", "mail.google.com",
+        "googleapis.com", "gstatic.com", "localhost",
+    }
+    if d_clean in skip_domains:
+        return None
+    # If domain is already an IP, return as-is
+    if IPV4_RE.fullmatch(d_clean):
+        return d_clean
+    try:
+        ip = socket.gethostbyname(d_clean)
+        if ip and IPV4_RE.fullmatch(ip):
+            return ip
+    except (socket.gaierror, socket.timeout, OSError):
+        pass
+
+    # Try parent domain if subdomain fails (e.g. ptrack.ippbonline.co.in -> ippbonline.co.in)
+    parts = d_clean.split(".")
+    if len(parts) > 2:
+        parent = ".".join(parts[1:])
+        try:
+            ip = socket.gethostbyname(parent)
+            if ip and IPV4_RE.fullmatch(ip):
+                return ip
+        except (socket.gaierror, socket.timeout, OSError):
+            pass
+
+    # Try root domain
+    if len(parts) > 3:
+        parent_root = ".".join(parts[-2:])
+        try:
+            ip = socket.gethostbyname(parent_root)
+            if ip and IPV4_RE.fullmatch(ip):
+                return ip
+        except Exception:
+            pass
+
+    return None
 
 PHONE_PATTERNS = [
-    # E.164 with country code (+91 9876543210, +1-800-555-0199)
+    # E.164 with country code (+91 9876543210, +1-800-555-0199, +91-98765-43210, +91 98765 43210)
     r'(?<![A-Za-z0-9])\+\d{1,3}[-.\s]?(?:\(?\d{2,5}\)?[-.\s]?)?\d{3,5}[-.\s]?\d{3,5}(?![A-Za-z0-9])',
-    # 10-digit Indian standard numbers starting with 6-9
+    # 10-digit Indian standard numbers starting with 6-9 (with or without spaces/dashes)
     r'(?<![A-Za-z0-9])[6-9]\d{4}[-.\s]?\d{5}(?![A-Za-z0-9])',
-    # STD code / Landline / Toll-free (1800-xxx-xxxx, 1860-xxx-xxxx, 011-xxxxxxxx)
-    r'(?<![A-Za-z0-9])(?:1800|1860|0[1-9]\d{1,3})[-.\s]?\d{3,4}[-.\s]?\d{3,4}(?![A-Za-z0-9])'
+    r'(?<![A-Za-z0-9])[6-9]\d{2}[-.\s]?\d{3}[-.\s]?\d{4}(?![A-Za-z0-9])',
+    r'(?<![A-Za-z0-9])[6-9]\d{9}(?![A-Za-z0-9])',
+    # STD code / Landline / Toll-free (1800-xxx-xxxx, 1860-xxx-xxxx, 1800xxxxxxx, 011-xxxxxxxx, 080-xxxxxxxx)
+    r'(?<![A-Za-z0-9])(?:1800|1860|0[1-9]\d{1,3})[-.\s]?\d{3,4}[-.\s]?\d{3,4}(?![A-Za-z0-9])',
+    r'(?<![A-Za-z0-9])(?:1800|1860)\d{6,8}(?![A-Za-z0-9])',
+    r'(?<![A-Za-z0-9])0\d{2,4}[-.\s]?\d{6,8}(?![A-Za-z0-9])',
+    # Prefixed numbers: Tel:, Call:, Helpline:, Phone:, Ph:, Mobile:
+    r'(?:tel|call|phone|ph|mobile|helpline|contact|whatsapp)\s*[:=-]?\s*(\+?[0-9\-\s\(\)\.]{7,18})',
 ]
 
 def extract_phone_numbers(text: str) -> List[str]:
     """
     Extract all unique telephone, mobile, toll-free, and VoIP contact numbers from text.
-    Handles international codes, Indian 10-digit formats, and prevents false positives (ISIN codes, dates, IPs).
+    Handles international codes, Indian 10-digit formats, and prevents false positives.
     """
     if not text:
         return []
     found: List[str] = []
     seen = set()
     for pattern in PHONE_PATTERNS:
-        matches = re.finditer(pattern, text)
+        matches = re.finditer(pattern, text, re.IGNORECASE)
         for m in matches:
-            raw = m.group(0).strip()
+            raw = m.group(1) if m.lastindex else m.group(0)
+            raw = raw.strip(" .,:;()[]{}'\"")
             digits = re.sub(r'\D', '', raw)
             if 7 <= len(digits) <= 15:
                 # Discard date strings (YYYY-MM-DD, DD-MM-YYYY)
@@ -285,7 +322,7 @@ def extract_origin_ip_from_text(text: str) -> Optional[str]:
     return None
 
 
-def extract_iocs(body: str, headers: dict = None, extension_links: list = None) -> dict:
+def extract_iocs(body: str, headers: dict = None, extension_links: list = None, extension_phones: list = None) -> dict:
     text = body or ""
     headers = headers or {}
 
@@ -483,6 +520,14 @@ def extract_iocs(body: str, headers: dict = None, extension_links: list = None) 
     elif resolved_ips:
         payload_ip = next(iter(resolved_ips.values()), None)
 
+    # If origin_ip is not present (e.g. extension scan lacking RFC822 transport headers),
+    # fallback to the resolved payload hosting IP or first resolved domain IP
+    if not origin_ip:
+        if payload_ip:
+            origin_ip = payload_ip
+        elif resolved_ips:
+            origin_ip = next(iter(resolved_ips.values()), None)
+
     # -------------------------------------------------------------------
     # Construct ordered all_ips list:
     # 1. origin_ip (ALWAYS index 0 if exists)
@@ -491,7 +536,7 @@ def extract_iocs(body: str, headers: dict = None, extension_links: list = None) 
     # 4. other body IPs
     # -------------------------------------------------------------------
     all_ips: List[str] = []
-    if origin_ip:
+    if origin_ip and origin_ip not in all_ips:
         all_ips.append(origin_ip)
     for hip in header_ips:
         if hip not in all_ips:
@@ -506,6 +551,13 @@ def extract_iocs(body: str, headers: dict = None, extension_links: list = None) 
             all_ips.append(bip)
 
     extracted_phones = extract_phone_numbers(text)
+    if extension_phones:
+        for ep in extension_phones:
+            if isinstance(ep, str) and ep.strip():
+                ep_clean = ep.strip()
+                if ep_clean not in extracted_phones:
+                    extracted_phones.append(ep_clean)
+
     telephony_intel = [analyze_phoneinfoga_osint(p) for p in extracted_phones]
     valid_telephony = [t for t in telephony_intel if t.get("valid")]
     valid_phones = [t["raw"] for t in valid_telephony]

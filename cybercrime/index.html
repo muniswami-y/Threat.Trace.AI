@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ThreatTrace AI &bull; Cyber Crime Department | All-India Digital Jurisdiction</title>
-  <link rel="icon" type="image/png" href="https://res.cloudinary.com/dfnoy78m8/image/upload/v1788969898/kc3gaetw67dwqmn426p9.png" />
+  <link rel="icon" type="image/png" href="https://res.cloudinary.com/dfnoy78m8/image/upload/v1790074185/f3buclvjh9ph5kytez1w.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -13,104 +13,38 @@
        THREATTRACE AI CYBER CRIME DEPARTMENT DESIGN SYSTEM
        Fully Dynamic & System-Theme Responsive (Dark / Light)
        ------------------------------------------------------------- */
-    :root, [data-theme="dark"] {
-      --bg-base: #0a0d14;
-      --bg-surface: #111726;
-      --bg-surface-alt: #172033;
-      --bg-surface-hover: #1e293b;
-      --border-subtle: rgba(255, 255, 255, 0.09);
-      --border-strong: rgba(255, 255, 255, 0.18);
-      --border-focus: #38bdf8;
-      --text-primary: #f8fafc;
-      --text-secondary: #cbd5e1;
-      --text-muted: #94a3b8;
-      --accent-primary: #0284c7;
-      --accent-primary-hover: #0369a1;
-      --accent-border: #38bdf8;
-      --accent-gold: #f59e0b;
-      --accent-gold-bg: rgba(245, 158, 11, 0.15);
-      --accent-cyan: #38bdf8;
-      --status-success: #10b981;
-      --status-success-bg: rgba(16, 185, 129, 0.15);
-      --status-warning: #f59e0b;
-      --status-warning-bg: rgba(245, 158, 11, 0.15);
-      --status-danger: #ef4444;
-      --status-danger-bg: rgba(239, 68, 68, 0.15);
-      --status-neutral: #cbd5e1;
-      --status-neutral-bg: rgba(255, 255, 255, 0.08);
-      --cover-bg-radial: radial-gradient(circle at 50% 15%, #0e1a33 0%, #080d1a 65%, #04070e 100%);
-      --cover-card-gradient: linear-gradient(135deg, #131d2e 0%, #0d1422 100%);
-      --cover-card-hover: linear-gradient(135deg, #1c2a44 0%, #121c2e 100%);
-      --cover-admin-card: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-      --header-bg: rgba(17, 23, 38, 0.95);
-      --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      --font-code: 'JetBrains Mono', monospace;
-    }
-
-    @media (prefers-color-scheme: light) {
-      :root {
-        --bg-base: #f1f5f9;
-        --bg-surface: #ffffff;
-        --bg-surface-alt: #f8fafc;
-        --bg-surface-hover: #e2e8f0;
-        --border-subtle: #e2e8f0;
-        --border-strong: #cbd5e1;
-        --border-focus: #0284c7;
-        --text-primary: #0f172a;
-        --text-secondary: #334155;
-        --text-muted: #64748b;
-        --accent-primary: #0284c7;
-        --accent-primary-hover: #0369a1;
-        --accent-border: #0284c7;
-        --accent-gold: #d97706;
-        --accent-gold-bg: rgba(217, 119, 6, 0.12);
-        --accent-cyan: #0284c7;
-        --status-success: #059669;
-        --status-success-bg: rgba(5, 150, 105, 0.12);
-        --status-warning: #d97706;
-        --status-warning-bg: rgba(217, 119, 6, 0.12);
-        --status-danger: #dc2626;
-        --status-danger-bg: rgba(220, 38, 38, 0.12);
-        --status-neutral: #475569;
-        --status-neutral-bg: rgba(0, 0, 0, 0.05);
-        --cover-bg-radial: radial-gradient(circle at 50% 15%, #e2e8f0 0%, #f1f5f9 65%, #ffffff 100%);
-        --cover-card-gradient: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-        --cover-card-hover: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-        --cover-admin-card: linear-gradient(135deg, #f8fafc 0%, #eef2f6 100%);
-        --header-bg: rgba(255, 255, 255, 0.95);
-      }
-    }
-
-    [data-theme="light"] {
-      --bg-base: #f1f5f9;
-      --bg-surface: #ffffff;
-      --bg-surface-alt: #f8fafc;
-      --bg-surface-hover: #e2e8f0;
-      --border-subtle: #e2e8f0;
-      --border-strong: #cbd5e1;
+    :root, [data-theme="light"], [data-theme="dark"] {
+      --bg-base: #FFFFFF;
+      --bg-surface: #FFFFFF;
+      --bg-surface-alt: #F8FAFC;
+      --bg-surface-hover: #F1F5F9;
+      --border-subtle: transparent;
+      --border-strong: transparent;
       --border-focus: #0284c7;
-      --text-primary: #0f172a;
+      --text-primary: #0F172A;
       --text-secondary: #334155;
-      --text-muted: #64748b;
+      --text-muted: #64748B;
       --accent-primary: #0284c7;
       --accent-primary-hover: #0369a1;
       --accent-border: #0284c7;
       --accent-gold: #d97706;
-      --accent-gold-bg: rgba(217, 119, 6, 0.12);
+      --accent-gold-bg: rgba(217, 119, 6, 0.1);
       --accent-cyan: #0284c7;
       --status-success: #059669;
-      --status-success-bg: rgba(5, 150, 105, 0.12);
+      --status-success-bg: rgba(5, 150, 105, 0.1);
       --status-warning: #d97706;
-      --status-warning-bg: rgba(217, 119, 6, 0.12);
+      --status-warning-bg: rgba(217, 119, 6, 0.1);
       --status-danger: #dc2626;
-      --status-danger-bg: rgba(220, 38, 38, 0.12);
+      --status-danger-bg: rgba(220, 38, 38, 0.1);
       --status-neutral: #475569;
-      --status-neutral-bg: rgba(0, 0, 0, 0.05);
-      --cover-bg-radial: radial-gradient(circle at 50% 15%, #e2e8f0 0%, #f1f5f9 65%, #ffffff 100%);
-      --cover-card-gradient: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-      --cover-card-hover: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-      --cover-admin-card: linear-gradient(135deg, #f8fafc 0%, #eef2f6 100%);
-      --header-bg: rgba(255, 255, 255, 0.95);
+      --status-neutral-bg: rgba(0, 0, 0, 0.04);
+      --cover-bg-radial: #FFFFFF;
+      --cover-card-gradient: #FFFFFF;
+      --cover-card-hover: #FFFFFF;
+      --cover-admin-card: #FFFFFF;
+      --header-bg: #FFFFFF;
+      --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-code: 'JetBrains Mono', monospace;
     }
 
     * {
@@ -436,13 +370,12 @@
     .header-seal {
       width: 52px;
       height: 52px;
-      border-radius: 10px;
-      background: var(--bg-surface-alt);
-      border: 1.5px solid var(--border-focus);
+      background: transparent;
+      border: none;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 0 16px var(--accent-gold-bg);
+      box-shadow: none;
       flex-shrink: 0;
     }
 
@@ -1226,18 +1159,21 @@
     }
 
     .cover-crest-seal {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      background: var(--bg-surface-alt);
-      border: 3px solid var(--accent-gold);
-      box-shadow: 0 0 35px var(--accent-gold-bg), inset 0 0 20px var(--accent-gold-bg);
+      width: 140px;
+      height: 140px;
+      background: transparent;
+      border: none;
+      box-shadow: none;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--accent-gold);
-      margin-bottom: 20px;
+      margin-bottom: 18px;
       flex-shrink: 0;
+      padding: 0;
+      transition: transform 0.25s ease;
+    }
+    .cover-crest-seal:hover {
+      transform: scale(1.05);
     }
 
     .cover-crest-seal svg {
@@ -1260,7 +1196,6 @@
       color: var(--text-primary);
       letter-spacing: -0.02em;
       margin: 0 0 8px;
-      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
     }
 
     .cover-headline-sub {
@@ -1275,12 +1210,12 @@
       align-items: center;
       gap: 16px;
       background: var(--bg-surface);
-      border: 1px solid var(--border-strong);
+      border: 1px solid var(--border-subtle);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
       padding: 8px 18px;
       border-radius: 999px;
       margin-top: 14px;
       margin-bottom: 36px;
-      backdrop-filter: blur(8px);
     }
 
     .cover-status-item {
@@ -1314,34 +1249,35 @@
     }
 
     .cover-role-card {
-      background: var(--cover-card-gradient);
+      background: #FFFFFF;
       border: 1px solid var(--border-subtle);
       border-radius: 10px;
       padding: 20px;
       cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       position: relative;
       overflow: hidden;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
     }
 
     .cover-role-card:hover {
       border-color: var(--accent-gold);
       transform: translateY(-3px);
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4), 0 0 15px var(--accent-gold-bg);
-      background: var(--cover-card-hover);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+      background: #FFFFFF;
     }
 
     .cover-role-card.admin-card {
-      border-color: var(--accent-gold);
-      background: var(--cover-admin-card);
+      border: 1.5px solid var(--accent-gold);
+      background: #FFFFFF;
     }
 
     .cover-role-card.admin-card:hover {
       border-color: var(--accent-gold);
-      box-shadow: 0 14px 32px rgba(0, 0, 0, 0.5), 0 0 20px var(--accent-gold-bg);
+      box-shadow: 0 12px 24px rgba(217, 119, 6, 0.15), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     }
 
     .cover-card-top {
@@ -1368,33 +1304,34 @@
 
     .cover-card-avatar.officer {
       background: var(--bg-surface-alt);
-      color: #34d399;
-      border-color: rgba(52, 211, 153, 0.3);
+      color: #059669;
+      border-color: rgba(5, 150, 105, 0.3);
     }
 
     .cover-card-name {
       font-size: 1.05rem;
       font-weight: 700;
-      color: var(--text-primary);
+      color: #0F172A;
       line-height: 1.3;
     }
 
     .cover-card-badge {
       font-family: var(--font-code);
       font-size: 0.74rem;
-      color: var(--accent-gold);
+      color: #D97706;
       margin-top: 2px;
+      font-weight: 600;
     }
 
     .cover-card-role {
       font-size: 0.8rem;
-      color: var(--text-secondary);
+      color: #334155;
       margin-top: 2px;
     }
 
     .cover-card-meta {
       font-size: 0.78rem;
-      color: var(--text-muted);
+      color: #64748B;
       border-top: 1px solid var(--border-subtle);
       padding-top: 12px;
       margin-top: 6px;
@@ -1405,17 +1342,18 @@
 
     .cover-manual-auth {
       width: 100%;
-      background: var(--bg-surface-alt);
+      background: #FFFFFF;
       border: 1px solid var(--border-subtle);
       border-radius: 10px;
       padding: 22px 24px;
       margin-bottom: 28px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     }
 
     .cover-manual-title {
       font-size: 0.88rem;
       font-weight: 700;
-      color: var(--text-primary);
+      color: #0F172A;
       margin-bottom: 12px;
       display: flex;
       align-items: center;
@@ -1426,7 +1364,7 @@
       width: 100%;
       text-align: center;
       font-size: 0.74rem;
-      color: var(--text-muted);
+      color: #64748B;
       line-height: 1.6;
       border-top: 1px solid var(--border-subtle);
       padding-top: 18px;
@@ -1451,8 +1389,8 @@
     <div class="cover-container">
       <!-- Top Emblem & Authority Crest -->
       <div class="cover-top-emblem">
-        <div class="cover-crest-seal" style="padding: 4px; overflow: hidden; background: var(--bg-surface-alt);">
-          <img src="https://res.cloudinary.com/dfnoy78m8/image/upload/v1788969898/kc3gaetw67dwqmn426p9.png" alt="Cyber Crime Department Emblem" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%;" />
+        <div class="cover-crest-seal">
+          <img src="https://res.cloudinary.com/dfnoy78m8/image/upload/v1790074185/f3buclvjh9ph5kytez1w.png" alt="Cyber Crime Department Emblem" style="width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 8px 24px rgba(2, 132, 199, 0.4));" />
         </div>
         <div class="cover-headline-dept">Government of India &bull; Indian Cyber Crime Coordination Centre (I4C)</div>
         <h1 class="cover-headline-main">CYBER CRIME DEPARTMENT</h1>
@@ -1523,8 +1461,8 @@
   <div id="view-dashboard" style="display: none; flex-direction: column; width: 100vw; height: 100vh; overflow: hidden;">
     <header class="app-header">
       <div class="header-branding">
-        <div class="header-seal" style="padding: 2px; overflow: hidden; background: var(--bg-surface-alt);">
-          <img src="https://res.cloudinary.com/dfnoy78m8/image/upload/v1788969898/kc3gaetw67dwqmn426p9.png" alt="Cybercrime Department Seal" style="width: 100%; height: 100%; object-fit: contain; border-radius: 4px;" />
+        <div class="header-seal" style="padding: 0; overflow: visible; background: transparent;">
+          <img src="https://res.cloudinary.com/dfnoy78m8/image/upload/v1790074185/f3buclvjh9ph5kytez1w.png" alt="Cybercrime Department Seal" style="width: 100%; height: 100%; object-fit: contain;" />
         </div>
         <div class="header-title-text">
           <h2 id="top-title-text">CYBER CRIME DEPARTMENT</h2>
@@ -1945,13 +1883,13 @@
 
   <!-- CASE DETAILS MODAL -->
   <div class="modal-backdrop" id="modal-dossier">
-    <div class="modal-window">
-      <div class="modal-top">
-        <h3 id="dossier-title">Case Details</h3>
-        <button class="btn-action btn-action-secondary" onclick="closeModal('modal-dossier')">Close</button>
+    <div class="modal-window" style="max-width: 960px;">
+      <div class="modal-top" id="dossier-top-bar" style="padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; border-bottom: 1px solid var(--border-subtle); background: var(--bg-surface-alt);">
+        <div id="dossier-title-left" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;"></div>
+        <div id="dossier-title-right" style="display: flex; align-items: center; gap: 8px;"></div>
       </div>
       <div class="modal-body" id="dossier-content"></div>
-      <div class="modal-bottom" id="dossier-footer"></div>
+      <div class="modal-bottom" id="dossier-footer" style="padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; background: var(--bg-surface-alt); border-top: 1px solid var(--border-subtle);"></div>
     </div>
   </div>
 
@@ -2480,6 +2418,10 @@
         country: c.country || (c.geoLocations && c.geoLocations[0]?.country) || 'Global Internet',
         geoLocations: c.geoLocations || (c.geo_locations) || [],
         riskFactors: c.riskFactors || c.risk_factors || ['Electronic crime report received from ThreatTrace AI sensor.'],
+        ackNumber: c.ackNumber || c.ack_number || null,
+        evidenceFiles: c.evidenceFiles || c.evidence_files || [],
+        threatCategory: c.threatCategory || c.threat_category || 'Phishing Attempt',
+        urgencyLevel: c.urgencyLevel || c.urgency_level || 'Medium',
         threeLayerKeys: c.threeLayerKeys || null,
         assignedOfficer: officer || null,
         diaryEntries: c.diaryEntries || (c.dailyLogs ? c.dailyLogs.map(l => ({ entryNo: l.day || 1, date: l.date, officer: l.officerName || 'Officer', notes: l.notes })) : []),
@@ -2629,21 +2571,21 @@
         <div class="cover-role-card admin-card" onclick="switchOfficerAccount('ADMIN')">
           <div>
             <div class="cover-card-top">
-              <div class="cover-card-avatar">SP</div>
+              <div class="cover-card-avatar" style="background: rgba(217, 119, 6, 0.1); color: #D97706; border: 1.5px solid rgba(217, 119, 6, 0.3);">SP</div>
               <div style="flex: 1;">
-                <div class="cover-card-name">Shri K. Varma, IPS</div>
-                <div class="cover-card-badge">BADGE: IPS-CYB-001 &bull; LEVEL 5 ENCLAVE</div>
-                <div class="cover-card-role">Head of Cyber Crime Department &bull; Superintendent of Police</div>
+                <div class="cover-card-name" style="color: #0F172A; font-weight: 700;">Shri K. Varma, IPS</div>
+                <div class="cover-card-badge" style="color: #D97706; font-weight: 600;">BADGE: IPS-CYB-001 &bull; LEVEL 5 ENCLAVE</div>
+                <div class="cover-card-role" style="color: #334155;">Head of Cyber Crime Department &bull; Superintendent of Police</div>
               </div>
-              <span class="badge-status badge-active" style="background: var(--accent-gold-bg); color: var(--accent-gold); border-color: var(--accent-gold);">Supreme Command</span>
+              <span class="badge-status badge-active" style="background: rgba(217, 119, 6, 0.1); color: #D97706; border: 1px solid rgba(217, 119, 6, 0.3);">Supreme Command</span>
             </div>
-            <div style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.4; margin-bottom: 12px;">
+            <div style="font-size: 0.8rem; color: #475569; line-height: 1.4; margin-bottom: 12px;">
               Statewide administrative command, queue triage, investigation allocation, cadre induction, and transfer orders.
             </div>
           </div>
-          <div class="cover-card-meta">
-            <span style="color: #34d399; font-weight: 600;">Full Department Control</span>
-            <span style="color: var(--accent-gold); font-weight: 700;">Enter Command &rarr;</span>
+          <div class="cover-card-meta" style="border-top: 1px solid #F0F0F0;">
+            <span style="color: #059669; font-weight: 600;">Full Department Control</span>
+            <span style="color: #D97706; font-weight: 700;">Enter Command &rarr;</span>
           </div>
         </div>
 
@@ -2656,24 +2598,24 @@
             <div class="cover-role-card" onclick="switchOfficerAccount('${o.id}')">
               <div>
                 <div class="cover-card-top">
-                  <div class="cover-card-avatar officer">IO</div>
+                  <div class="cover-card-avatar officer" style="background: rgba(5, 150, 105, 0.1); color: #059669; border: 1.5px solid rgba(5, 150, 105, 0.3);">IO</div>
                   <div style="flex: 1;">
-                    <div class="cover-card-name">${o.name}</div>
-                    <div class="cover-card-badge">BADGE: ${o.badge} &bull; ${o.station || 'CID Cyber'}</div>
-                    <div class="cover-card-role">${o.rank}</div>
+                    <div class="cover-card-name" style="color: #0F172A; font-weight: 700;">${o.name}</div>
+                    <div class="cover-card-badge" style="color: #D97706; font-weight: 600;">BADGE: ${o.badge} &bull; ${o.station || 'CID Cyber'}</div>
+                    <div class="cover-card-role" style="color: #334155;">${o.rank}</div>
                   </div>
-                  <span class="badge-status badge-concluded" style="font-size: 0.68rem;">Investigator</span>
+                  <span class="badge-status badge-concluded" style="font-size: 0.68rem; background: rgba(5, 150, 105, 0.1); color: #059669; border: 1px solid rgba(5, 150, 105, 0.3);">Investigator</span>
                 </div>
-                <div style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.4; margin-bottom: 12px;">
-                  Scope: <strong style="color: var(--text-primary);">${o.specialization}</strong>
+                <div style="font-size: 0.8rem; color: #475569; line-height: 1.4; margin-bottom: 12px;">
+                  Scope: <strong style="color: #0F172A;">${o.specialization}</strong>
                 </div>
               </div>
-              <div class="cover-card-meta">
+              <div class="cover-card-meta" style="border-top: 1px solid #F0F0F0;">
                 <div style="display: flex; gap: 8px;">
-                  <span style="color: #f59e0b; font-weight: 600;">${myActiveCount} Active</span>
-                  <span style="color: #34d399; font-weight: 600;">${mySolvedCount} Solved</span>
+                  <span style="color: #D97706; font-weight: 600;">${myActiveCount} Active</span>
+                  <span style="color: #059669; font-weight: 600;">${mySolvedCount} Solved</span>
                 </div>
-                <span style="color: #34d399; font-weight: 700;">Enter Terminal &rarr;</span>
+                <span style="color: #059669; font-weight: 700;">Enter Terminal &rarr;</span>
               </div>
             </div>
           `;
@@ -2928,14 +2870,14 @@
         <tr>
           <td><button class="case-link-btn" onclick="openCaseDossier('${c.caseId}')">${c.caseId}</button></td>
           <td>
-            <div style="font-weight: 600; color: #ffffff;">${c.complainantName}</div>
-            <div style="font-size: 0.72rem; color: var(--text-secondary);">${c.reportingEmail}</div>
+            <div style="font-weight: 600; color: var(--text-primary);">${c.complainantName}</div>
+            <div style="font-size: 0.72rem; color: var(--text-muted);">${c.reportingEmail}</div>
           </td>
           <td>
-            <div style="font-weight: 500; color: #ffffff; max-width: 340px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${c.subject}</div>
+            <div style="font-weight: 500; color: var(--text-primary); max-width: 340px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${c.subject}</div>
           </td>
           <td>
-            <div style="color: #ffffff; font-weight: 500;">${c.assignedOfficer?.name || 'Unassigned'}</div>
+            <div style="color: var(--text-primary); font-weight: 500;">${c.assignedOfficer?.name || 'Unassigned'}</div>
             <div style="font-size: 0.7rem; color: var(--text-muted); font-family: var(--font-code);">${c.assignedOfficer?.badge || ''}</div>
           </td>
           <td>
@@ -2944,6 +2886,7 @@
           <td>
             <div style="display: flex; gap: 6px;">
               <button class="btn-action btn-action-secondary" onclick="openCaseDossier('${c.caseId}')">View Case</button>
+              <button class="btn-action btn-action-secondary" onclick="openCaseDossier('${c.caseId}', 'fir')" style="border-color: #0284c7; color: #0284c7; font-weight: 600;" title="View Official FIR">📄 FIR</button>
               <button class="btn-action btn-action-primary" onclick="openAddDiaryModal('${c.caseId}')">Add Note</button>
             </div>
           </td>
@@ -2980,16 +2923,19 @@
         <tr>
           <td><button class="case-link-btn" onclick="openCaseDossier('${c.caseId}', 'fir')">${c.caseId}</button></td>
           <td>
-            <div style="font-weight: 600; color: #ffffff;">${c.complainantName}</div>
-            <div style="font-size: 0.72rem; color: var(--text-secondary);">${c.reportingEmail}</div>
+            <div style="font-weight: 600; color: var(--text-primary);">${c.complainantName}</div>
+            <div style="font-size: 0.72rem; color: var(--text-muted);">${c.reportingEmail}</div>
           </td>
-          <td style="color: #ffffff; font-weight: 500;">${c.assignedOfficer?.name || 'Officer'}</td>
+          <td style="color: var(--text-primary); font-weight: 500;">${c.assignedOfficer?.name || 'Officer'}</td>
           <td>
-            <span style="font-family: var(--font-code); color: #34d399; font-weight: 600;">${c.firData?.firNumber || 'REC-COMPLETED'}</span>
+            <span style="font-family: var(--font-code); color: #059669; font-weight: 600;">${c.firData?.firNumber || 'REC-COMPLETED'}</span>
           </td>
           <td><span class="badge-status badge-concluded">Solved</span></td>
           <td>
-            <button class="btn-action btn-action-secondary" onclick="openCaseDossier('${c.caseId}', 'fir')">View Case</button>
+            <div style="display: flex; gap: 6px;">
+              <button class="btn-action btn-action-secondary" onclick="openCaseDossier('${c.caseId}')">View Case</button>
+              <button class="btn-action btn-action-primary" onclick="openCaseDossier('${c.caseId}', 'fir')" style="background: #0284c7; border-color: #0284c7;">📄 Official FIR</button>
+            </div>
           </td>
         </tr>
       `).join('');
@@ -3005,7 +2951,7 @@
       if (isOfficer) {
         tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted);">
           <div style="max-width: 480px; margin: 0 auto;">
-            <div style="color: #FFF9F0; font-weight: 600; font-size: 0.95rem; margin-bottom: 6px;">Administrative Triage Zone</div>
+            <div style="color: var(--text-primary); font-weight: 600; font-size: 0.95rem; margin-bottom: 6px;">Administrative Triage Zone</div>
             <div style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5;">Incoming citizen and enterprise complaints in Queue are triaged and assigned exclusively by the Head of Cybercrime Department (Shri K. Varma, IPS). All cases assigned to you appear directly in your <strong>Process</strong> caseload.</div>
           </div>
         </td></tr>`;
@@ -3029,32 +2975,36 @@
       tbody.innerHTML = list.map(c => {
         const score = Math.round(Number(c.riskScore !== undefined ? c.riskScore : (c.risk_score !== undefined ? c.risk_score : 0)) || 0);
         const scoreStyle = score >= 85 
-          ? 'color: #f87171; border-color: rgba(239, 68, 68, 0.4); background: rgba(248, 113, 113, 0.16);' 
+          ? 'color: #dc2626; border-color: rgba(220, 38, 38, 0.4); background: rgba(220, 38, 38, 0.12);' 
           : (score >= 70 
-              ? 'color: #f59e0b; border-color: rgba(245, 158, 11, 0.4); background: rgba(251, 191, 36, 0.16);' 
+              ? 'color: #d97706; border-color: rgba(217, 119, 6, 0.4); background: rgba(217, 119, 6, 0.12);' 
               : (score >= 40 
-                  ? 'color: #fbbf24; border-color: rgba(251, 191, 36, 0.4); background: rgba(251, 191, 36, 0.16);' 
-                  : 'color: #34d399; border-color: rgba(16, 185, 129, 0.4); background: rgba(52, 211, 153, 0.16);'));
+                  ? 'color: #d97706; border-color: rgba(217, 119, 6, 0.4); background: rgba(217, 119, 6, 0.12);' 
+                  : 'color: #059669; border-color: rgba(5, 150, 105, 0.4); background: rgba(5, 150, 105, 0.12);'));
         return `
         <tr>
           <td><button class="case-link-btn" onclick="openCaseDossier('${c.caseId}')">${c.caseId}</button></td>
           <td>
-            <div style="font-weight: 600; color: #ffffff;">${c.complainantName}</div>
-            <div style="font-size: 0.72rem; color: var(--text-secondary);">${c.reportingEmail}</div>
+            <div style="font-weight: 600; color: var(--text-primary);">${c.complainantName}</div>
+            <div style="font-size: 0.72rem; color: var(--text-muted);">${c.reportingEmail}</div>
           </td>
           <td>
-            <div style="font-weight: 500; color: #ffffff; max-width: 320px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${c.subject}</div>
+            <div style="font-weight: 500; color: var(--text-primary); max-width: 320px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${c.subject}</div>
           </td>
           <td><span class="badge-status" style="${scoreStyle}">Score: ${score}/100</span></td>
-          <td style="font-family: var(--font-code); font-size: 0.78rem;">${new Date(c.reportedAt).toLocaleDateString()}</td>
+          <td style="font-family: var(--font-code); font-size: 0.78rem; color: var(--text-secondary);">${new Date(c.reportedAt).toLocaleDateString()}</td>
           <td>
             ${isAdmin ? `
               <div style="display: flex; gap: 6px;">
-                <button class="btn-action btn-action-primary" onclick="openAssignModal('${c.caseId}')">Assign Officer</button>
+                <button class="btn-action btn-action-primary" onclick="openAssignModal('${c.caseId}')">Assign</button>
+                <button class="btn-action btn-action-secondary" onclick="openCaseDossier('${c.caseId}', 'fir')" style="border-color: #0284c7; color: #0284c7; font-weight: 600;" title="View Official FIR">📄 FIR</button>
                 <button class="btn-action btn-action-danger" onclick="openDeclineModal('${c.caseId}')">Reject</button>
               </div>
             ` : `
-              <button class="btn-action btn-action-secondary" onclick="openCaseDossier('${c.caseId}')">View Details</button>
+              <div style="display: flex; gap: 6px;">
+                <button class="btn-action btn-action-secondary" onclick="openCaseDossier('${c.caseId}')">View Details</button>
+                <button class="btn-action btn-action-secondary" onclick="openCaseDossier('${c.caseId}', 'fir')" style="border-color: #0284c7; color: #0284c7; font-weight: 600;">📄 FIR</button>
+              </div>
             `}
           </td>
         </tr>
@@ -3078,7 +3028,7 @@
       if (list.length === 0) {
         tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 40px; color: var(--text-muted);">
           ${isOfficer 
-            ? '<div style="max-width: 480px; margin: 0 auto;"><div style="color: #FFF9F0; font-weight: 600; font-size: 0.95rem; margin-bottom: 6px;">No Rejected Cases in Caseload</div><div style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5;">You do not have any rejected cases under your officer account. Administrative triage rejections are reviewed and maintained exclusively by the Head of Cybercrime Department (Shri K. Varma, IPS).</div></div>' 
+            ? '<div style="max-width: 480px; margin: 0 auto;"><div style="color: var(--text-primary); font-weight: 600; font-size: 0.95rem; margin-bottom: 6px;">No Rejected Cases in Caseload</div><div style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5;">You do not have any rejected cases under your officer account. Administrative triage rejections are reviewed and maintained exclusively by the Head of Cybercrime Department (Shri K. Varma, IPS).</div></div>' 
             : 'No rejected complaints on file.'}
         </td></tr>`;
         return;
@@ -3088,12 +3038,17 @@
         <tr>
           <td><button class="case-link-btn" onclick="openCaseDossier('${c.caseId}')">${c.caseId}</button></td>
           <td>
-            <div style="font-weight: 600; color: #ffffff;">${c.complainantName}</div>
-            <div style="font-size: 0.72rem; color: var(--text-secondary);">${c.reportingEmail}</div>
+            <div style="font-weight: 600; color: var(--text-primary);">${c.complainantName}</div>
+            <div style="font-size: 0.72rem; color: var(--text-muted);">${c.reportingEmail}</div>
           </td>
-          <td style="color: #fca5a5; font-size: 0.82rem; max-width: 380px;">"${c.rejectionReason}"</td>
+          <td style="color: #dc2626; font-size: 0.82rem; max-width: 380px; font-weight: 500;">"${c.rejectionReason}"</td>
           <td style="color: var(--text-secondary);">${c.rejectedBy}</td>
-          <td><button class="btn-action btn-action-secondary" onclick="openCaseDossier('${c.caseId}')">View Case</button></td>
+          <td>
+            <div style="display: flex; gap: 6px;">
+              <button class="btn-action btn-action-secondary" onclick="openCaseDossier('${c.caseId}')">View Case</button>
+              <button class="btn-action btn-action-secondary" onclick="openCaseDossier('${c.caseId}', 'fir')" style="border-color: #0284c7; color: #0284c7; font-weight: 600;">📄 FIR</button>
+            </div>
+          </td>
         </tr>
       `).join('');
     }
@@ -3136,25 +3091,25 @@
           <tr style="${isRelieved ? 'opacity: 0.65;' : ''}">
             <td>
               <div style="display: flex; align-items: center; gap: 10px;">
-                <div style="width: 34px; height: 34px; border-radius: 6px; background: #2D1E12; border: 1px solid var(--border-strong); display: flex; align-items: center; justify-content: center; font-weight: 700; color: #E6C280; font-size: 0.8rem; flex-shrink: 0;">
+                <div style="width: 34px; height: 34px; border-radius: 6px; background: rgba(217, 119, 6, 0.1); border: 1.5px solid rgba(217, 119, 6, 0.3); display: flex; align-items: center; justify-content: center; font-weight: 700; color: #d97706; font-size: 0.8rem; flex-shrink: 0;">
                   ${o.badge.includes('DET') ? 'DET' : (o.badge.includes('INSP') ? 'INSP' : 'IO')}
                 </div>
                 <div>
-                  <div style="font-weight: 600; color: #FFF9F0;">${o.name}</div>
-                  <div style="font-family: var(--font-code); font-size: 0.72rem; color: #E6C280;">${o.badge}</div>
+                  <div style="font-weight: 600; color: var(--text-primary);">${o.name}</div>
+                  <div style="font-family: var(--font-code); font-size: 0.72rem; color: #d97706; font-weight: 600;">${o.badge}</div>
                   <div style="font-size: 0.7rem; color: var(--text-muted);">${o.mail}</div>
                 </div>
               </div>
             </td>
             <td>
-              <div style="font-weight: 500; color: #FFF9F0; font-size: 0.82rem;">${o.rank}</div>
+              <div style="font-weight: 500; color: var(--text-primary); font-size: 0.82rem;">${o.rank}</div>
               <div style="font-size: 0.7rem; color: var(--text-muted);">Cadre: CID Cyber</div>
             </td>
             <td>
               <div style="font-size: 0.8rem; color: var(--text-secondary); max-width: 240px;">${o.specialization}</div>
             </td>
             <td>
-              <div style="font-size: 0.82rem; color: #FFF9F0; font-weight: 500;">${o.station || 'National Cyber Crime Police Station, Central Command, New Delhi'}</div>
+              <div style="font-size: 0.82rem; color: var(--text-primary); font-weight: 500;">${o.station || 'National Cyber Crime Police Station, Central Command, New Delhi'}</div>
               <div style="font-size: 0.7rem; color: var(--text-muted);">Since: ${o.joinedDate || '2024'}</div>
             </td>
             <td>
@@ -3523,50 +3478,167 @@
       const scoreColor = score >= 85 ? '#ef4444' : (score >= 70 ? '#f59e0b' : (score >= 40 ? '#fbbf24' : '#34d399'));
       const scoreBg = score >= 85 ? 'rgba(239, 68, 68, 0.16)' : (score >= 70 ? 'rgba(245, 158, 11, 0.16)' : (score >= 40 ? 'rgba(251, 191, 36, 0.16)' : 'rgba(52, 211, 153, 0.16)'));
 
-      document.getElementById('dossier-title').innerHTML = `
-        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-          <span>Case: ${c.caseId}</span>
+      const titleLeft = document.getElementById('dossier-title-left');
+      const titleRight = document.getElementById('dossier-title-right');
+
+      if (titleLeft) {
+        titleLeft.innerHTML = `
+          <span style="font-size: 1.08rem; font-weight: 800; color: var(--text-primary); letter-spacing: -0.01em;">Case: ${c.caseId}</span>
           <span class="badge-status ${statusBadgeClass}">${statusLabel}</span>
-          <span class="badge-status" style="color: ${scoreColor}; border-color: ${scoreColor}80; background: ${scoreBg};">
+          <span class="badge-status" style="color: ${scoreColor}; border-color: ${scoreColor}80; background: ${scoreBg}; font-weight: 700;">
             Risk Score: ${score}/100 &bull; ${c.riskLevel || (score >= 70 ? 'HIGH' : (score >= 40 ? 'MEDIUM' : 'LOW'))}
           </span>
-        </div>
-      `;
+        `;
+      }
+
+      if (titleRight) {
+        titleRight.innerHTML = `
+          <button class="btn-action ${viewTab === 'overview' ? 'btn-action-primary' : 'btn-action-secondary'}" onclick="openCaseDossier('${c.caseId}', 'overview')" style="padding: 6px 14px; font-weight: 700;">
+            📊 Investigation Dossier
+          </button>
+          <button class="btn-action ${viewTab === 'fir' ? 'btn-action-primary' : 'btn-action-secondary'}" onclick="openCaseDossier('${c.caseId}', 'fir')" style="padding: 6px 14px; font-weight: 700; ${viewTab === 'fir' ? 'background: #0284c7; color: #FFFFFF;' : 'border-color: #0284c7; color: #0284c7; background: rgba(2, 132, 199, 0.08);'}">
+            📄 View Official FIR
+          </button>
+          <button class="btn-action btn-action-secondary" onclick="closeModal('modal-dossier')" style="padding: 6px 14px;">
+            ✕ Close
+          </button>
+        `;
+      }
 
       const content = document.getElementById('dossier-content');
       const footer = document.getElementById('dossier-footer');
 
+      const ackNo = c.ackNumber || c.firData?.firNumber || `NCRP-IN-2026-${c.caseId.replace(/[^A-Za-z0-9]/g, '').slice(-6)}`;
+      const suspectEmail = c.sender || 'threat-sender@external-source.net';
+      const suspectIp = c.originIp || (c.ips && c.ips[0]) || '103.112.45.19';
+      const suspectUrl = (c.urls && c.urls[0]) || 'None Detected';
+      const suspectDomain = (c.domains && c.domains[0]) || (suspectEmail.includes('@') ? suspectEmail.split('@')[1] : 'unknown-domain.com');
+
       if (viewTab === 'fir') {
         content.innerHTML = `
-          <div style="text-align: right; margin-bottom: 12px;">
-            <button class="btn-action btn-action-secondary" onclick="window.print()">
-              <svg style="width:14px;height:14px;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-              </svg>
-              Print Case Summary
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <button class="btn-action btn-action-secondary" onclick="openCaseDossier('${c.caseId}', 'overview')" style="font-weight: 600;">
+              &larr; Back to Investigation Dossier
             </button>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn-action btn-action-primary" onclick="window.print()" style="background: #0284c7; border-color: #0284c7; font-weight: 700; padding: 7px 16px;">
+                <svg style="width:14px;height:14px;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                </svg>
+                Print Official FIR
+              </button>
+            </div>
           </div>
-          <div class="printable-fir">
-            <h2>CASE INVESTIGATION REPORT</h2>
-            <div style="text-align: center; font-size: 0.85rem; color: #4b5563; margin-bottom: 20px;">
-              National Cyber Crime Police Station, Central Command, New Delhi
+
+          <div class="printable-fir" style="background: #FFFFFF; border: 2px solid #0F172A; padding: 24px; border-radius: 8px; color: #0F172A; font-family: 'Times New Roman', serif; position: relative; box-shadow: 0 4px 16px rgba(0,0,0,0.06);">
+            
+            <!-- FIR Header -->
+            <div style="text-align: center; border-bottom: 2px double #0F172A; padding-bottom: 12px; margin-bottom: 16px;">
+              <div style="font-size: 26px; line-height: 1; margin-bottom: 4px;">🏛️</div>
+              <div style="font-size: 15px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: #0F172A;">GOVERNMENT OF INDIA &bull; MINISTRY OF HOME AFFAIRS</div>
+              <div style="font-size: 13px; font-weight: 700; color: #334155; margin-top: 2px;">NATIONAL CYBER CRIME REPORTING PORTAL (NCRP)</div>
+              <div style="font-size: 11px; color: #64748B; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.08em;">Central Cyber Crime Investigation Directorate (I4C), New Delhi</div>
+              <div style="display: inline-block; background: #0F172A; color: #FFFFFF; font-size: 12px; font-weight: 800; padding: 4px 14px; border-radius: 4px; margin-top: 8px; text-transform: uppercase; letter-spacing: 0.06em;">
+                FIRST INFORMATION REPORT (FIR) / CASE DOSSIER
+              </div>
             </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.88rem; margin-bottom: 20px;">
-              <div><strong>Record Number:</strong> ${c.firData?.firNumber || 'REC-2026-IND-CYB-00892'}</div>
-              <div><strong>Case ID:</strong> ${c.caseId}</div>
-              <div><strong>Complainant:</strong> ${c.complainantName} (${c.reportingEmail})</div>
-              <div><strong>Investigating Officer:</strong> ${c.assignedOfficer?.name || 'Det. Vikram Malhotra'}</div>
+
+            <!-- Meta Table -->
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 14px; font-size: 12.5px;">
+              <tr>
+                <td style="width: 25%; font-weight: 700; background: #F8FAFC; border: 1px solid #CBD5E1; padding: 6px 10px;">Acknowledgment No:</td>
+                <td style="width: 25%; font-weight: 800; color: #0F172A; font-family: monospace; border: 1px solid #CBD5E1; padding: 6px 10px;">${ackNo}</td>
+                <td style="width: 25%; font-weight: 700; background: #F8FAFC; border: 1px solid #CBD5E1; padding: 6px 10px;">Registration Date/Time:</td>
+                <td style="width: 25%; font-family: monospace; border: 1px solid #CBD5E1; padding: 6px 10px;">${new Date(c.reportedAt).toLocaleString()}</td>
+              </tr>
+              <tr>
+                <td style="font-weight: 700; background: #F8FAFC; border: 1px solid #CBD5E1; padding: 6px 10px;">Case Dossier ID:</td>
+                <td style="font-weight: 800; color: #0284C7; font-family: monospace; border: 1px solid #CBD5E1; padding: 6px 10px;">${c.caseId}</td>
+                <td style="font-weight: 700; background: #F8FAFC; border: 1px solid #CBD5E1; padding: 6px 10px;">Acts & Sections:</td>
+                <td style="font-weight: 700; color: #DC2626; border: 1px solid #CBD5E1; padding: 6px 10px;">Sec 66C, 66D IT Act 2000; Sec 419, 420 IPC</td>
+              </tr>
+            </table>
+
+            <!-- Section 1 -->
+            <div style="font-size: 12.5px; font-weight: 800; text-transform: uppercase; background: #E2E8F0; padding: 4px 8px; border-left: 4px solid #0F172A; margin: 12px 0 6px 0;">
+              1. COMPLAINANT / INFORMANT DETAILS
             </div>
-            <div style="margin-bottom: 16px; font-size: 0.88rem;">
-              <strong>Crime & Law Sections:</strong> ${c.firData?.acts || 'IT Act Sec 66C, 66D; IPC Sec 419, 420'}
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 12px;">
+              <tr>
+                <td style="width: 25%; font-weight: 700; border: 1px solid #CBD5E1; padding: 5px 8px;">Full Legal Name:</td>
+                <td style="width: 25%; border: 1px solid #CBD5E1; padding: 5px 8px;">${c.complainantName}</td>
+                <td style="width: 25%; font-weight: 700; border: 1px solid #CBD5E1; padding: 5px 8px;">Registered Email:</td>
+                <td style="width: 25%; font-family: monospace; border: 1px solid #CBD5E1; padding: 5px 8px;">${c.reportingEmail}</td>
+              </tr>
+              <tr>
+                <td style="font-weight: 700; border: 1px solid #CBD5E1; padding: 5px 8px;">Contact Phone:</td>
+                <td style="border: 1px solid #CBD5E1; padding: 5px 8px;">${c.reportingPhone || '+91 9876543210'}</td>
+                <td style="font-weight: 700; border: 1px solid #CBD5E1; padding: 5px 8px;">Verification Status:</td>
+                <td style="color: #059669; font-weight: 700; border: 1px solid #CBD5E1; padding: 5px 8px;">✓ Verified Electronic Filing</td>
+              </tr>
+            </table>
+
+            <!-- Section 2 -->
+            <div style="font-size: 12.5px; font-weight: 800; text-transform: uppercase; background: #E2E8F0; padding: 4px 8px; border-left: 4px solid #0F172A; margin: 12px 0 6px 0;">
+              2. OFFENSE ATTRIBUTION & SUSPECT PROFILE
             </div>
-            <p style="font-size: 0.86rem; line-height: 1.6; margin-bottom: 24px;">
-              The complainant reported unauthorized financial redirection and online impersonation fraud. The assigned police officer investigated the complaint, traced the digital transaction trail, and preserved electronic evidence.
-            </p>
-            <div style="display: flex; justify-content: flex-end; margin-top: 30px;">
-              <div style="text-align: center;">
-                <div style="font-style: italic; font-size: 1.1rem;">${c.assignedOfficer?.name || 'V. Malhotra'}</div>
-                <div style="border-top: 1px solid #000000; font-size: 0.75rem; font-weight: 700; margin-top: 4px;">Investigating Officer</div>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 12px;">
+              <tr>
+                <td style="width: 25%; font-weight: 700; border: 1px solid #CBD5E1; padding: 5px 8px;">Threat Category:</td>
+                <td style="width: 25%; font-weight: 700; color: #DC2626; border: 1px solid #CBD5E1; padding: 5px 8px;">${c.threatCategory || 'Phishing / Cyber Fraud'}</td>
+                <td style="width: 25%; font-weight: 700; border: 1px solid #CBD5E1; padding: 5px 8px;">Assessed Urgency:</td>
+                <td style="width: 25%; font-weight: 700; border: 1px solid #CBD5E1; padding: 5px 8px;">${c.urgencyLevel || (score >= 70 ? 'Critical' : 'High')}</td>
+              </tr>
+              <tr>
+                <td style="font-weight: 700; border: 1px solid #CBD5E1; padding: 5px 8px;">Suspect Sender:</td>
+                <td style="font-family: monospace; color: #DC2626; border: 1px solid #CBD5E1; padding: 5px 8px;">${suspectEmail}</td>
+                <td style="font-weight: 700; border: 1px solid #CBD5E1; padding: 5px 8px;">Origin Gateway / IP:</td>
+                <td style="font-family: monospace; border: 1px solid #CBD5E1; padding: 5px 8px;">${suspectIp}</td>
+              </tr>
+              <tr>
+                <td style="font-weight: 700; border: 1px solid #CBD5E1; padding: 5px 8px;">Target Payload URL:</td>
+                <td colspan="3" style="font-family: monospace; word-break: break-all; border: 1px solid #CBD5E1; padding: 5px 8px;">${suspectUrl}</td>
+              </tr>
+            </table>
+
+            <!-- Section 3 -->
+            <div style="font-size: 12.5px; font-weight: 800; text-transform: uppercase; background: #E2E8F0; padding: 4px 8px; border-left: 4px solid #0F172A; margin: 12px 0 6px 0;">
+              3. COMPOSITE FORENSIC SYNTHESIS (THREATTRACE AI)
+            </div>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 12px;">
+              <tr>
+                <td style="width: 25%; font-weight: 700; border: 1px solid #CBD5E1; padding: 5px 8px;">Composite Risk Score:</td>
+                <td style="font-weight: 800; font-size: 13px; color: ${score >= 70 ? '#DC2626' : score >= 40 ? '#D97706' : '#059669'}; border: 1px solid #CBD5E1; padding: 5px 8px;">
+                  ${score} / 100 (${c.riskLevel || (score >= 70 ? 'HIGH' : 'LOW')})
+                </td>
+                <td style="width: 25%; font-weight: 700; border: 1px solid #CBD5E1; padding: 5px 8px;">Bayesian Analysis:</td>
+                <td style="border: 1px solid #CBD5E1; padding: 5px 8px;">Behavioral NLP (30%), Network Hop (25%), Payload (25%), Identity (20%)</td>
+              </tr>
+              <tr>
+                <td style="font-weight: 700; border: 1px solid #CBD5E1; padding: 5px 8px;">Incident Narrative:</td>
+                <td colspan="3" style="font-style: italic; color: #334155; border: 1px solid #CBD5E1; padding: 5px 8px;">"${c.bodyText || c.subject}"</td>
+              </tr>
+            </table>
+
+            <!-- Cryptographic Custody Box -->
+            <div style="font-family: monospace; background: #F8FAFC; border: 1px solid #CBD5E1; padding: 8px 10px; font-size: 11px; border-radius: 4px; word-break: break-all; margin-top: 10px;">
+              <strong>CRYPTOGRAPHIC SIGNATURE & IMMUTABLE LEDGER SEAL:</strong><br/>
+              Algorithm: ECDSA SECP256R1 + SHA-256 &bull; Ledger: Polygon Amoy Block #80002-AMOY<br/>
+              Authority Key Fingerprint: TT-SECP256R1-DEV-88F4-AMOY<br/>
+              Master Integrity Hash: ${c.threeLayerKeys?.masterCombinedHash || '0x7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069'}
+            </div>
+
+            <!-- Digital Seal Section -->
+            <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: flex-end; padding-top: 14px; border-top: 1px dashed #CBD5E1;">
+              <div style="border: 2px solid #059669; color: #059669; padding: 6px 12px; font-size: 10px; font-weight: 700; text-transform: uppercase; text-align: center; border-radius: 6px;">
+                ✓ CRYPTOGRAPHICALLY SEALED<br/>
+                DIGITAL EVIDENCE REPOSITORY<br/>
+                NCRP CENTRAL INVESTIGATION ENCLAVE
+              </div>
+              <div style="text-align: right; font-size: 12px;">
+                <div style="font-weight: 800; color: #0F172A;">CYBER CRIME INVESTIGATION WING</div>
+                <div style="color: #64748B; font-size: 10.5px; margin-top: 2px;">Electronic Copy Generated under Section 65B, Indian Evidence Act</div>
+                <div style="font-family: monospace; font-size: 10.5px; color: #0284C7; margin-top: 2px;">ID: ${ackNo}</div>
               </div>
             </div>
           </div>
@@ -3579,10 +3651,10 @@
         const masterHash = c.threeLayerKeys?.masterCombinedHash || `0x${c.caseId.replace(/[^A-Za-z0-9]/g, '').toLowerCase()}e7b99201a0841289bca88109`;
 
         const originIp = c.originIp || (c.ips && c.ips[0]) || '185.220.101.44';
-        const ispName = c.isp || (c.geoLocations && c.geoLocations[0]?.isp) || 'HostSailor Bulletproof Hosting';
-        const locationName = (c.city && c.country) ? `${c.city}, ${c.country}` : ((c.geoLocations && c.geoLocations[0]) ? `${c.geoLocations[0].city}, ${c.geoLocations[0].country}` : 'Bucharest, Romania');
-        const firstUrl = (c.urls && c.urls[0]) || 'https://global-logistics-supporrt.com/settlement-verification.php?id=992';
-        const firstDomain = (c.domains && c.domains[0]) || 'global-logistics-supporrt.com';
+        const ispName = c.isp || (c.geoLocations && c.geoLocations[0]?.isp) || 'External Gateway Host';
+        const locationName = (c.city && c.country) ? `${c.city}, ${c.country}` : ((c.geoLocations && c.geoLocations[0]) ? `${c.geoLocations[0].city}, ${c.geoLocations[0].country}` : 'External Region, Global Internet');
+        const firstUrl = (c.urls && c.urls[0]) || 'None Detected';
+        const firstDomain = (c.domains && c.domains[0]) || 'unknown-domain.com';
 
         content.innerHTML = `
           <!-- 1. Complainant & Assignment Info Card -->
@@ -3736,38 +3808,53 @@
 
       // Dynamic Footer Action Buttons depending on Case State & Role
       let actionButtons = '';
-      if (c.status === 'QUEUE' && isAdmin) {
+      
+      if (viewTab === 'fir') {
         actionButtons += `
-          <button class="btn-action btn-action-primary" onclick="closeModal('modal-dossier'); openAssignModal('${c.caseId}')">
-            <svg style="width:14px;height:14px;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-            </svg>
-            Assign Officer
+          <button class="btn-action btn-action-secondary" onclick="openCaseDossier('${c.caseId}', 'overview')" style="font-weight:600;">
+            📊 Back to Investigation Dossier
           </button>
-          <button class="btn-action btn-action-danger" onclick="closeModal('modal-dossier'); openDeclineModal('${c.caseId}')">
-            Reject Complaint
+          <button class="btn-action btn-action-primary" onclick="window.print()" style="background: #0284c7; border-color: #0284c7; font-weight:700;">
+            🖨️ Print / Download FIR
           </button>
         `;
-      } else if (c.status === 'PROCESS') {
+      } else {
+        // Prominent FIR Button on overview tab
         actionButtons += `
-          <button class="btn-action btn-action-primary" onclick="openAddDiaryModal('${c.caseId}')">
-            + Add Investigation Note
-          </button>
-          <button class="btn-action btn-action-primary" onclick="concludeInvestigation('${c.caseId}')" style="background:#10b981; border-color:#059669;">
-            Mark Case as Solved
+          <button class="btn-action btn-action-secondary" onclick="openCaseDossier('${c.caseId}', 'fir')" style="border-color: #0284c7; color: #0284c7; font-weight: 700; background: rgba(2, 132, 199, 0.08);">
+            📄 View Official FIR
           </button>
         `;
-      } else if (c.status === 'COMPLETED') {
-        actionButtons += `
-          <button class="btn-action btn-action-secondary" onclick="openCaseDossier('${c.caseId}', 'fir')">
-            View Official FIR
-          </button>
-        `;
+
+        if (c.status === 'QUEUE' && isAdmin) {
+          actionButtons += `
+            <button class="btn-action btn-action-primary" onclick="closeModal('modal-dossier'); openAssignModal('${c.caseId}')">
+              <svg style="width:14px;height:14px;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+              </svg>
+              Assign Officer
+            </button>
+            <button class="btn-action btn-action-danger" onclick="closeModal('modal-dossier'); openDeclineModal('${c.caseId}')">
+              Reject Complaint
+            </button>
+          `;
+        } else if (c.status === 'PROCESS') {
+          actionButtons += `
+            <button class="btn-action btn-action-primary" onclick="openAddDiaryModal('${c.caseId}')">
+              + Add Note
+            </button>
+            <button class="btn-action btn-action-primary" onclick="concludeInvestigation('${c.caseId}')" style="background:#10b981; border-color:#059669;">
+              Mark as Solved
+            </button>
+          `;
+        }
       }
 
       footer.innerHTML = `
-        <div style="font-size: 0.78rem; color: var(--text-muted); font-family: var(--font-code);">Case ID: ${c.caseId}</div>
-        <div style="display: flex; gap: 8px;">
+        <div style="font-size: 0.8rem; color: var(--text-muted); font-family: var(--font-code); font-weight: 600;">
+          Case ID: <span style="color: var(--text-primary); font-weight: 700;">${c.caseId}</span> &bull; Ack: <span style="color: #0284c7;">${ackNo}</span>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
           ${actionButtons}
           <button class="btn-action btn-action-secondary" onclick="closeModal('modal-dossier')">Close</button>
         </div>
@@ -3849,11 +3936,11 @@
       }
 
       document.getElementById('assign-officer-options').innerHTML = activeOfficers.map(o => `
-        <label style="display: flex; align-items: center; gap: 12px; background: #2D1E12; padding: 12px; border-radius: 6px; cursor: pointer; border: 1px solid var(--border-subtle);">
+        <label style="display: flex; align-items: center; gap: 12px; background: var(--bg-surface-alt); padding: 12px; border-radius: 6px; cursor: pointer; border: 1px solid var(--border-strong);">
           <input type="radio" name="dispatch-officer" value="${o.id}" ${o.id === selectedAssignmentOfficerId ? 'checked' : ''} onchange="selectedAssignmentOfficerId='${o.id}'" />
           <div>
-            <div style="font-weight: 600; color: #FFF9F0;">${o.name} (${o.badge})</div>
-            <div style="font-size: 0.74rem; color: var(--text-secondary);">${o.rank} &bull; ${o.specialization} &bull; <span style="color:#E6C280;">${o.station || 'CID Cyber'}</span></div>
+            <div style="font-weight: 600; color: var(--text-primary);">${o.name} (${o.badge})</div>
+            <div style="font-size: 0.74rem; color: var(--text-secondary);">${o.rank} &bull; ${o.specialization} &bull; <span style="color:var(--accent-gold); font-weight:600;">${o.station || 'CID Cyber'}</span></div>
           </div>
         </label>
       `).join('');

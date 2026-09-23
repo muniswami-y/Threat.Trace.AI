@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { api } from '../services/api'
 
-export default function SOCDispatchModal({ isOpen, onClose, caseData }) {
-  if (!isOpen) return null
+export default function SOCDispatchModal({ isOpen = true, onClose, caseData }) {
+  if (isOpen === false) return null
 
   const [activeTab, setActiveTab] = useState('dispatch') // 'dispatch' | 'cef' | 'jira' | 'live-ip' | 'url-inspect'
   const [dispatching, setDispatching] = useState(false)

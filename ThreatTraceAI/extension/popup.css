@@ -3,12 +3,12 @@
   --pop-bg: #0b111e;
   --pop-header-bg: #070c16;
   --pop-card-bg: #070c16;
-  --pop-border: #1e293b;
+  --pop-border: transparent;
   --pop-text: #f1f5f9;
   --pop-muted: #94a3b8;
   --pop-subtle: #64748b;
   --pop-input-bg: #0b111e;
-  --pop-input-border: #334155;
+  --pop-input-border: transparent;
 }
 
 @media (prefers-color-scheme: light) {
@@ -16,12 +16,12 @@
     --pop-bg: #f8fafc;
     --pop-header-bg: #ffffff;
     --pop-card-bg: #ffffff;
-    --pop-border: #e2e8f0;
+    --pop-border: transparent;
     --pop-text: #0f172a;
     --pop-muted: #475569;
     --pop-subtle: #64748b;
     --pop-input-bg: #f1f5f9;
-    --pop-input-border: #cbd5e1;
+    --pop-input-border: transparent;
   }
 }
 
@@ -50,7 +50,7 @@ body {
   align-items: center;
   padding: 12px 16px;
   background: var(--pop-header-bg);
-  border-bottom: 1px solid var(--pop-border);
+  border-bottom: none;
 }
 
 .popup-brand {
@@ -62,14 +62,13 @@ body {
 .logo-box {
   width: 44px;
   height: 44px;
-  border-radius: 10px;
-  background: rgba(56, 189, 248, 0.12);
-  border: 1.5px solid rgba(56, 189, 248, 0.4);
+  background: transparent;
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  box-shadow: 0 0 16px rgba(56, 189, 248, 0.3);
+  overflow: visible;
+  box-shadow: none;
   flex-shrink: 0;
 }
 

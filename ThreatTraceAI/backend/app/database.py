@@ -5,9 +5,14 @@ from app.config import get_settings
 
 settings = get_settings()
 
+connect_args = {}
+if "postgresql" in settings.DATABASE_URL:
+    connect_args["ssl"] = "require"
+
 engine = create_async_engine(
     settings.DATABASE_URL,
     echo=settings.DEBUG,
+    connect_args=connect_args,
     future=True
 )
 
@@ -41,14 +46,15 @@ async def _run_migrations(conn):
             ("evidence_hash", "VARCHAR(64)"),
         ],
     }
-    for table, columns in schema_additions.items():
-        result = await conn.execute(text(f"PRAGMA table_info({table})"))
-        existing_cols = {row[1] for row in result.fetchall()}
-        for col_name, col_type in columns:
-            if col_name not in existing_cols:
-                await conn.execute(
-                    text(f"ALTER TABLE {table} ADD COLUMN {col_name} {col_type}")
-                )
+    if "sqlite" in engine.url.drivername:
+        for table, columns in schema_additions.items():
+            result = await conn.execute(text(f"PRAGMA table_info({table})"))
+            existing_cols = {row[1] for row in result.fetchall()}
+            for col_name, col_type in columns:
+                if col_name not in existing_cols:
+                    await conn.execute(
+                        text(f"ALTER TABLE {table} ADD COLUMN {col_name} {col_type}")
+                    )
 
 async def init_db():
     async with engine.begin() as conn:

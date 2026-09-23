@@ -1,14 +1,28 @@
 import React, { useState } from 'react'
 
-export default function QuarantineVaultModal({ isOpen, onClose, quarantineData, caseData }) {
-  if (!isOpen || !quarantineData) return null
+export default function QuarantineVaultModal({ isOpen = true, onClose, quarantineData, caseData }) {
+  if (isOpen === false) return null
+
+  const safeQuarantine = quarantineData || {
+    suspicious_email: caseData?.from || 'threat@isolated.net',
+    folder_name: `Quarantine/${caseData?.from || 'threat@isolated.net'}`,
+    isolation_status: 'ACTIVE_CONTAINMENT',
+    action_timestamp: new Date().toISOString(),
+    quarantined_emails: [{
+      id: caseData?.incidentId || 'CASE-01',
+      subject: caseData?.fullSubject || 'Isolated Phishing Evidence',
+      from: caseData?.from || 'threat@isolated.net',
+      date: new Date().toISOString(),
+      risk_score: caseData?.riskScore || 85
+    }]
+  }
 
   const [copied, setCopied] = useState(false)
   const [activeTab, setActiveTab] = useState('overview') // 'overview' | 'emails' | 'policy'
 
-  const emails = quarantineData.quarantined_emails || []
-  const folderName = quarantineData.folder_name || `Quarantine/${quarantineData.suspicious_email || 'threat@isolated.net'}`
-  const suspiciousEmail = quarantineData.suspicious_email || caseData?.from || 'threat@isolated.net'
+  const emails = safeQuarantine.quarantined_emails || []
+  const folderName = safeQuarantine.folder_name || `Quarantine/${safeQuarantine.suspicious_email || 'threat@isolated.net'}`
+  const suspiciousEmail = safeQuarantine.suspicious_email || caseData?.from || 'threat@isolated.net'
 
   const handleCopyFolder = () => {
     navigator.clipboard.writeText(folderName)
@@ -20,9 +34,9 @@ export default function QuarantineVaultModal({ isOpen, onClose, quarantineData, 
     const exportPayload = {
       quarantine_folder: folderName,
       target_threat_sender: suspiciousEmail,
-      isolation_status: quarantineData.isolation_status || 'ACTIVE_CONTAINMENT',
-      firewall_rule: quarantineData.firewall_rule,
-      action_timestamp: quarantineData.action_timestamp || new Date().toISOString(),
+      isolation_status: safeQuarantine?.isolation_status || 'ACTIVE_CONTAINMENT',
+      firewall_rule: safeQuarantine?.firewall_rule || `DROP ALL FROM ${suspiciousEmail}`,
+      action_timestamp: safeQuarantine?.action_timestamp || new Date().toISOString(),
       total_emails_quarantined: emails.length,
       quarantined_emails: emails,
       cryptographic_containment_hash: '0x' + Array.from(crypto.getRandomValues(new Uint8Array(32))).map(b => b.toString(16).padStart(2, '0')).join('')
@@ -38,10 +52,35 @@ export default function QuarantineVaultModal({ isOpen, onClose, quarantineData, 
   }
 
   return (
-    <div className="soc-modal-overlay" onClick={onClose}>
+    <div 
+      className="soc-modal-overlay" 
+      onClick={onClose}
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'rgba(5, 10, 20, 0.85)',
+        backdropFilter: 'blur(6px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 9999,
+        padding: '20px'
+      }}
+    >
       <div
         className="soc-modal-container custom-gold-scroll"
-        style={{ maxWidth: '820px', width: '92%' }}
+        style={{ 
+          maxWidth: '820px', 
+          width: '92%',
+          background: '#0d1322',
+          border: '1px solid #7c3aed',
+          borderRadius: '12px',
+          overflow: 'hidden',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)'
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

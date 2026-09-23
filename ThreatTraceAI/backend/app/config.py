@@ -11,7 +11,29 @@ class Settings(BaseSettings):
     @field_validator("DATABASE_URL", mode="before")
     @classmethod
     def sanitize_database_url(cls, v):
-        if not v or not isinstance(v, str) or not (v.startswith("sqlite") or v.startswith("postgresql") or v.startswith("mysql")):
+        if not v or not isinstance(v, str):
+            return "sqlite+aiosqlite:///./threattrace.db"
+        v = str(v).split("#")[0].strip()
+        if not v:
+            return "sqlite+aiosqlite:///./threattrace.db"
+        if v.startswith("file:"):
+            db_path = v[5:].replace("\\", "/")
+            return f"sqlite+aiosqlite:///{db_path}"
+        if v.startswith("postgres://"):
+            v = v.replace("postgres://", "postgresql+asyncpg://", 1)
+        elif v.startswith("postgresql://") and not v.startswith("postgresql+asyncpg://"):
+            v = v.replace("postgresql://", "postgresql+asyncpg://", 1)
+        
+        if "postgresql+asyncpg://" in v:
+            import re
+            v = re.sub(r'[\?\&]sslmode=[^&]+', '', v)
+            v = re.sub(r'[\?\&]channel_binding=[^&]+', '', v)
+            if '?' in v and v.endswith('?'):
+                v = v[:-1]
+            if '&' in v and '?' not in v:
+                v = v.replace('&', '?', 1)
+
+        if not (v.startswith("sqlite") or v.startswith("postgresql") or v.startswith("mysql")):
             return "sqlite+aiosqlite:///./threattrace.db"
         return v
 
