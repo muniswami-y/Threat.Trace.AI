@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Threat Trace AI</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="popup-container">
+    
+    <!-- Top Header -->
+    <header class="popup-header">
+      <div class="popup-brand">
+        <div class="logo-box">
+          <img src="logo.png" alt="ThreatTrace AI Logo" width="44" height="44" style="object-fit: contain;" />
+        </div>
+        <div>
+          <div class="title">THREAT TRACE AI</div>
+          <div class="subtitle">Gmail Forensic Shield <span id="versionBadge" style="font-size:9px;opacity:0.6;margin-left:4px;">v1.3.1</span></div>
+        </div>
+      </div>
+      <div class="status-indicator ready" id="topStatusIndicator">
+        <span class="pulse-dot" id="topPulseDot"></span>
+        <span id="topStatusText">ACTIVE</span>
+      </div>
+    </header>
+
+    <!-- DIRECT SCANNER VIEW (Zero-Login / Instant Access) -->
+    <main id="scannerSection" class="popup-content scanner-view" style="display: flex;">
+
+      <!-- Live Mailbox Status -->
+      <div id="tabStatusBanner" class="tab-status-card matched">
+        <span class="tab-status-icon">🛡️</span>
+        <span id="tabStatusText">Forensic Engine Ready • Real-Time Protection Active</span>
+      </div>
+
+      <div class="helper-text">
+        Threat scores appear automatically inside Gmail! Or paste email content / headers below to inspect manually:
+      </div>
+
+      <textarea id="emailText" rows="3" placeholder="Paste email body or headers here to scan…"></textarea>
+
+      <button id="analyzeBtn" class="primary-btn">
+        <span id="scanSpinner" class="spinner" style="display: none; width: 14px; height: 14px; border: 2px solid #ffffff; border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 6px;"></span>
+        <span id="scanBtnText">⚡ Scan Forensic Threat</span>
+      </button>
+
+      <!-- Scan Results Container -->
+      <div id="scanResults" class="result-box" style="display: none; margin-top: 12px;">
+        <div class="result-score-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <div>
+            <div class="score-label" style="font-size: 10px; color: #94a3b8; text-transform: uppercase;">Risk Score</div>
+            <div id="riskScore" class="score-number" style="font-size: 24px; font-weight: 800; color: #f8fafc;">0/100</div>
+          </div>
+          <div id="riskLevel" class="risk-badge low" style="padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; text-transform: uppercase;">LOW</div>
+        </div>
+
+        <div class="factor-title" style="font-size: 11px; font-weight: 700; color: #cbd5e1; margin-top: 8px; margin-bottom: 4px;">DETECTED SIGNALS & FORENSICS:</div>
+        <ul id="indicatorsList" class="factor-list" style="margin: 0; padding-left: 18px; font-size: 11px; color: #94a3b8; line-height: 1.5;"></ul>
+
+        <!-- Report Incident directly to Cybercrime Button -->
+        <button id="btnReportCybercrime" type="button" class="primary-btn" style="background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); margin-top: 10px; width: 100%; display: none;">
+          <span>🚨 Report Incident to Cybercrime</span>
+        </button>
+
+        <!-- Reporting Success Confirmation Container -->
+        <div id="popupReportSuccess" style="display: none; margin-top: 10px; padding: 10px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 6px; font-size: 11.5px; color: #34d399;">
+          <div style="font-weight: 700; display: flex; align-items: center; gap: 4px;">
+            <span>✓ Case Registered & Dispatched!</span>
+          </div>
+          <div id="popupCaseIdDisplay" style="font-family: monospace; font-size: 11px; margin-top: 4px; color: #ffffff; font-weight: 700;"></div>
+          <div id="popupAckDisplay" style="font-size: 10.5px; opacity: 0.9; margin-top: 2px; color: #a7f3d0;"></div>
+          <a id="popupCybercrimeLink" href="https://threattrace-cybercrime.vercel.app/" target="_blank" style="display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; color: #38bdf8; font-size: 10.5px; text-decoration: none; font-weight: 600;">
+            🏛️ View in Cybercrime Officer Command Center →
+          </a>
+        </div>
+
+        <button id="btnOpenCaseDashboard" type="button" class="primary-btn" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); margin-top: 10px; width: 100%; display: none;">
+          <span>🔍 Open in Full Forensic Cockpit ↗</span>
+        </button>
+
+        <!-- Canary Trap Button (shown only when case exists) -->
+        <button id="btnDeployCanary" type="button" class="primary-btn" style="background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); margin-top: 8px; width: 100%; display: none;">
+          <span>🪤 Deploy Canary Trap</span>
+        </button>
+
+        <!-- Subpoena Package Button -->
+        <button id="btnSubpoena" type="button" class="primary-btn" style="background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%); margin-top: 8px; width: 100%; display: none;">
+          <span>📋 Get Subpoena Package</span>
+        </button>
+
+        <!-- Canary result display -->
+        <div id="canaryResult" style="display:none; margin-top:10px; padding:8px; background:#1e1b4b; border-radius:6px; border:1px solid #7c3aed; font-size:11px; color:#c4b5fd; word-break:break-all;">
+          <div style="font-weight:700; color:#a78bfa; margin-bottom:4px;">🪤 Canary Token Deployed</div>
+          <div id="canaryTokenDisplay"></div>
+          <div id="canaryPingUrl" style="margin-top:4px; color:#818cf8;"></div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Bottom Footer with Full Suite Links -->
+    <footer class="popup-footer" style="display: flex; flex-direction: column; gap: 6px; align-items: center; padding: 10px 14px; background: #030712; border-top: 1px solid #1e293b;">
+      <a href="https://threat-trace-ai.vercel.app/" target="_blank" class="footer-link" id="footerDashboardLink" style="font-size: 11.5px; font-weight: 700; color: #38bdf8; text-decoration: none;">
+        🌐 Open Full Forensic Cockpit →
+      </a>
+      <div style="display: flex; gap: 8px; font-size: 9.5px; color: #64748b;">
+        <a href="https://threat-trace-ai.vercel.app/privacy" target="_blank" style="color: #94a3b8; text-decoration: none;">Privacy Policy</a>
+        <span>•</span>
+        <a href="https://threat-trace-ai.vercel.app/terms" target="_blank" style="color: #94a3b8; text-decoration: none;">Terms</a>
+        <span>•</span>
+        <a href="https://threattrace-cybercrime.vercel.app/" target="_blank" style="color: #f59e0b; text-decoration: none; font-weight: 600;">Officer Portal</a>
+      </div>
+    </footer>
+
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -145,13 +145,13 @@ export default function ThreatTraceCockpit() {
       effectiveGeo = {
         ip: originIp,
         country: 'India',
-        region: 'National Capital Territory of Delhi',
-        city: 'New Delhi',
-        lat: '28.6015',
-        lon: '77.186',
-        isp: 'India Post Payments Bank Limited',
-        org: 'India Post Payments Bank Limited',
-        status: 'success'
+        region: 'Unknown',
+        city: 'Unknown',
+        lat: null,
+        lon: null,
+        isp: 'Lookup Required',
+        org: 'Lookup Required',
+        status: 'pending'
       }
     }
 
@@ -213,11 +213,11 @@ export default function ThreatTraceCockpit() {
     const hasPhone = allPhones.length > 0
     const primaryPhone = allPhones[0] || null
 
-    const resolvedCity = effectiveGeo?.city || (isPrivateOrigin ? 'Private Subnet' : 'New Delhi')
-    const resolvedCountry = effectiveGeo?.country || (isPrivateOrigin ? 'RFC-1918 Private Net' : 'India')
-    const resolvedRegion = effectiveGeo?.region || (isPrivateOrigin ? 'Local Intranet' : 'National Capital Territory of Delhi')
-    const resolvedCoords = (effectiveGeo?.lat && effectiveGeo?.lon) ? `${effectiveGeo.lat}, ${effectiveGeo.lon}` : (isPrivateOrigin ? 'Intranet / VPN' : '28.6015, 77.186')
-    const resolvedIsp = effectiveGeo?.isp || (isPrivateOrigin ? 'Corporate Gateway (Internal)' : 'India Post Payments Bank Limited')
+    const resolvedCity = effectiveGeo?.city || (isPrivateOrigin ? 'Private Subnet' : 'Unknown')
+    const resolvedCountry = effectiveGeo?.country || (isPrivateOrigin ? 'RFC-1918 Private Net' : 'Unknown')
+    const resolvedRegion = effectiveGeo?.region || (isPrivateOrigin ? 'Local Intranet' : 'Unknown')
+    const resolvedCoords = (effectiveGeo?.lat && effectiveGeo?.lon) ? `${effectiveGeo.lat}, ${effectiveGeo.lon}` : (isPrivateOrigin ? 'Intranet / VPN' : 'Pending Lookup')
+    const resolvedIsp = effectiveGeo?.isp || (isPrivateOrigin ? 'Corporate Gateway (Internal)' : 'Lookup Required')
 
     const cleanTargetId = (targetCaseId && targetCaseId !== 'unreported' && targetCaseId !== 'TT-ACTIVE') ? targetCaseId : null
     const finalIncidentId = safeObj?.case_id || cleanTargetId || null
@@ -250,21 +250,21 @@ export default function ThreatTraceCockpit() {
       phones: allPhones,
       phoneCount: allPhones.length,
       phone: primaryPhone || 'No Telephony Indicators in Message Payload',
-      carrier: hasPhone ? (isSafe ? 'National Toll-Free PSTN / BSNL Trunk' : 'VoIP / Virtual PBX') : 'N/A',
-      lineType: hasPhone ? (safePrimaryPhone.startsWith('1800') ? 'Toll-Free Enterprise Trunk' : (isSafe ? 'PSTN Landline' : 'Cloud VoIP PBX')) : 'N/A',
-      cnam: hasPhone ? (isSafe ? 'AUTHENTICATED CALLER ID' : 'UNVERIFIED CALLER ID') : 'N/A',
-      ss7Status: hasPhone ? (isSafe ? '✓ SS7 VERIFIED CLEAN' : '⚠️ SS7 SUSPICIOUS ROUTE') : 'NO TELEPHONY INDICATOR',
-      voipRisk: hasPhone ? (isHigh ? '94 / 100 (High Risk VoIP)' : '0 / 100 (Nominal)') : 'N/A',
+      carrier: hasPhone ? (safeObj.telephony_intelligence?.[0]?.carrier || 'Lookup Required') : 'N/A',
+      lineType: hasPhone ? (safeObj.telephony_intelligence?.[0]?.line_type || 'Lookup Required') : 'N/A',
+      cnam: hasPhone ? (safeObj.telephony_intelligence?.[0]?.cnam || 'LOOKUP REQUIRED') : 'N/A',
+      ss7Status: hasPhone ? (safeObj.telephony_intelligence?.[0]?.ss7_status || 'PENDING VERIFICATION') : 'NO TELEPHONY INDICATOR',
+      voipRisk: hasPhone ? (safeObj.telephony_intelligence?.[0]?.voip_scam_score != null ? `${safeObj.telephony_intelligence[0].voip_scam_score} / 100` : 'Pending') : 'N/A',
       telephonyIntelligence: rawTelephony.length > 0 ? rawTelephony : allPhones.map(p => ({
         valid: true,
         raw: p,
         e164: p.startsWith('+') ? p : `+91${p.replace(/\D/g, '')}`,
-        carrier: p.startsWith('1800') ? 'BSNL / MTNL National Toll-Free Gateway' : (isHigh ? 'VoIP / Virtual Trunk' : 'Airtel / Jio PSTN'),
-        line_type: p.startsWith('1800') ? 'Toll-Free Enterprise Trunk' : 'Mobile GSM / LTE',
-        country: 'India',
-        voip_scam_score: isHigh ? 94 : 0,
-        cnam: isHigh ? 'UNVERIFIED CALLER ID' : 'AUTHENTICATED ENTERPRISE TRUNK',
-        ss7_status: isHigh ? '⚠️ SS7 SUSPICIOUS ROUTE' : '✓ SS7 VERIFIED CLEAN'
+        carrier: 'Lookup Required',
+        line_type: 'Lookup Required',
+        country: 'Pending Verification',
+        voip_scam_score: null,
+        cnam: 'LOOKUP REQUIRED',
+        ss7_status: 'PENDING VERIFICATION'
       })),
       aiExplanation: {
         count: Array.isArray(safeObj.risk_factors) && safeObj.risk_factors.length > 0 ? `${safeObj.risk_factors.length} threat signals evaluated` : (isHigh ? 'High risk signals detected' : 'Nominal signals evaluated'),
@@ -894,7 +894,7 @@ export default function ThreatTraceCockpit() {
                   </span>
                 )}
                 <span style={{ fontSize: '0.68rem', fontWeight: 700, color: data?.phones && data.phones.length > 0 ? '#34D399' : 'var(--text-muted)', background: data?.phones && data.phones.length > 0 ? 'rgba(16, 185, 129, 0.15)' : 'rgba(255, 255, 255, 0.05)', padding: '2px 8px', borderRadius: '9999px', border: 'none' }}>
-                  {data?.phones && data.phones.length > 0 ? (data?.ss7Status || '✓ SS7 VERIFIED CLEAN') : 'NO TELEPHONY INDICATOR'}
+                  {data?.phones && data.phones.length > 0 ? (data?.ss7Status || 'PENDING VERIFICATION') : 'NO TELEPHONY INDICATOR'}
                 </span>
               </div>
             </div>
@@ -946,26 +946,26 @@ export default function ThreatTraceCockpit() {
                     <div style={{ background: 'var(--bg-subtle)', padding: '8px 10px', borderRadius: 'var(--radius-sm)', border: 'none' }}>
                       <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Operator / Line Type</div>
                       <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-primary)', marginTop: '2px' }}>
-                        {isTollFree ? 'BSNL Toll-Free PSTN Trunk' : (data?.carrier || 'PSTN Enterprise')}
+                        {isTollFree ? (data?.carrier || 'Lookup Required (Toll-Free)') : (data?.carrier || 'Lookup Required')}
                       </div>
                     </div>
                     <div style={{ background: 'var(--bg-subtle)', padding: '8px 10px', borderRadius: 'var(--radius-sm)', border: 'none' }}>
                       <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>VoIP Fraud Risk</div>
                       <div style={{ fontSize: '0.78rem', fontWeight: 700, color: data?.riskLevel === 'HIGH' ? '#EF4444' : '#059669', marginTop: '2px' }}>
-                        {data?.voipRisk || '0 / 100 (Nominal)'}
+                        {data?.voipRisk || 'Pending'}
                       </div>
                     </div>
                     <div style={{ background: 'var(--bg-subtle)', padding: '8px 10px', borderRadius: 'var(--radius-sm)', border: 'none' }}>
                       <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>CNAM & Identity Record</div>
                       <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-primary)', marginTop: '2px' }}>
-                        {isTollFree ? 'AUTHENTICATED TOLL-FREE' : (data?.cnam || 'AUTHENTICATED CALLER ID')}
+                        {isTollFree ? (data?.cnam || 'LOOKUP REQUIRED') : (data?.cnam || 'LOOKUP REQUIRED')}
                       </div>
                     </div>
                   </div>
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '6px', borderTop: 'none', flexWrap: 'wrap', gap: '6px' }}>
                     <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-                      PhoneInfoga Recon: Country IN (+91) • Line: {isTollFree ? 'Toll-Free' : 'PSTN'} • Numverify: Clean
+                      PhoneInfoga Recon: Country IN (+91) • Line: {isTollFree ? 'Toll-Free' : (data?.lineType || 'Pending')} • Numverify: Pending
                     </span>
                     <a
                       href={`https://www.google.com/search?q=%22${encodeURIComponent(activePhone)}%22`}

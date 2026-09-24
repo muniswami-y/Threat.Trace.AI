@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ThreatTrace AI – Extension Authentication & Account Binding</title>
+  <link rel="stylesheet" href="auth.css" />
+</head>
+<body>
+  <div class="auth-page-container">
+    
+    <!-- Left Hero / Brand Panel -->
+    <div class="brand-panel">
+      <div class="brand-header">
+        <div class="brand-logo-wrap">
+          <img src="logo.png" alt="ThreatTrace Logo" class="brand-logo" />
+        </div>
+        <div class="brand-text">
+          <h1>THREAT TRACE AI</h1>
+          <p class="tagline">Gmail In-Page Forensic Defense Shield</p>
+        </div>
+      </div>
+
+      <div class="hero-features">
+        <div class="feature-item">
+          <div class="feature-icon">🛡️</div>
+          <div class="feature-content">
+            <h3>Automated In-Mail Risk Scoring</h3>
+            <p>Opens directly beside your email subject & labels in Gmail. Real-time NLP, header, and URL telemetry.</p>
+          </div>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-icon">🔒</div>
+          <div class="feature-content">
+            <h3>Zero-Trust Account Binding</h3>
+            <p>Cryptographically locks the extension to your authorized mailbox to prevent cross-account forensic leakage.</p>
+          </div>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-icon">⏳</div>
+          <div class="feature-content">
+            <h3>1-Month Rolling Authentication</h3>
+            <p>Your authenticated session remains active for 30 days. Auto-locks after 1 month for regulatory defense hygiene.</p>
+          </div>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-icon">⛓️</div>
+          <div class="feature-content">
+            <h3>Immutable Chain-of-Custody</h3>
+            <p>Every inspected email generates cryptographic SHA-256 digests and audit logs for enterprise SOC compliance.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="brand-footer">
+        <span>ThreatTrace AI Enterprise Shield v1.2.0</span>
+        <span class="dot-separator">•</span>
+        <span>SIH 2024 / 2026 Edition</span>
+      </div>
+    </div>
+
+    <!-- Right Authentication / Onboarding Box -->
+    <div class="auth-form-panel">
+      
+      <div class="auth-card">
+        
+        <!-- Status Indicator Pill -->
+        <div class="top-status-bar">
+          <span class="status-chip locked" id="statusChip">
+            <span class="status-pulse"></span>
+            <span id="statusChipText">LOCKED – AUTHENTICATION REQUIRED</span>
+          </span>
+          <span class="expiry-note">Session Lifespan: <strong>30 Days (1 Month)</strong></span>
+        </div>
+
+        <div class="auth-header">
+          <h2 id="authHeading">Account Setup & Verification</h2>
+          <p id="authSubtitle">
+            Enter your authorized email and set your password to receive an OTP verification code.
+          </p>
+        </div>
+
+        <!-- Notification / Alert Message -->
+        <div id="alertBox" class="alert-box" style="display: none;"></div>
+
+        <!-- STEP 1: Enter Email & Password -->
+        <div id="step1Container" class="form-step">
+          <form id="step1Form">
+            
+            <div class="form-group">
+              <label for="inputEmail">
+                <span>Authorized Mailbox Email Address</span>
+                <span class="label-hint">Gmail account to be monitored</span>
+              </label>
+              <div class="input-with-icon">
+                <span class="input-icon">✉️</span>
+                <input 
+                  type="email" 
+                  id="inputEmail" 
+                  placeholder="e.g. yourname@gmail.com" 
+                  required 
+                  autocomplete="email"
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="inputPassword">
+                <span>Create Security Key / Password</span>
+                <span class="label-hint">Minimum 4 characters</span>
+              </label>
+              <div class="input-with-icon">
+                <span class="input-icon">🔑</span>
+                <input 
+                  type="password" 
+                  id="inputPassword" 
+                  placeholder="Enter or create your analyst password" 
+                  value="threattrace2026" 
+                  required 
+                />
+                <button type="button" class="pwd-toggle" id="togglePwdBtn" title="Toggle password visibility">👁️</button>
+              </div>
+              <span class="field-help">Default security key: <code>threattrace2026</code></span>
+            </div>
+
+
+
+            <button type="button" id="btnRequestOtp" class="submit-btn primary">
+              <span>Send 6-Digit Verification Code (OTP) →</span>
+            </button>
+
+            <div class="switch-mode-row">
+              <span>Already have an account?</span>
+              <a href="#" id="linkDirectLogin">Log In with Password Only</a>
+            </div>
+
+          </form>
+        </div>
+
+        <!-- STEP 2: Enter OTP -->
+        <div id="step2Container" class="form-step" style="display: none;">
+          <div class="otp-notice">
+            <div class="otp-notice-icon">📬</div>
+            <div>
+              <div class="otp-notice-title">Verification Code Sent!</div>
+              <div class="otp-notice-desc" id="otpSentTo">We sent a 6-digit code to your email.</div>
+            </div>
+          </div>
+
+          <!-- Demo / Lab Helper Banner -->
+          <div class="lab-helper" id="labHelper">
+            <div class="lab-helper-head">
+              <span>🧪 DEMO / LAB MODE HELPER</span>
+              <span class="lab-badge">Active</span>
+            </div>
+            <p>Your verification code is: <strong id="demoOtpDisplay">123456</strong></p>
+            <button type="button" id="btnAutoFillOtp" class="lab-fill-btn">Click to Auto-Fill Code</button>
+          </div>
+
+          <form id="step2Form">
+            
+            <div class="form-group">
+              <label for="inputOtp">
+                <span>Enter 6-Digit OTP Code</span>
+                <span class="label-hint" id="otpTimerText">Expires in 10:00</span>
+              </label>
+              <div class="input-with-icon">
+                <span class="input-icon">🛡️</span>
+                <input 
+                  type="text" 
+                  id="inputOtp" 
+                  placeholder="e.g. 123456" 
+                  maxlength="6" 
+                  pattern="[0-9]{6}"
+                  autocomplete="one-time-code"
+                  style="letter-spacing: 0.25em; font-size: 18px; font-weight: 700; text-align: center;"
+                  required 
+                />
+              </div>
+            </div>
+
+            <button type="button" id="btnVerifyOtp" class="submit-btn primary">
+              <span>🔒 Verify OTP & Bind Extension (30 Days)</span>
+            </button>
+
+            <div class="step-actions-row">
+              <button type="button" id="btnBackToStep1" class="text-btn">← Back to Email</button>
+              <button type="button" id="btnResendOtp" class="text-btn">Resend OTP Code</button>
+            </div>
+
+          </form>
+        </div>
+
+        <!-- STEP 3: Success Confirmation -->
+        <div id="step3Success" class="form-step success-view" style="display: none;">
+          <div class="success-icon-wrap">
+            <div class="success-shield-icon">✓</div>
+          </div>
+          <h3>Authentication Successful!</h3>
+          <p class="success-desc">
+            ThreatTrace AI is now <strong>cryptographically bound</strong> to:
+            <br/><span class="bound-email-highlight" id="successBoundEmail">user@gmail.com</span>
+          </p>
+
+          <div class="session-badge-card">
+            <div class="session-badge-title">30-DAY SESSION ACTIVE</div>
+            <div class="session-badge-info">
+              Valid until: <strong id="successExpiryDate">--</strong>
+            </div>
+            <p class="session-note">
+              After 1 month, you will be prompted to verify again to maintain maximum account security.
+            </p>
+          </div>
+
+          <div class="next-steps-guide">
+            <div class="guide-title">How to use your Forensic Shield:</div>
+            <ol class="guide-list">
+              <li>Open any email in <strong>Gmail</strong>.</li>
+              <li>Look right beside the <strong>Subject Line and Inbox tag</strong>.</li>
+              <li>Your <strong>Threat Risk Score</strong> will appear automatically in real-time!</li>
+            </ol>
+          </div>
+
+          <div class="success-buttons">
+            <button type="button" id="btnOpenDashboard" class="submit-btn primary" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);">
+              <span>🌐 Open Forensic Cockpit / Dashboard ↗</span>
+            </button>
+            <button type="button" id="btnOpenGmail" class="submit-btn secondary">
+              <span>Open Gmail Now ↗</span>
+            </button>
+            <button type="button" id="btnCloseTab" class="submit-btn secondary">
+              <span>Close This Window</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Direct Login Container (Toggle) -->
+        <div id="directLoginContainer" class="form-step" style="display: none;">
+          <form id="directLoginForm">
+            
+            <div class="form-group">
+              <label for="directLoginEmail">Authorized Email Address</label>
+              <input type="email" id="directLoginEmail" placeholder="yourname@gmail.com" required />
+            </div>
+
+            <div class="form-group">
+              <label for="directLoginPassword">Analyst Password</label>
+              <input type="password" id="directLoginPassword" value="threattrace2026" required />
+            </div>
+
+
+
+            <button type="button" id="btnDirectLoginSubmit" class="submit-btn primary">
+              <span>Sign In & Bind for 30 Days</span>
+            </button>
+
+            <div class="switch-mode-row">
+              <span>Need to verify with OTP?</span>
+              <a href="#" id="linkOtpSetup">Register / Verify with OTP</a>
+            </div>
+
+          </form>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <script src="auth.js"></script>
+</body>
+</html>

@@ -127,6 +127,7 @@ def analyze_phoneinfoga_osint(phone_str: str) -> Dict[str, Any]:
     """
     Run PhoneInfoga OSINT reconnaissance & telecom carrier analysis on an extracted telephone number.
     Returns standard PhoneInfoga format: E.164, Carrier, Line Type, Country, VoIP Fraud Score, CNAM & Search Dorks.
+    Only returns validated data — no hardcoded defaults or assumptions.
     """
     raw = phone_str.strip()
     digits = re.sub(r'\D', '', raw)
@@ -138,66 +139,117 @@ def analyze_phoneinfoga_osint(phone_str: str) -> Dict[str, Any]:
             "raw": raw,
             "error": "Invalid E.164 phone structure / Not a telecom subscriber line"
         }
-    
-    country = "India"
-    country_code = "+91"
-    country_iso = "IN"
+
+    # Reject numbers with excessive repeating digits (e.g. 000000, 111111)
+    if len(set(digits[-6:])) <= 2:
+        return {
+            "valid": False,
+            "raw": raw,
+            "error": "Rejected: repetitive digit pattern — likely not a real subscriber line"
+        }
+
+    # Initialize as unknown — no assumptions
+    country = None
+    country_code = None
+    country_iso = None
     national_number = digits
-    line_type = "Fixed Line / Landline"
-    carrier = "PSTN Verified Trunk"
-    voip_risk = 0
-    cnam = "AUTHENTICATED CALLER ID"
-    ss7_status = "✓ SS7 VERIFIED CLEAN"
-    
+    line_type = None
+    carrier = None
+    voip_risk = None
+    cnam = None
+    ss7_status = None
+
+    # Only classify if the number matches a known, verifiable pattern
     if raw.startswith("+1") or (digits.startswith("1") and len(digits) == 11):
         country = "United States / Canada"
         country_code = "+1"
         country_iso = "US"
         national_number = digits[-10:]
-        carrier = "AT&T / Verizon PSTN"
+        line_type = "NANP Subscriber Line"
+        carrier = "Lookup Required"
+        cnam = "LOOKUP REQUIRED"
+        voip_risk = None
+        ss7_status = "PENDING VERIFICATION"
     elif raw.startswith("+44") or (digits.startswith("44") and len(digits) >= 11):
         country = "United Kingdom"
         country_code = "+44"
         country_iso = "GB"
-        carrier = "BT Group / Vodafone UK"
+        line_type = "UK Subscriber Line"
+        carrier = "Lookup Required"
+        cnam = "LOOKUP REQUIRED"
+        voip_risk = None
+        ss7_status = "PENDING VERIFICATION"
+    elif raw.startswith("+91") or (digits.startswith("91") and len(digits) in (12, 13)):
+        country = "India"
+        country_code = "+91"
+        country_iso = "IN"
+        national_number = digits[-10:]
+        # Classify Indian numbers by prefix
+        if national_number.startswith("1800"):
+            line_type = "Toll-Free Enterprise Trunk"
+            carrier = "Lookup Required (Toll-Free Gateway)"
+            cnam = "LOOKUP REQUIRED"
+        elif national_number.startswith("1860"):
+            line_type = "Shared-Cost Enterprise Line"
+            carrier = "Lookup Required (Enterprise Gateway)"
+            cnam = "LOOKUP REQUIRED"
+        elif len(national_number) == 10 and national_number[0] in "6789":
+            line_type = "Mobile GSM / LTE"
+            carrier = "Lookup Required (Mobile Operator)"
+            cnam = "LOOKUP REQUIRED"
+        elif national_number.startswith("0") and len(national_number) in (10, 11):
+            line_type = "PSTN Landline / Fixed Line"
+            carrier = "Lookup Required (Fixed Line)"
+            cnam = "LOOKUP REQUIRED"
+        else:
+            line_type = "Unknown"
+            carrier = "Unknown"
+            cnam = "UNKNOWN"
+        voip_risk = None
+        ss7_status = "PENDING VERIFICATION"
     elif digits.startswith("1800") or raw.startswith("1800"):
         country = "India"
         country_code = "+91"
         country_iso = "IN"
         line_type = "Toll-Free Enterprise Trunk"
-        carrier = "BSNL / MTNL National Toll-Free Gateway"
-        cnam = "OFFICIAL HELPLINE (TOLL FREE)"
-        voip_risk = 0
+        carrier = "Lookup Required (Toll-Free Gateway)"
+        cnam = "LOOKUP REQUIRED"
+        voip_risk = None
+        ss7_status = "PENDING VERIFICATION"
     elif digits.startswith("1860") or raw.startswith("1860"):
         country = "India"
         country_code = "+91"
         country_iso = "IN"
         line_type = "Shared-Cost Enterprise Line"
-        carrier = "National Enterprise Gateway"
-        cnam = "CORPORATE CALL CENTER"
-        voip_risk = 5
+        carrier = "Lookup Required (Enterprise Gateway)"
+        cnam = "LOOKUP REQUIRED"
+        voip_risk = None
+        ss7_status = "PENDING VERIFICATION"
     elif len(digits) == 10 and digits[0] in "6789":
         country = "India"
         country_code = "+91"
         country_iso = "IN"
         line_type = "Mobile GSM / LTE"
-        first2 = digits[:2]
-        if first2 in ("98", "99", "97", "96", "88", "89", "86", "70", "79"):
-            carrier = "Bharti Airtel / Reliance Jio"
-        elif first2 in ("94", "93", "81", "82", "73", "74"):
-            carrier = "Reliance Jio Infocomm Ltd"
-        else:
-            carrier = "Vodafone Idea (Vi) / BSNL Mobile"
-        cnam = "REGISTERED CELLULAR SUBSCRIBER"
-        voip_risk = 10
+        carrier = "Lookup Required (Mobile Operator)"
+        cnam = "LOOKUP REQUIRED"
+        voip_risk = None
+        ss7_status = "PENDING VERIFICATION"
     elif digits.startswith("0") and len(digits) in (10, 11):
         country = "India"
         country_code = "+91"
         country_iso = "IN"
         line_type = "PSTN Landline / Fixed Line"
-        carrier = "BSNL / MTNL / Tata Teleservices Fixed Line"
-        cnam = "LANDLINE SUBSCRIBER"
-        voip_risk = 0
+        carrier = "Lookup Required (Fixed Line)"
+        cnam = "LOOKUP REQUIRED"
+        voip_risk = None
+        ss7_status = "PENDING VERIFICATION"
+    else:
+        # Unrecognized pattern — do not fabricate data
+        return {
+            "valid": False,
+            "raw": raw,
+            "error": f"Unrecognized number pattern ({len(digits)} digits) — cannot classify without live OSINT lookup"
+        }
 
     e164 = f"{country_code}{national_number[-10:] if len(national_number) >= 10 else national_number}"
     
@@ -205,24 +257,26 @@ def analyze_phoneinfoga_osint(phone_str: str) -> Dict[str, Any]:
         "valid": True,
         "raw": raw,
         "e164": e164,
-        "international": f"{country_code} {raw.replace('+91', '').strip()}",
+        "international": f"{country_code} {raw.replace(country_code, '').strip()}",
         "national": raw,
         "country": country,
         "country_code": country_code,
         "country_iso": country_iso,
-        "location": f"{country} Telecom Circle",
+        "location": f"{country} Telecom Circle" if country else "Unknown",
         "carrier": carrier,
         "line_type": line_type,
         "voip_scam_score": voip_risk,
         "cnam": cnam,
         "ss7_status": ss7_status,
         "osint_scanner": "PhoneInfoga v2.10 OSINT Recon Engine",
+        "note": "Live carrier lookup required for verified CNAM, SS7 status, and VoIP risk scoring",
         "dorks": {
             "google_search": f"https://www.google.com/search?q=%22{e164}%22",
-            "numverify_check": "NUMVERIFY_CLEAN",
-            "footprint": "Verified Public / Enterprise Footprint"
+            "numverify_check": "PENDING",
+            "footprint": "Requires Live OSINT Verification"
         }
     }
+
 
 
 def extract_origin_ip_from_headers(headers: dict) -> Tuple[Optional[str], List[str]]:
