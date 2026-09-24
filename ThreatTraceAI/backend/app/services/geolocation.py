@@ -78,17 +78,39 @@ async def _geolocate_single_ip(client: httpx.AsyncClient, ip: str) -> Dict:
         r = await client.get(url)
         data = r.json()
         if data.get("status") == "success":
-            entry.update({
-                "country": data.get("country"),
-                "region": data.get("regionName"),
-                "city": data.get("city"),
-                "lat": data.get("lat"),
-                "lon": data.get("lon"),
-                "isp": data.get("isp"),
-                "org": data.get("org"),
-                "is_private": False,
-                "status": "success"
-            })
+            isp = data.get("isp") or ""
+            org = data.get("org") or ""
+            
+            # ESP Provider Masking (to prevent falsely attributing datacenter to the attacker)
+            provider_str = (isp + " " + org).lower()
+            esp_keywords = ["google", "microsoft", "yahoo", "amazon", "aws", "cloudflare", "fastly", "akamai", "proofpoint", "mimecast"]
+            
+            if any(k in provider_str for k in esp_keywords):
+                entry.update({
+                    "country": "Masked (Provider Infrastructure)",
+                    "region": "Masked by Email/Cloud Provider",
+                    "city": "Unknown (Sender IP Hidden)",
+                    "lat": 0.0,
+                    "lon": 0.0,
+                    "isp": f"{isp} (ESP Gateway)",
+                    "org": f"{org} (Original Sender IP Masked for Privacy)",
+                    "is_private": False,
+                    "status": "success",
+                    "error": None
+                })
+            else:
+                entry.update({
+                    "country": data.get("country"),
+                    "region": data.get("regionName"),
+                    "city": data.get("city"),
+                    "lat": data.get("lat"),
+                    "lon": data.get("lon"),
+                    "isp": isp,
+                    "org": org,
+                    "is_private": False,
+                    "status": "success",
+                    "error": None
+                })
         else:
             # Fallback for public IP when ip-api rate-limited or unlisted
             entry.update({
@@ -96,6 +118,7 @@ async def _geolocate_single_ip(client: httpx.AsyncClient, ip: str) -> Dict:
                 "region": "External Subnet",
                 "city": f"Host {ip}",
                 "isp": "Public Internet Gateway",
+                "org": "Unknown",
                 "is_private": False,
                 "status": "partial",
                 "error": data.get("message", "lookup limited")
@@ -106,6 +129,7 @@ async def _geolocate_single_ip(client: httpx.AsyncClient, ip: str) -> Dict:
             "region": "External Subnet",
             "city": f"Host {ip}",
             "isp": "Public Internet Gateway",
+            "org": "Unknown",
             "is_private": False,
             "status": "partial",
             "error": str(e)[:100]
