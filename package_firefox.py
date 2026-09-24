@@ -1,23 +1,47 @@
+"""
+Sync Chrome extension files to Firefox extension (preserving Firefox manifest.json),
+then rebuild the Firefox distribution ZIP.
+"""
 import os
+import shutil
 import zipfile
 
-def build_firefox_addon():
-    src_dir = os.path.join(os.path.dirname(__file__), "ThreatTraceAI", "extension-firefox")
-    out_file = os.path.join(os.path.dirname(__file__), "ThreatTraceAI-Firefox-v1.3.1.zip")
-    
-    print(f"Packaging Firefox extension from: {src_dir}")
-    with zipfile.ZipFile(out_file, "w", zipfile.ZIP_DEFLATED) as zipf:
-        for root, dirs, files in os.walk(src_dir):
-            if ".git" in root or "__pycache__" in root:
-                continue
-            for file in files:
-                file_path = os.path.join(root, file)
-                arcname = os.path.relpath(file_path, src_dir)
-                zipf.write(file_path, arcname)
-                print(f"  + Added: {arcname}")
-                
-    print(f"\n[+] Build complete: {out_file}")
-    print("You can upload this ZIP directly to Mozilla Add-on Developer Hub (AMO) or load it in Firefox via about:debugging.")
+BASE = os.path.dirname(__file__)
+CHROME_EXT = os.path.join(BASE, "ThreatTraceAI", "extension")
+FIREFOX_EXT = os.path.join(BASE, "ThreatTraceAI", "extension-firefox")
+OUT_ZIP = os.path.join(BASE, "ThreatTraceAI-Firefox-v1.3.1.zip")
+
+def sync_extensions():
+    print("=== Syncing Chrome extension -> Firefox extension ===")
+    for item in os.listdir(CHROME_EXT):
+        if item == "manifest.json":
+            print(f"  [SKIP] {item} (Firefox has its own manifest)")
+            continue
+        src = os.path.join(CHROME_EXT, item)
+        dst = os.path.join(FIREFOX_EXT, item)
+        if os.path.isdir(src):
+            if os.path.exists(dst):
+                shutil.rmtree(dst)
+            shutil.copytree(src, dst)
+            print(f"  [DIR]  {item}")
+        else:
+            shutil.copy2(src, dst)
+            print(f"  [FILE] {item}")
+    print("Sync complete.\n")
+
+def build_zip():
+    print("=== Building Firefox ZIP ===")
+    if os.path.exists(OUT_ZIP):
+        os.remove(OUT_ZIP)
+    with zipfile.ZipFile(OUT_ZIP, "w", zipfile.ZIP_DEFLATED) as zipf:
+        for root, dirs, files in os.walk(FIREFOX_EXT):
+            for f in files:
+                fpath = os.path.join(root, f)
+                arcname = os.path.relpath(fpath, FIREFOX_EXT)
+                zipf.write(fpath, arcname)
+                print(f"  + {arcname}")
+    print(f"\n[OK] Firefox ZIP built: {OUT_ZIP}")
 
 if __name__ == "__main__":
-    build_firefox_addon()
+    sync_extensions()
+    build_zip()
