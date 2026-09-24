@@ -250,22 +250,48 @@ export default function ThreatTraceCockpit() {
       phones: allPhones,
       phoneCount: allPhones.length,
       phone: primaryPhone || 'No Telephony Indicators in Message Payload',
-      carrier: hasPhone ? (safeObj.telephony_intelligence?.[0]?.carrier || 'Lookup Required') : 'N/A',
-      lineType: hasPhone ? (safeObj.telephony_intelligence?.[0]?.line_type || 'Lookup Required') : 'N/A',
-      cnam: hasPhone ? (safeObj.telephony_intelligence?.[0]?.cnam || 'LOOKUP REQUIRED') : 'N/A',
-      ss7Status: hasPhone ? (safeObj.telephony_intelligence?.[0]?.ss7_status || 'PENDING VERIFICATION') : 'NO TELEPHONY INDICATOR',
-      voipRisk: hasPhone ? (safeObj.telephony_intelligence?.[0]?.voip_scam_score != null ? `${safeObj.telephony_intelligence[0].voip_scam_score} / 100` : 'Pending') : 'N/A',
-      telephonyIntelligence: rawTelephony.length > 0 ? rawTelephony : allPhones.map(p => ({
-        valid: true,
-        raw: p,
-        e164: p.startsWith('+') ? p : `+91${p.replace(/\D/g, '')}`,
-        carrier: 'Lookup Required',
-        line_type: 'Lookup Required',
-        country: 'Pending Verification',
-        voip_scam_score: null,
-        cnam: 'LOOKUP REQUIRED',
-        ss7_status: 'PENDING VERIFICATION'
-      })),
+      carrier: hasPhone ? (safeObj.telephony_intelligence?.[0]?.carrier || rawTelephony?.[0]?.carrier || 'Analyzing...') : 'N/A',
+      lineType: hasPhone ? (safeObj.telephony_intelligence?.[0]?.line_type || rawTelephony?.[0]?.line_type || 'Analyzing...') : 'N/A',
+      cnam: hasPhone ? (safeObj.telephony_intelligence?.[0]?.cnam || rawTelephony?.[0]?.cnam || 'Analyzing...') : 'N/A',
+      ss7Status: hasPhone ? (safeObj.telephony_intelligence?.[0]?.ss7_status || rawTelephony?.[0]?.ss7_status || 'Analyzing...') : 'NO TELEPHONY INDICATOR',
+      voipRisk: hasPhone ? (safeObj.telephony_intelligence?.[0]?.voip_scam_score != null ? `${safeObj.telephony_intelligence[0].voip_scam_score} / 100` : (rawTelephony?.[0]?.voip_scam_score != null ? `${rawTelephony[0].voip_scam_score} / 100` : 'Analyzing...')) : 'N/A',
+      telephonyIntelligence: rawTelephony.length > 0 ? rawTelephony : allPhones.map(p => {
+        const d = p.replace(/\D/g, '')
+        // Check if it's a valid Indian mobile (10 digits starting with 6-9)
+        const isValidIndianMobile = d.length === 10 && '6789'.includes(d[0])
+        // Check if it's a valid toll-free
+        const isTollFree = d.startsWith('1800')
+        const isSharedCost = d.startsWith('1860')
+        // Check if it's a valid landline (starts with 0, 10-11 digits)
+        const isLandline = d.startsWith('0') && (d.length === 10 || d.length === 11)
+        const isValid = isValidIndianMobile || isTollFree || isSharedCost || isLandline || p.startsWith('+')
+
+        if (!isValid) {
+          return {
+            valid: false,
+            raw: p,
+            e164: null,
+            carrier: null,
+            line_type: 'INVALID FORMAT',
+            country: null,
+            voip_scam_score: null,
+            cnam: 'INVALID FORMAT',
+            ss7_status: 'INVALID FORMAT',
+            error: `Not a valid phone number format (${d.length} digits)`
+          }
+        }
+        return {
+          valid: true,
+          raw: p,
+          e164: p.startsWith('+') ? p : `+91${d}`,
+          carrier: 'Analyzing...',
+          line_type: isTollFree ? 'Toll-Free Enterprise Trunk' : (isLandline ? 'PSTN Landline' : 'Mobile'),
+          country: 'India',
+          voip_scam_score: null,
+          cnam: 'Analyzing...',
+          ss7_status: 'Analyzing...'
+        }
+      }),
       aiExplanation: {
         count: Array.isArray(safeObj.risk_factors) && safeObj.risk_factors.length > 0 ? `${safeObj.risk_factors.length} threat signals evaluated` : (isHigh ? 'High risk signals detected' : 'Nominal signals evaluated'),
         url: resolvedPayloadDomain,
@@ -934,38 +960,52 @@ export default function ThreatTraceCockpit() {
               const activePhoneRaw = data.phones[selectedPhoneIdx] || data.phones[0] || ''
               const activePhone = String(activePhoneRaw).trim()
               const isTollFree = activePhone.startsWith('1800')
+              // Find the telephony intelligence for the active phone
+              const activeTelephony = data.telephonyIntelligence?.find(t => t.raw === activePhone) || data.telephonyIntelligence?.[selectedPhoneIdx] || null
+              const isInvalidFormat = activeTelephony?.valid === false || activeTelephony?.line_type === 'INVALID FORMAT'
               return (
                 <>
+                  {isInvalidFormat && (
+                    <div style={{ background: 'rgba(239, 68, 68, 0.12)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: 'var(--radius-sm)', padding: '8px 12px', marginBottom: '8px' }}>
+                      <div style={{ fontSize: '0.72rem', fontWeight: 800, color: '#EF4444' }}>⚠ INVALID FORMAT</div>
+                      <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                        {activeTelephony?.error || `"${activePhone}" does not match any recognized telecom number pattern. This may be a tracking ID, timestamp, or system identifier extracted from the email body.`}
+                      </div>
+                    </div>
+                  )}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                     <div style={{ background: 'var(--bg-subtle)', padding: '8px 10px', borderRadius: 'var(--radius-sm)', border: 'none' }}>
                       <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Contact / E.164 Format</div>
-                      <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-primary)', marginTop: '2px', fontFamily: 'var(--font-mono)' }}>
-                        {activePhone.startsWith('+') ? activePhone : `+91 ${activePhone}`}
+                      <div style={{ fontSize: '0.78rem', fontWeight: 700, color: isInvalidFormat ? '#EF4444' : 'var(--text-primary)', marginTop: '2px', fontFamily: 'var(--font-mono)' }}>
+                        {isInvalidFormat ? activePhone : (activeTelephony?.e164 || (activePhone.startsWith('+') ? activePhone : `+91 ${activePhone}`))}
                       </div>
                     </div>
                     <div style={{ background: 'var(--bg-subtle)', padding: '8px 10px', borderRadius: 'var(--radius-sm)', border: 'none' }}>
                       <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Operator / Line Type</div>
-                      <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-primary)', marginTop: '2px' }}>
-                        {isTollFree ? (data?.carrier || 'Lookup Required (Toll-Free)') : (data?.carrier || 'Lookup Required')}
+                      <div style={{ fontSize: '0.78rem', fontWeight: 700, color: isInvalidFormat ? '#EF4444' : 'var(--text-primary)', marginTop: '2px' }}>
+                        {isInvalidFormat ? 'INVALID FORMAT' : (activeTelephony?.carrier || data?.carrier || 'Analyzing...')}
                       </div>
                     </div>
                     <div style={{ background: 'var(--bg-subtle)', padding: '8px 10px', borderRadius: 'var(--radius-sm)', border: 'none' }}>
                       <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>VoIP Fraud Risk</div>
-                      <div style={{ fontSize: '0.78rem', fontWeight: 700, color: data?.riskLevel === 'HIGH' ? '#EF4444' : '#059669', marginTop: '2px' }}>
-                        {data?.voipRisk || 'Pending'}
+                      <div style={{ fontSize: '0.78rem', fontWeight: 700, color: isInvalidFormat ? '#EF4444' : (data?.riskLevel === 'HIGH' ? '#EF4444' : '#059669'), marginTop: '2px' }}>
+                        {isInvalidFormat ? 'INVALID FORMAT' : (activeTelephony?.voip_scam_score != null ? `${activeTelephony.voip_scam_score} / 100` : (data?.voipRisk || 'Analyzing...'))}
                       </div>
                     </div>
                     <div style={{ background: 'var(--bg-subtle)', padding: '8px 10px', borderRadius: 'var(--radius-sm)', border: 'none' }}>
                       <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>CNAM & Identity Record</div>
-                      <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-primary)', marginTop: '2px' }}>
-                        {isTollFree ? (data?.cnam || 'LOOKUP REQUIRED') : (data?.cnam || 'LOOKUP REQUIRED')}
+                      <div style={{ fontSize: '0.78rem', fontWeight: 700, color: isInvalidFormat ? '#EF4444' : 'var(--text-primary)', marginTop: '2px' }}>
+                        {isInvalidFormat ? 'INVALID FORMAT' : (activeTelephony?.cnam || data?.cnam || 'Analyzing...')}
                       </div>
                     </div>
                   </div>
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '6px', borderTop: 'none', flexWrap: 'wrap', gap: '6px' }}>
-                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-                      PhoneInfoga Recon: Country IN (+91) • Line: {isTollFree ? 'Toll-Free' : (data?.lineType || 'Pending')} • Numverify: Pending
+                    <span style={{ fontSize: '0.7rem', color: isInvalidFormat ? '#EF4444' : 'var(--text-muted)' }}>
+                      {isInvalidFormat
+                        ? `PhoneInfoga Recon: INVALID FORMAT — not a telecom subscriber number`
+                        : `PhoneInfoga Recon: Country ${activeTelephony?.country_iso || 'IN'} (${activeTelephony?.country_code || '+91'}) • Line: ${activeTelephony?.line_type || data?.lineType || 'Mobile'} • Numverify: ${activeTelephony?.voip_scam_score != null && activeTelephony.voip_scam_score < 50 ? 'Clean' : 'Pending'}`
+                      }
                     </span>
                     <a
                       href={`https://www.google.com/search?q=%22${encodeURIComponent(activePhone)}%22`}
