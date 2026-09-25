@@ -216,10 +216,22 @@ export default function IncidentReportModal({
     }
   }, [caseData, safeScore, displayLevel])
 
-  // Target URL & IP Metadata from Screen Data
-  const targetUrl = caseData?.payloadUrl && caseData.payloadUrl !== 'No link' && caseData.payloadUrl !== 'None Detected' && !caseData.payloadUrl.includes('calendar.google.com')
-    ? caseData.payloadUrl
-    : (caseData?.urls?.[0] && !caseData.urls[0].includes('calendar.google.com') ? caseData.urls[0] : 'No external URLs detected')
+  const allCaseUrls = (caseData?.unmaskedUrls && caseData.unmaskedUrls.length > 0)
+    ? caseData.unmaskedUrls
+    : (Array.isArray(caseData?.urls) && caseData.urls.length > 0
+        ? caseData.urls
+        : (caseData?.payloadUrl && caseData.payloadUrl !== 'No link' && caseData.payloadUrl !== 'None Detected' ? [caseData.payloadUrl] : []))
+
+  const targetUrl = (function() {
+    if (caseData?.payloadUrl && caseData.payloadUrl !== 'No link' && caseData.payloadUrl !== 'None Detected' && !caseData.payloadUrl.includes('calendar.google.com')) {
+      return caseData.payloadUrl
+    }
+    if (allCaseUrls.length > 0) {
+      const u0 = allCaseUrls[0]
+      return typeof u0 === 'string' ? u0 : (u0.final || u0.unwrapped || u0.original || 'No external URLs detected')
+    }
+    return 'No external URLs detected'
+  })()
 
   const originIp = caseData?.originIp && caseData.originIp !== 'Not detected' && caseData.originIp !== 'Verified Gateway' && caseData.originIp !== 'Not Detected in Source Headers'
     ? caseData.originIp
@@ -297,7 +309,7 @@ export default function IncidentReportModal({
         raw_headers: caseData?.rawHeaders || '',
         risk_score: safeScore,
         risk_level: displayLevel,
-        urls: [targetUrl],
+        urls: allCaseUrls.length > 0 ? allCaseUrls : [targetUrl],
         ips: [originIp],
         device_fingerprint: deviceFingerprint,
         evidence_file_count: evidenceFiles.length,

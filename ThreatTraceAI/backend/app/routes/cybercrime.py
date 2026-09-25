@@ -80,7 +80,7 @@ class ReportIncidentRequest(BaseModel):
     recipient: Optional[str] = ""
     risk_score: Optional[float] = 0.0
     risk_level: Optional[str] = "LOW"
-    urls: Optional[List[str]] = []
+    urls: Optional[List[Any]] = []
     domains: Optional[List[str]] = []
     ips: Optional[List[str]] = []
 

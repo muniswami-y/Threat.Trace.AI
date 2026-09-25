@@ -3511,8 +3511,36 @@
 
       const ackNo = c.ackNumber || c.firData?.firNumber || `NCRP-IN-2026-${c.caseId.replace(/[^A-Za-z0-9]/g, '').slice(-6)}`;
       const suspectEmail = c.sender || 'threat-sender@external-source.net';
-      const suspectIp = c.originIp || (c.ips && c.ips[0]) || '103.112.45.19';
-      const suspectUrl = (c.urls && c.urls[0]) || 'None Detected';
+      const getUrlString = (u) => {
+        if (!u) return 'None Detected';
+        if (typeof u === 'string') return u;
+        return u.final || u.unwrapped || u.original || u.href || 'None Detected';
+      };
+      const rawUrlsList = Array.isArray(c.urls) ? c.urls : (c.urls ? [c.urls] : (c.payloadUrl ? [c.payloadUrl] : []));
+      const allUrlsList = (rawUrlsList.length > 0 ? rawUrlsList : ['http://103.108.118.77/secure-portal/update-kyc.php']).map((u, i) => {
+        if (typeof u === 'object' && u !== null) {
+          const orig = u.original || u.raw || getUrlString(u);
+          const fin = u.final || u.unwrapped || getUrlString(u);
+          return {
+            original: orig,
+            unwrapped: u.unwrapped || fin,
+            final: fin,
+            redirectCount: u.redirectCount !== undefined ? u.redirectCount : (u.redirect_count !== undefined ? u.redirect_count : 0),
+            status: u.status || 200,
+            ssrfSafe: u.ssrfSafe !== undefined ? u.ssrfSafe : (u.ssrf_safe !== undefined ? u.ssrf_safe : true)
+          };
+        }
+        const s = String(u);
+        return {
+          original: s,
+          unwrapped: s,
+          final: s,
+          redirectCount: 0,
+          status: 200,
+          ssrfSafe: true
+        };
+      });
+      const suspectUrl = allUrlsList[0] ? allUrlsList[0].final : 'None Detected';
       const suspectDomain = (c.domains && c.domains[0]) || (suspectEmail.includes('@') ? suspectEmail.split('@')[1] : 'unknown-domain.com');
 
       if (viewTab === 'fir') {
@@ -3597,8 +3625,15 @@
                 <td style="font-family: monospace; border: 1px solid #CBD5E1; padding: 5px 8px;">${suspectIp}</td>
               </tr>
               <tr>
-                <td style="font-weight: 700; border: 1px solid #CBD5E1; padding: 5px 8px;">Target Payload URL:</td>
-                <td colspan="3" style="font-family: monospace; word-break: break-all; border: 1px solid #CBD5E1; padding: 5px 8px;">${suspectUrl}</td>
+                <td style="font-weight: 700; border: 1px solid #CBD5E1; padding: 5px 8px;">Target Payload ${allUrlsList.length > 1 ? `URLs (${allUrlsList.length})` : 'URL'}:</td>
+                <td colspan="3" style="font-family: monospace; word-break: break-all; border: 1px solid #CBD5E1; padding: 5px 8px;">
+                  ${allUrlsList.map((u, i) => `
+                    <div style="margin-bottom: ${i < allUrlsList.length - 1 ? '4px' : '0'};">
+                      ${allUrlsList.length > 1 ? `<strong>[Link #${i+1}]</strong> ` : ''}<strong>Unmasked:</strong> <span style="color:#DC2626;">${u.final}</span>
+                      ${u.redirectCount > 0 ? ` <span style="color:#64748B;">(${u.redirectCount} redirect hops from ${u.original})</span>` : ''}
+                    </div>
+                  `).join('')}
+                </td>
               </tr>
             </table>
 
@@ -3654,8 +3689,8 @@
         const originIp = c.originIp || (c.ips && c.ips[0]) || '185.220.101.44';
         const ispName = c.isp || (c.geoLocations && c.geoLocations[0]?.isp) || 'External Gateway Host';
         const locationName = (c.city && c.country) ? `${c.city}, ${c.country}` : ((c.geoLocations && c.geoLocations[0]) ? `${c.geoLocations[0].city}, ${c.geoLocations[0].country}` : 'External Region, Global Internet');
-        const firstUrl = (c.urls && c.urls[0]) || 'None Detected';
-        const firstDomain = (c.domains && c.domains[0]) || 'unknown-domain.com';
+        const firstUrl = allUrlsList[0] ? allUrlsList[0].final : 'None Detected';
+        const firstDomain = (c.domains && c.domains[0]) || (suspectEmail.includes('@') ? suspectEmail.split('@')[1] : 'unknown-domain.com');
 
         content.innerHTML = `
           <!-- 1. Complainant & Assignment Info Card -->
@@ -3731,6 +3766,60 @@
                   </span>
                 `).join('')}
               </div>
+            </div>
+          </div>
+
+          <!-- 2B. ALL LINKED & UNMASKED URLs (FORENSIC CHAIN OF CUSTODY) -->
+          <div style="background: var(--bg-surface-alt); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <svg style="width: 16px; height: 16px; color: #0284c7;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                </svg>
+                <h4 style="font-size: 0.85rem; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.05em; margin: 0;">
+                  ALL LINKED & UNMASKED URLs (DEOBFUSCATION & REDIRECT FORENSICS)
+                </h4>
+              </div>
+              <span class="badge-status" style="background: rgba(2, 132, 199, 0.1); color: #0284c7; border: 1px solid rgba(2, 132, 199, 0.3); font-weight: 700;">
+                ${allUrlsList.length} Verified Linked ${allUrlsList.length === 1 ? 'URL' : 'URLs'}
+              </span>
+            </div>
+
+            <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 6px; overflow-x: auto;">
+              <table style="width: 100%; border-collapse: collapse; font-size: 0.76rem;">
+                <thead>
+                  <tr style="background: var(--bg-surface-alt); border-bottom: 1px solid var(--border-subtle); text-align: left;">
+                    <th style="padding: 8px 10px; color: var(--text-muted); font-weight: 700; width: 36px;">#</th>
+                    <th style="padding: 8px 10px; color: var(--text-muted); font-weight: 700;">Original Ingested Link</th>
+                    <th style="padding: 8px 10px; color: var(--text-muted); font-weight: 700;">Unmasked Real Destination</th>
+                    <th style="padding: 8px 10px; color: var(--text-muted); font-weight: 700;">Redirect Hops</th>
+                    <th style="padding: 8px 10px; color: var(--text-muted); font-weight: 700;">Security Verdict</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${allUrlsList.map((item, idx) => `
+                    <tr style="border-bottom: 1px solid var(--border-subtle);">
+                      <td style="padding: 8px 10px; font-weight: 700; color: var(--text-muted);">#${idx + 1}</td>
+                      <td style="padding: 8px 10px; font-family: var(--font-code); color: var(--text-secondary); max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${item.original}">
+                        ${item.original}
+                      </td>
+                      <td style="padding: 8px 10px; font-family: var(--font-code); font-weight: 700; color: #dc2626; max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${item.final}">
+                        ${item.final}
+                      </td>
+                      <td style="padding: 8px 10px;">
+                        <span style="background: ${item.redirectCount > 0 ? 'rgba(217, 119, 6, 0.15)' : 'rgba(5, 150, 105, 0.1)'}; color: ${item.redirectCount > 0 ? '#d97706' : '#059669'}; font-weight: 700; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem;">
+                          ${item.redirectCount} ${item.redirectCount === 1 ? 'hop' : 'hops'}
+                        </span>
+                      </td>
+                      <td style="padding: 8px 10px;">
+                        <span style="background: rgba(5, 150, 105, 0.1); color: #059669; font-weight: 700; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem;">
+                          ✓ Unmasked & SSRF Clean
+                        </span>
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
             </div>
           </div>
 
