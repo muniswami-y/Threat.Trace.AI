@@ -38,82 +38,8 @@ async def list_cases(limit: int = 50, db: AsyncSession = Depends(get_db)):
 
 @router.post("/seed")
 async def seed_demo_cases(db: AsyncSession = Depends(get_db)):
-    """Seed the database with sample demo cases if empty or requested."""
-    from pathlib import Path
-    from app.services.email_parser import parse_email_content
-    from app.services.header_analyzer import analyze_headers
-    from app.services.ioc_extractor import extract_iocs
-    from app.services.risk_engine import score_content, combine_scores
-    from app.services.blockchain_service import prepare_case_hash
-    import uuid
-    from datetime import datetime, timezone
-
-    demo_dir = Path(__file__).resolve().parents[3] / "demo_data"
-    created = []
-
-    files = list(demo_dir.glob("*.eml")) if demo_dir.exists() else []
-    for eml_file in files:
-        raw_text = eml_file.read_text(encoding="utf-8")
-        parsed = parse_email_content(raw_text)
-        
-        # Check if already seeded by subject (handle duplicates safely)
-        existing = await db.execute(select(Case).where(Case.subject == parsed.get("subject")))
-        if existing.scalars().first():
-            continue
-            
-        header_factors, header_pts = analyze_headers(parsed.get("headers") or {}, parsed.get("sender_email") or "")
-        iocs = extract_iocs(parsed.get("body_text") or "", parsed.get("headers"))
-        content_factors, content_pts = score_content(parsed.get("body_text") or "", parsed.get("subject") or "")
-        
-        # Check if phishing file
-        is_phish = "phish" in eml_file.name.lower()
-        score, level, rec, extra = combine_scores(header_pts, content_pts, 1 if is_phish else 0)
-        factors = header_factors + content_factors + extra
-        
-        case_id = f"TT-DEMO-{uuid.uuid4().hex[:6].upper()}"
-        
-        sample_geos = []
-        if iocs.get("ips"):
-            for ip in iocs["ips"]:
-                sample_geos.append({
-                    "ip": ip, "status": "success", "country": "United States",
-                    "region": "California", "city": "San Jose", "lat": 37.3382, "lon": -121.8863,
-                    "isp": "Cloudflare / CDN Relay"
-                })
-                
-        new_case = Case(
-            case_id=case_id,
-            subject=parsed.get("subject") or eml_file.stem.replace("_", " ").title(),
-            sender=parsed.get("sender_email") or parsed.get("from_header") or "unknown@demo.org",
-            recipient=parsed.get("to_header") or "analyst@enterprise.local",
-            raw_headers=str(parsed.get("headers")),
-            body_text=parsed.get("body_text"),
-            risk_score=score,
-            risk_level=level,
-            risk_factors=factors,
-            urls=[{"original": u, "final": u, "redirect_count": 0, "status": 200} for u in iocs.get("urls", [])],
-            domains=iocs.get("domains", []),
-            ips=iocs.get("ips", []),
-            geo_locations=sample_geos,
-            recommendation=rec,
-            is_reported=is_phish
-        )
-        case_dict = {
-            "case_id": case_id, "subject": new_case.subject, "sender": new_case.sender,
-            "risk_score": score, "risk_level": level, "urls": new_case.urls,
-            "domains": new_case.domains, "ips": new_case.ips, "recommendation": rec,
-            "created_at": datetime.now(timezone.utc).isoformat()
-        }
-        new_case.blockchain_hash = prepare_case_hash(case_dict)
-        if is_phish:
-            new_case.blockchain_tx = f"0x{uuid.uuid4().hex}{uuid.uuid4().hex}"[:66]
-            new_case.report_id = f"RPT-DEMO-{uuid.uuid4().hex[:6].upper()}"
-            
-        db.add(new_case)
-        created.append(case_id)
-
-    await db.commit()
-    return {"seeded_count": len(created), "case_ids": created}
+    """Seed the database with sample demo cases disabled."""
+    return {"seeded_count": 0, "case_ids": []}
 
 @router.get("/{case_id}")
 async def get_case(case_id: str, db: AsyncSession = Depends(get_db)):

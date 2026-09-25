@@ -25,19 +25,7 @@ URGENCY = ["urgent", "immediately", "account locked", "verify immediately", "sus
 CREDENTIAL = ["password", "login", "verify your account", "otp", "reset your password"]
 FINANCIAL = ["wire transfer", "invoice", "overdue", "bank details", "gift card"]
 
-DEMO_PHISH = """From: payroll-reminder@urgent-verify-now.net
-Subject: Urgent: Account Lockout Warning - Immediate Verification Required
 
-Your payroll account has been suspended. Verify immediately or it will be locked.
-Reset your password here: {live_url}
-"""
-
-DEMO_SAFE = """From: noreply@github.com
-Subject: [GitHub] Please reset your password
-
-We received a password reset request for your GitHub account.
-If this was you, continue on github.com. If not, ignore this email.
-"""
 
 
 def fetch_text(url: str, timeout: int = 20) -> str:
@@ -194,20 +182,7 @@ def main() -> None:
     for u in live_urls[:5]:
         print(f"      - {u}")
 
-    live_url = live_urls[0]
-    print("\n[2] Scoring a phishing-style email that contains a LIVE feed URL")
-    phish = analyze(DEMO_PHISH.format(live_url=live_url), live_bad, live_domains)
-    print(f"    SCORE {phish['risk_score']:.0f}/100  {phish['risk_level']} -> {phish['recommendation']}")
-    print(f"    points breakdown: {phish['points']}")
-    for f in phish["risk_factors"]:
-        print(f"      - {f}")
 
-    print("\n[3] Scoring a legitimate-looking GitHub mail (no live IOC)")
-    safe = analyze(DEMO_SAFE, live_bad, live_domains)
-    print(f"    SCORE {safe['risk_score']:.0f}/100  {safe['risk_level']} -> {safe['recommendation']}")
-    print(f"    points breakdown: {safe['points']}")
-    for f in safe["risk_factors"]:
-        print(f"      - {f}")
 
     print("\n[4] Live GeoIP on a public resolver (1.1.1.1) via ip-api.com")
     try:

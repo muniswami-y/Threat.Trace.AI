@@ -86,11 +86,41 @@ FREE_EMAIL_PROVIDERS = {
     "rediffmail.com",
 }
 
+# Verified Legitimate Service Providers & Cloud/Dev Infrastructure
+# Notifications from these domains should not trigger urgency/failure false-positives
+TRUSTED_SERVICES_DOMAINS = {
+    "github.com", "koyeb.com", "google.com", "accounts.google.com",
+    "gitlab.com", "bitbucket.org", "atlassian.com", "atlassian.net", "jira.com", "trello.com",
+    "docker.com", "docker.io", "vercel.com", "vercel.app", "render.com",
+    "railway.app", "fly.io", "netlify.com", "netlify.app", "heroku.com",
+    "digitalocean.com", "linode.com", "aws.amazon.com", "amazonaws.com",
+    "microsoft.com", "azure.com", "office.com", "office365.com",
+    "cloudflare.com", "sentry.io", "datadog.com", "newrelic.com",
+    "slack.com", "slack-msgs.com", "stripe.com", "npmjs.com", "npmjs.org",
+    "python.org", "pypi.org", "apple.com", "threattrace.ai",
+}
+
+
+def is_trusted_service_domain(sender: str) -> bool:
+    """Check if the sender email originates from an officially verified service provider."""
+    if not sender:
+        return False
+    s = sender.lower().strip()
+    match = re.search(r'([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)', s)
+    email = match.group(1) if match else s
+    domain = email.split('@')[-1] if '@' in email else email
+    domain = domain.strip().lower()
+    return any(domain == td or domain.endswith("." + td) for td in TRUSTED_SERVICES_DOMAINS)
+
 
 # ===================================================================
 # CONTENT SCORING
 # ===================================================================
-def score_content(body: str, subject: str = "") -> Tuple[List[str], int]:
+def score_content(body: str, subject: str = "", is_trusted: bool = False) -> Tuple[List[str], int]:
+    if is_trusted:
+        # Legitimate CI/CD, build failure, and provider status emails are not phishing lures
+        return ["Verified trusted developer/service communication pattern."], 0
+
     text = f"{subject} {body}".lower()
     factors = []
     points = 0

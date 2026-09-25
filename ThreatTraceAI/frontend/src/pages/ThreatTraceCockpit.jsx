@@ -443,6 +443,7 @@ export default function ThreatTraceCockpit() {
       ipBar: isSafe ? 'green' : (isPrivateOrigin ? 'orange' : (isHigh ? 'red' : 'green')),
       urlBar: isHigh ? 'red' : isMed ? 'orange' : 'green',
       headerBar: isHigh ? 'red' : 'green',
+      traversalIps: Array.isArray(safeObj.ips) && safeObj.ips.length > 0 ? safeObj.ips.map(ip => typeof ip === 'string' ? ip : ip.ip).filter(Boolean) : [originIp],
       originIp: originIp,
       payloadDomain: resolvedPayloadDomain,
       payloadIp: payloadIp,
@@ -1011,10 +1012,10 @@ export default function ThreatTraceCockpit() {
               <div style={{ background: 'var(--bg-subtle)', padding: '12px 14px', borderRadius: 'var(--radius-md)', border: 'none' }}>
                 <div style={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: data?.riskScore === 0 ? '#10B981' : '#EF4444' }} />
-                  <span>Sender Origin IPv4</span>
+                  <span>IP Traversal Path</span>
                 </div>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.88rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                  {data?.originIp || 'Verified Gateway'}
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.88rem', fontWeight: 700, color: 'var(--text-primary)', wordBreak: 'break-all' }}>
+                  {data?.traversalIps?.join(' → ') || data?.originIp || 'Verified Gateway'}
                 </div>
                 <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '2px' }}>
                   ASN: {data?.isp || 'Trusted Corporate Gateway'}

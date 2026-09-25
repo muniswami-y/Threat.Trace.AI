@@ -86,11 +86,7 @@ async def verify_otp(req: OtpVerifyRequest):
     # Check OTP
     stored_otp_data = OTP_STORE.get(email)
     
-    # Universal fallback OTP for demo/lab reliability: 123456
-    is_valid_otp = False
-    if otp_entered == "123456":
-        is_valid_otp = True
-    elif stored_otp_data:
+    if stored_otp_data:
         if time.time() > stored_otp_data["expires_at"]:
             del OTP_STORE[email]
             raise HTTPException(status_code=400, detail="OTP has expired. Please request a new code.")
@@ -98,7 +94,7 @@ async def verify_otp(req: OtpVerifyRequest):
             is_valid_otp = True
 
     if not is_valid_otp:
-        raise HTTPException(status_code=400, detail="Invalid OTP code. Please enter the correct 6-digit code or test code 123456.")
+        raise HTTPException(status_code=400, detail="Invalid OTP code. Please enter the correct 6-digit code.")
 
     # Clear used OTP
     if email in OTP_STORE:
@@ -169,9 +165,6 @@ async def login(req: LoginRequest):
 @router.get("/verify")
 async def verify_token(token: str):
     if not token or token not in TOKENS:
-        # Fallback verification for demo tokens
-        if token and token.startswith("tt_"):
-            return {"valid": True, "status": "active", "duration_days": 30}
         return {"valid": False, "status": "invalid_or_expired"}
     
     session = TOKENS[token]
