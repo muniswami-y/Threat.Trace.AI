@@ -2,7 +2,7 @@
 // v1.3.1 – MV3 keepalive + canary trap support + local resilient heuristic fallback + Live Render Backend & Vercel
 const LIVE_BASE_URL = 'https://threat-trace-ai.onrender.com';
 const LIVE_DASHBOARD_URL = 'https://threat-trace-ai.vercel.app';
-const LOCAL_BASE_URL_1 = 'http://127.0.0.1:8000';
+const LOCAL_BASE_URL_1 = 'https://threat-trace-ai.onrender.com';
 const LOCAL_BASE_URL_2 = 'http://localhost:8000';
 
 // 30 Days (1 Month) Session Lifespan in Milliseconds
