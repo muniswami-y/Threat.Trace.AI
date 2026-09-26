@@ -427,7 +427,10 @@ Cryptographic Custody: ECDSA-SECP256R1 Sealed (Polygon Amoy)`
   <div class="fir-container">
     <div class="watermark">OFFICIAL COMPLAINT FIR</div>
 
-    <div class="fir-header">
+    <div class="fir-header" style="position: relative; padding: 10px 80px;">
+      <img src="${window.location.origin}/logo.png" alt="Threat Trace AI" style="position: absolute; left: 0; top: 50%; transform: translateY(-50%); height: 64px; object-fit: contain;" />
+      <img src="https://res.cloudinary.com/dfnoy78m8/image/upload/v1790424891/nprquyyd5oisxrnnw8dr.png" alt="Cyber Crime Dept" style="position: absolute; right: 0; top: 50%; transform: translateY(-50%); height: 64px; object-fit: contain;" />
+      
       <div class="fir-emblem">🏛️</div>
       <div class="govt-title">GOVERNMENT OF INDIA • MINISTRY OF HOME AFFAIRS</div>
       <div class="dept-title">NATIONAL CYBER CRIME REPORTING PORTAL (NCRP)</div>
