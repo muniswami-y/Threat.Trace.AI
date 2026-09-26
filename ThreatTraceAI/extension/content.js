@@ -792,20 +792,27 @@
       if (dismissed.includes(cleanSender)) return;
     } catch (e) {}
 
-    // Detect actual count of search results specifically inside table
+    // Detect actual count of search results
     let realCount = 0;
-    const searchTableRows = document.querySelectorAll('div[role="main"] table.F.cf.zt tr.zA, div[role="main"] div.UI table tr.zA');
-    if (searchTableRows.length > 0) {
-      realCount = searchTableRows.length;
-    } else {
-      // Pager text inside search results toolbar
-      const searchPager = document.querySelector('div.D.E.G-atb span.Dj, div.ar5 span.Dj');
-      if (searchPager) {
-        const txt = (searchPager.textContent || '').trim();
-        const pMatch = txt.match(/\bof\s+(\d+)\b/i) || txt.match(/1-\d+\s+of\s+(\d+)/i);
-        if (pMatch) {
-          realCount = parseInt(pMatch[1], 10) || 0;
-        }
+    
+    // Always prefer the pager text inside search results toolbar for true total count
+    const searchPager = document.querySelector('div.D.E.G-atb span.Dj, div.ar5 span.Dj');
+    if (searchPager) {
+      const txt = (searchPager.textContent || '').trim();
+      const pMatch = txt.match(/\bof\s+([\d,]+)\b/i) || txt.match(/1-\d+\s+of\s+([\d,]+)/i);
+      if (pMatch) {
+        realCount = parseInt(pMatch[1].replace(/,/g, ''), 10) || 0;
+      } else if (txt.match(/^[\d,]+$/)) {
+        // Sometimes it might just be a bare number
+        realCount = parseInt(txt.replace(/,/g, ''), 10) || 0;
+      }
+    }
+
+    // Fallback to table rows if pager is missing or unparseable
+    if (realCount === 0) {
+      const searchTableRows = document.querySelectorAll('div[role="main"] table.F.cf.zt tr.zA, div[role="main"] div.UI table tr.zA');
+      if (searchTableRows.length > 0) {
+        realCount = searchTableRows.length;
       }
     }
 
