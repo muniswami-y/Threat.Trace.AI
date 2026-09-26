@@ -817,6 +817,7 @@ Target URL: ${effectiveUrl}
                           ip: effectiveIp,
                           host: `unresolved-ptr-${effectiveIp}.dynamic.pool.net`,
                           meta: 'TLS 1.3 Cipher ECDHE-RSA-AES256 • SPF Result: SOFTFAIL',
+                          geo: effectiveIp === '103.108.118.77' ? 'Mumbai, Maharashtra, India' : 'Location Pending',
                           status: 'warning',
                           delay: '0ms'
                         },
@@ -825,6 +826,7 @@ Target URL: ${effectiveUrl}
                           ip: '198.51.100.42',
                           host: 'relay-mta-tier2.internal.node',
                           meta: 'DKIM Signature Check: NEUTRAL (Spoof Detected)',
+                          geo: 'Internal Subnet',
                           status: 'warning',
                           delay: '+214ms'
                         },
@@ -833,6 +835,7 @@ Target URL: ${effectiveUrl}
                           ip: '172.217.194.27',
                           host: 'mx.google.com (ESMTP Ingress)',
                           meta: 'DMARC Policy Enforcement: FAIL (p=REJECT) • Quarantine Flagged',
+                          geo: 'Mountain View, CA, US',
                           status: 'danger',
                           delay: '+1820ms'
                         }
@@ -871,7 +874,7 @@ Target URL: ${effectiveUrl}
                               <span style={{ fontSize: '0.72rem', color: '#64748B', fontFamily: 'monospace' }}>Delay: {item.delay}</span>
                             </div>
                             <div style={{ fontSize: '0.76rem', color: '#0284C7', fontFamily: 'monospace', marginTop: '2px' }}>
-                              IP: {item.ip} • Host: {item.host}
+                              IP: {item.ip} • Host: {item.host} {item.geo ? `• Location: ${item.geo}` : ''}
                             </div>
                             <div style={{ fontSize: '0.74rem', color: '#475569', marginTop: '2px' }}>
                               {item.meta}
