@@ -635,15 +635,17 @@ Cryptographic Custody: ECDSA-SECP256R1 Sealed (Polygon Amoy)`
               width: '44px',
               height: '44px',
               borderRadius: '12px',
-              background: 'linear-gradient(135deg, rgba(220, 38, 38, 0.1) 0%, rgba(217, 119, 6, 0.12) 100%)',
-              color: '#DC2626',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '1.3rem',
-              flexShrink: 0
+              flexShrink: 0,
+              overflow: 'hidden'
             }}>
-              🚨
+              <img 
+                src="https://res.cloudinary.com/dfnoy78m8/image/upload/v1790424891/nprquyyd5oisxrnnw8dr.png" 
+                alt="Cyber Crime Siren" 
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
             </div>
             <div>
               <h2 style={{
