@@ -358,4 +358,58 @@ fig.savefig('temp_report_assets/fig8_danger_meter.png', dpi=300, bbox_inches='ti
 plt.close(fig)
 print("Saved fig8_danger_meter.png")
 
+
+# -------------------------------------------------------------
+# FIGURE 9: COMPLETE OPERATIONAL LIFECYCLE (INSTALL TO CASE CLOSED)
+# -------------------------------------------------------------
+fig, ax = plt.subplots(figsize=(10.5, 5.8), dpi=300)
+ax.set_facecolor('#F8FAFC')
+fig.patch.set_facecolor('#FFFFFF')
+ax.axis('off')
+
+# 8 Phase boxes arranged in a 2x4 grid or clean snake flow
+phases = [
+    ("PHASE 1: INSTALLATION", "User installs Chrome MV3\nBinds to Gmail / Outlook\nZero password permissions\nReady in 10 seconds!", "#0284C7", 0.03, 0.55),
+    ("PHASE 2: INBOX INTERCEPT", "Phishing email arrives\nScrapes raw MIME envelope\nExtracts headers & DOM\nRuns in 1.2 milliseconds", "#0EA5E9", 0.27, 0.55),
+    ("PHASE 3: FORENSIC LAB", "14-Stage Forensic Engine\nBayesian NLP word counts\nShannon Entropy DGA check\n10-Hop URL unmasking", "#059669", 0.51, 0.55),
+    ("PHASE 4: USER PROTECTION", "Danger Gauge lights RED!\nPhishing links blocked\nUser clicks 'Open Cockpit'\n3D Globe shows origin", "#D97706", 0.75, 0.55),
+
+    ("PHASE 8: CASE CLOSED", "Judge convicts attacker\nVictim funds protected\nGlobal threat feed updated\nMillions safeguarded!", "#10B981", 0.03, 0.06),
+    ("PHASE 7: COURT TRIAL", "Section 65B admitted!\nHash matches on blockchain\n100% indisputable proof\nJudge accepts all evidence", "#6366F1", 0.27, 0.06),
+    ("PHASE 6: POLICE MANHUNT", "Cyber Crime Cell notified\nTiming correlation matches\nISP Subpoena issued\nRaids & Arrests executed!", "#DC2626", 0.51, 0.06),
+    ("PHASE 5: EVIDENCE VAULT", "ECDSA SECP256R1 Seal\nPolygon Blockchain Block\nInstant NCRP FIR Dossier\nTamper-proof forever", "#8B5CF6", 0.75, 0.06),
+]
+
+for title, desc, color, x, y in phases:
+    rect = patches.FancyBboxPatch((x, y), 0.21, 0.38, boxstyle="round,pad=0.02,rounding_size=0.03",
+                                  facecolor='#FFFFFF', edgecolor=color, linewidth=2.2, zorder=2)
+    ax.add_patch(rect)
+    hbar = patches.FancyBboxPatch((x, y + 0.27), 0.21, 0.11, boxstyle="round,pad=0.02,rounding_size=0.03",
+                                  facecolor=color, edgecolor=color, linewidth=0, zorder=3)
+    ax.add_patch(hbar)
+    ax.text(x + 0.105, y + 0.325, title, ha='center', va='center', color='#FFFFFF', fontsize=7.8, fontweight='bold', zorder=4)
+    ax.text(x + 0.105, y + 0.135, desc, ha='center', va='center', color='#334155', fontsize=7.0, linespacing=1.35, zorder=4)
+
+# Forward arrows on top row
+for x in [0.24, 0.48, 0.72]:
+    ax.annotate('', xy=(x + 0.03, 0.74), xytext=(x, 0.74),
+                arrowprops=dict(facecolor='#0284C7', edgecolor='#0284C7', width=1.6, headwidth=5.5, headlength=5.5))
+
+# Downward transition arrow from Phase 4 to Phase 5
+ax.annotate('', xy=(0.85, 0.44), xytext=(0.85, 0.55),
+            arrowprops=dict(facecolor='#8B5CF6', edgecolor='#8B5CF6', width=2.0, headwidth=6, headlength=6))
+
+# Leftward arrows on bottom row (from Phase 5 to 6, 6 to 7, 7 to 8)
+for x in [0.75, 0.51, 0.27]:
+    ax.annotate('', xy=(x - 0.03, 0.25), xytext=(x, 0.25),
+                arrowprops=dict(facecolor='#059669', edgecolor='#059669', width=1.6, headwidth=5.5, headlength=5.5))
+
+ax.set_title("The Complete ThreatTrace AI Operational Journey\nFrom Extension Installation to Police Investigation, Court Conviction & Case Solved",
+             fontsize=11.5, fontweight='bold', color='#0F172A', pad=15)
+plt.tight_layout()
+fig.savefig('temp_report_assets/fig9_lifecycle_flowchart.png', dpi=300, bbox_inches='tight')
+plt.close(fig)
+print("Saved fig9_lifecycle_flowchart.png")
+
 print("All enhanced figures successfully generated!")
+
