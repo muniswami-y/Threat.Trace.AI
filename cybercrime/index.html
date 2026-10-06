@@ -3511,6 +3511,7 @@
 
       const ackNo = c.ackNumber || c.firData?.firNumber || `NCRP-IN-2026-${c.caseId.replace(/[^A-Za-z0-9]/g, '').slice(-6)}`;
       const suspectEmail = c.sender || 'threat-sender@external-source.net';
+      const suspectIp = c.originIp || (c.ips && c.ips[0]) || '103.112.45.19';
       const getUrlString = (u) => {
         if (!u) return 'None Detected';
         if (typeof u === 'string') return u;
