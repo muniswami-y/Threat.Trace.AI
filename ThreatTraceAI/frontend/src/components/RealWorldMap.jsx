@@ -64,12 +64,17 @@ export default function RealWorldMap({
     })
     mapInstanceRef.current = map
 
-    // Tile Layer URL selection (CartoDB Positron Light by default for crisp white theme)
+    // Tile Layer URL selection (CartoDB Positron Light by default for crisp white theme, NO API KEY NEEDED)
+    const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN || null
+
     let tileUrl = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
     let subdomains = 'abcd'
     let maxZoom = 19
 
-    if (activeTileLayer === 'osm') {
+    if (activeTileLayer === 'mapbox' && mapboxToken) {
+      tileUrl = `https://api.mapbox.com/styles/v1/mapbox/light-v11/tiles/{z}/{x}/{y}?access_token=${mapboxToken}`
+      subdomains = 'abcd'
+    } else if (activeTileLayer === 'osm') {
       tileUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
       subdomains = 'abc'
     } else if (activeTileLayer === 'satellite') {
