@@ -9,13 +9,16 @@ import * as THREE from 'three'
 export default function ThreatGlobe3D({ 
   locations = [], 
   riskLevel = 'HIGH', 
-  riskScore = null,
-  height = 320,
-  showControls = true 
+  riskScore = null, 
+  height = 280, 
+  showControls = true,
+  theme = 'white'
 }) {
   const mountRef = useRef(null)
+  const [currentTheme, setCurrentTheme] = useState(theme)
   const [isRotating, setIsRotating] = useState(true)
   const [selectedLoc, setSelectedLoc] = useState(null)
+  const isLight = currentTheme === 'white' || currentTheme === 'light'
   const [cameraView, setCameraView] = useState('auto') // 'auto' | 'top' | 'threat'
   const sceneRef = useRef(null)
   const globeGroupRef = useRef(null)
@@ -373,64 +376,95 @@ export default function ThreatGlobe3D({
   return (
     <div style={{
       position: 'relative',
-      background: 'radial-gradient(circle at 50% 50%, #0c182c 0%, #030712 100%)',
-      borderRadius: '14px',
-      border: '1px solid rgba(56, 189, 248, 0.2)',
-      boxShadow: '0 12px 36px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.1)',
+      background: isLight 
+        ? 'linear-gradient(180deg, #F8FAFC 0%, #EFF6FF 100%)' 
+        : 'radial-gradient(circle at 50% 50%, #0c182c 0%, #030712 100%)',
+      borderRadius: '12px',
+      border: isLight ? '1px solid #E2E8F0' : '1px solid rgba(56, 189, 248, 0.2)',
+      boxShadow: isLight ? '0 2px 8px rgba(0, 0, 0, 0.04)' : '0 12px 36px rgba(0, 0, 0, 0.6)',
       overflow: 'hidden'
     }}>
-      {/* Top Header Overlay */}
+      {/* Top Header Overlay with Theme & Rotation Toggles */}
       <div style={{
         position: 'absolute',
-        top: '12px',
-        left: '14px',
-        right: '14px',
+        top: '8px',
+        left: '10px',
+        right: '10px',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
         zIndex: 10,
         pointerEvents: 'none'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          background: isLight ? 'rgba(255, 255, 255, 0.92)' : 'rgba(15, 23, 42, 0.75)',
+          backdropFilter: 'blur(8px)',
+          padding: '4px 10px',
+          borderRadius: '8px',
+          border: isLight ? '1px solid #E2E8F0' : '1px solid rgba(255, 255, 255, 0.08)',
+          boxShadow: isLight ? '0 2px 6px rgba(0, 0, 0, 0.05)' : 'none',
+          pointerEvents: 'auto'
+        }}>
           <span style={{
             display: 'inline-block',
-            width: '8px',
-            height: '8px',
+            width: '7px',
+            height: '7px',
             borderRadius: '50%',
             background: hexColorStr,
-            boxShadow: `0 0 10px ${hexColorStr}`
+            boxShadow: `0 0 8px ${hexColorStr}`
           }} />
           <span style={{
-            fontSize: '0.78rem',
+            fontSize: '0.7rem',
             fontWeight: 800,
-            letterSpacing: '0.06em',
+            letterSpacing: '0.04em',
             textTransform: 'uppercase',
-            color: '#f8fafc',
+            color: isLight ? '#0F172A' : '#f8fafc',
             fontFamily: 'var(--font-mono)'
           }}>
-            3D Cyber Threat Telemetry Globe
+            3D Threat Telemetry Globe
           </span>
         </div>
 
         <div style={{
           display: 'flex',
-          gap: '6px',
+          gap: '4px',
           pointerEvents: 'auto'
         }}>
           <button
-            onClick={() => setIsRotating(!isRotating)}
+            type="button"
+            onClick={() => setCurrentTheme(isLight ? 'dark' : 'white')}
             style={{
-              background: isRotating ? 'rgba(56, 189, 248, 0.15)' : 'rgba(255, 255, 255, 0.05)',
-              border: `1px solid ${isRotating ? '#38bdf8' : 'rgba(255, 255, 255, 0.15)'}`,
-              color: isRotating ? '#38bdf8' : '#94a3b8',
+              background: isLight ? '#FFFFFF' : 'rgba(255, 255, 255, 0.08)',
+              border: isLight ? '1px solid #E2E8F0' : '1px solid rgba(255, 255, 255, 0.15)',
+              color: isLight ? '#475569' : '#cbd5e1',
               padding: '3px 8px',
               borderRadius: '6px',
-              fontSize: '0.68rem',
+              fontSize: '0.64rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              boxShadow: isLight ? '0 1px 3px rgba(0, 0, 0, 0.05)' : 'none'
+            }}
+          >
+            {isLight ? '🌙 Dark' : '☀️ White'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsRotating(!isRotating)}
+            style={{
+              background: isRotating ? (isLight ? '#E0F2FE' : 'rgba(56, 189, 248, 0.15)') : (isLight ? '#FFFFFF' : 'rgba(255, 255, 255, 0.05)'),
+              border: `1px solid ${isRotating ? '#38BDF8' : (isLight ? '#E2E8F0' : 'rgba(255, 255, 255, 0.15)')}`,
+              color: isRotating ? '#0284C7' : (isLight ? '#64748B' : '#94A3B8'),
+              padding: '3px 8px',
+              borderRadius: '6px',
+              fontSize: '0.64rem',
               fontWeight: 700,
               cursor: 'pointer'
             }}
           >
-            {isRotating ? '⏸ PAUSE ROTATION' : '▶ SPIN GLOBE'}
+            {isRotating ? '⏸ PAUSE' : '▶ SPIN'}
           </button>
         </div>
       </div>
@@ -445,16 +479,16 @@ export default function ThreatGlobe3D({
         }} 
       />
 
-      {/* Bottom Telemetry HUD Bar */}
+      {/* Bottom Telemetry HUD Bar (White Themed) */}
       <div style={{
         position: 'absolute',
         bottom: '8px',
         left: '10px',
         right: '10px',
-        background: 'rgba(8, 14, 26, 0.72)',
+        background: isLight ? 'rgba(255, 255, 255, 0.95)' : 'rgba(8, 14, 26, 0.72)',
         backdropFilter: 'blur(10px)',
-        border: '1px solid rgba(56, 189, 248, 0.22)',
-        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4)',
+        border: isLight ? '1px solid #E2E8F0' : '1px solid rgba(56, 189, 248, 0.22)',
+        boxShadow: isLight ? '0 2px 8px rgba(0, 0, 0, 0.06)' : '0 4px 16px rgba(0, 0, 0, 0.4)',
         borderRadius: '8px',
         padding: '5px 10px',
         display: 'flex',
@@ -465,11 +499,11 @@ export default function ThreatGlobe3D({
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
           <span style={{ fontSize: '0.95rem' }}>📍</span>
           <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: '0.74rem', fontWeight: 700, color: '#f8fafc', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <div style={{ fontSize: '0.74rem', fontWeight: 700, color: isLight ? '#0F172A' : '#f8fafc', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {primaryLoc.city || 'Origin City'}, {primaryLoc.country || 'Host Country'}
             </div>
-            <div style={{ fontSize: '0.64rem', color: '#94a3b8', fontFamily: 'var(--font-mono)' }}>
-              IP: {primaryLoc.ip || 'Unknown'} • Lat: {primaryLoc.lat || '0'} Lon: {primaryLoc.lon || '0'}
+            <div style={{ fontSize: '0.64rem', color: isLight ? '#64748B' : '#94a3b8', fontFamily: 'var(--font-mono)' }}>
+              IP: <span style={{ color: '#0284C7', fontWeight: 600 }}>{primaryLoc.ip || 'Unknown'}</span> • Lat: {primaryLoc.lat || '0'} Lon: {primaryLoc.lon || '0'}
             </div>
           </div>
         </div>
@@ -478,11 +512,12 @@ export default function ThreatGlobe3D({
           {activeLocations.map((loc, i) => (
             <button
               key={i}
+              type="button"
               onClick={() => focusLocation(loc)}
               style={{
-                background: selectedLoc === loc ? 'rgba(56, 189, 248, 0.25)' : 'rgba(255, 255, 255, 0.04)',
-                border: `1px solid ${selectedLoc === loc ? '#38bdf8' : 'rgba(255, 255, 255, 0.1)'}`,
-                color: selectedLoc === loc ? '#38bdf8' : '#cbd5e1',
+                background: selectedLoc === loc ? '#0284C7' : (isLight ? '#F1F5F9' : 'rgba(255, 255, 255, 0.04)'),
+                border: `1px solid ${selectedLoc === loc ? '#0284C7' : (isLight ? '#E2E8F0' : 'rgba(255, 255, 255, 0.1)')}`,
+                color: selectedLoc === loc ? '#FFFFFF' : (isLight ? '#334155' : '#cbd5e1'),
                 borderRadius: '4px',
                 padding: '2px 5px',
                 fontSize: '0.62rem',

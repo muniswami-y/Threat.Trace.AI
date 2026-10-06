@@ -10,6 +10,7 @@ import SOCDispatchModal from '../components/SOCDispatchModal'
 import QuarantineVaultModal from '../components/QuarantineVaultModal'
 import IncidentReportModal from '../components/IncidentReportModal'
 import ThreatGlobe3D from '../components/ThreatGlobe3D'
+import RealWorldMap from '../components/RealWorldMap'
 
 export default function ThreatTraceCockpit() {
   const { caseId } = useParams()
@@ -19,7 +20,7 @@ export default function ThreatTraceCockpit() {
 
   // Case & Forensic State
   const [data, setData] = useState(() => formatCaseRecord(null, ''))
-  const [geoViewMode, setGeoViewMode] = useState('globe') // 'globe' | 'grid'
+  const [geoViewMode, setGeoViewMode] = useState('realmap') // 'realmap' | 'globe' | 'grid'
   const [actionDone, setActionDone] = useState(false)
   const [reportedMsg, setReportedMsg] = useState(null)
   const [loadingCase, setLoadingCase] = useState(false)
@@ -1015,6 +1016,23 @@ export default function ThreatTraceCockpit() {
               <div style={{ display: 'flex', gap: '4px', background: 'rgba(0,0,0,0.06)', padding: '2px', borderRadius: '6px' }}>
                 <button
                   type="button"
+                  onClick={() => setGeoViewMode('realmap')}
+                  style={{
+                    padding: '3px 8px',
+                    fontSize: '0.68rem',
+                    fontWeight: 700,
+                    borderRadius: '4px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    background: geoViewMode === 'realmap' ? '#0284C7' : 'transparent',
+                    color: geoViewMode === 'realmap' ? '#fff' : 'var(--text-muted)',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  🗺️ Real Map
+                </button>
+                <button
+                  type="button"
                   onClick={() => setGeoViewMode('globe')}
                   style={{
                     padding: '3px 8px',
@@ -1023,7 +1041,7 @@ export default function ThreatTraceCockpit() {
                     borderRadius: '4px',
                     border: 'none',
                     cursor: 'pointer',
-                    background: geoViewMode === 'globe' ? '#3B82F6' : 'transparent',
+                    background: geoViewMode === 'globe' ? '#0284C7' : 'transparent',
                     color: geoViewMode === 'globe' ? '#fff' : 'var(--text-muted)',
                     transition: 'all 0.2s ease'
                   }}
@@ -1040,7 +1058,7 @@ export default function ThreatTraceCockpit() {
                     borderRadius: '4px',
                     border: 'none',
                     cursor: 'pointer',
-                    background: geoViewMode === 'grid' ? '#3B82F6' : 'transparent',
+                    background: geoViewMode === 'grid' ? '#0284C7' : 'transparent',
                     color: geoViewMode === 'grid' ? '#fff' : 'var(--text-muted)',
                     transition: 'all 0.2s ease'
                   }}
@@ -1050,13 +1068,35 @@ export default function ThreatTraceCockpit() {
               </div>
             </div>
 
-            {geoViewMode === 'globe' ? (
+            {geoViewMode === 'realmap' ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <RealWorldMap
+                  locations={data?.geoLocations || []}
+                  primaryIp={data?.originIp || '103.108.118.77'}
+                  riskLevel={data?.riskLevel}
+                  riskScore={data?.riskScore}
+                  height={280}
+                />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-subtle)', padding: '8px 12px', borderRadius: 'var(--radius-md)', fontSize: '0.72rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: data?.riskScore === 0 ? '#10B981' : '#EF4444' }} />
+                    <span style={{ color: 'var(--text-muted)' }}>GPS Origin:</span>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--text-primary)' }}>{data?.originIp || '103.108.118.77'}</span>
+                    <span style={{ color: 'var(--text-muted)' }}>({data?.city || 'Mumbai'}, {data?.country || 'India'})</span>
+                  </div>
+                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: '#0284C7', fontWeight: 600 }}>
+                    {data?.coordinates || '19.0760, 72.8777'} • {data?.isp || 'Banking Infrastructure'}
+                  </div>
+                </div>
+              </div>
+            ) : geoViewMode === 'globe' ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <ThreatGlobe3D 
                   locations={data?.geoLocations || []} 
                   riskLevel={data?.riskLevel} 
                   riskScore={data?.riskScore} 
                   height={280} 
+                  theme="white"
                 />
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-subtle)', padding: '8px 12px', borderRadius: 'var(--radius-md)', fontSize: '0.72rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>

@@ -9,13 +9,17 @@ import * as THREE from 'three'
 export default function CyberMatrix3D({ 
   riskLevel = 'HIGH', 
   riskScore = null, 
-  height = 240 
+  height = 240,
+  theme = 'white'
 }) {
   const mountRef = useRef(null)
+  const [currentTheme, setCurrentTheme] = useState(theme)
   const [selectedNode, setSelectedNode] = useState(null)
   const isCritical = riskScore !== null ? Number(riskScore) >= 70 : (riskLevel === 'HIGH' || riskLevel === 'CRITICAL')
   const themeColor = isCritical ? 0xef4444 : 0x10b981
   const hexStr = isCritical ? '#ef4444' : '#10b981'
+
+  const isLight = currentTheme === 'white' || currentTheme === 'light'
 
   const animFrameId = useRef(null)
   const isDraggingRef = useRef(false)
@@ -60,9 +64,9 @@ export default function CyberMatrix3D({
     scene.add(matrixGroup)
 
     // 3. 3D Isometric Cyber Grid Floor
-    const gridHelper = new THREE.GridHelper(16, 16, 0x0284c7, 0x1e293b)
+    const gridHelper = new THREE.GridHelper(16, 16, 0x0284c7, isLight ? 0xcbd5e1 : 0x1e293b)
     gridHelper.position.y = -1.8
-    gridHelper.material.opacity = 0.25
+    gridHelper.material.opacity = isLight ? 0.35 : 0.25
     gridHelper.material.transparent = true
     matrixGroup.add(gridHelper)
 
@@ -297,14 +301,17 @@ export default function CyberMatrix3D({
       }
       renderer.dispose()
     }
-  }, [riskLevel, riskScore, height])
+  }, [riskLevel, riskScore, height, currentTheme])
 
   return (
     <div style={{
       position: 'relative',
-      background: 'radial-gradient(circle at 50% 50%, #0c182c 0%, #030712 100%)',
+      background: isLight 
+        ? 'linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 100%)' 
+        : 'radial-gradient(circle at 50% 50%, #0c182c 0%, #030712 100%)',
       borderRadius: '12px',
-      border: '1px solid rgba(56, 189, 248, 0.2)',
+      border: isLight ? '1px solid #E2E8F0' : '1px solid rgba(56, 189, 248, 0.2)',
+      boxShadow: isLight ? '0 2px 8px rgba(0, 0, 0, 0.04)' : '0 8px 32px rgba(0, 0, 0, 0.35)',
       overflow: 'hidden'
     }}>
       {/* 3D WebGL Canvas */}
@@ -317,7 +324,7 @@ export default function CyberMatrix3D({
         }} 
       />
 
-      {/* Floating 3D Node Labels Overlay */}
+      {/* Top Header Overlay with Theme Toggle */}
       <div style={{
         position: 'absolute',
         top: '8px',
@@ -326,33 +333,74 @@ export default function CyberMatrix3D({
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
+        zIndex: 10,
         pointerEvents: 'none'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: hexStr, boxShadow: `0 0 8px ${hexStr}` }} />
-          <span style={{ fontSize: '0.68rem', fontWeight: 800, color: '#f8fafc', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-            3D Cyber Topology Matrix (Drag to Rotate)
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          background: isLight ? 'rgba(255, 255, 255, 0.92)' : 'rgba(15, 23, 42, 0.75)',
+          backdropFilter: 'blur(8px)',
+          padding: '4px 10px',
+          borderRadius: '8px',
+          border: isLight ? '1px solid #E2E8F0' : '1px solid rgba(255, 255, 255, 0.08)',
+          boxShadow: isLight ? '0 2px 6px rgba(0,0,0,0.05)' : 'none',
+          pointerEvents: 'auto'
+        }}>
+          <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: hexStr, boxShadow: `0 0 8px ${hexStr}` }} />
+          <span style={{
+            fontSize: '0.7rem',
+            fontWeight: 800,
+            color: isLight ? '#0F172A' : '#f8fafc',
+            letterSpacing: '0.04em',
+            textTransform: 'uppercase'
+          }}>
+            3D Cyber Topology Matrix
+          </span>
+          <span style={{ fontSize: '0.64rem', color: '#0284C7', fontFamily: 'monospace', fontWeight: 700 }}>
+            5 Nodes • 4 Beams
           </span>
         </div>
-        <span style={{ fontSize: '0.64rem', color: '#38bdf8', fontFamily: 'var(--font-mono)' }}>
-          5 Nodes • 4 3D Beams
-        </span>
+
+        <div style={{ display: 'flex', gap: '4px', pointerEvents: 'auto' }}>
+          <button
+            type="button"
+            onClick={() => setCurrentTheme(isLight ? 'dark' : 'white')}
+            style={{
+              background: isLight ? '#FFFFFF' : 'rgba(255, 255, 255, 0.08)',
+              border: isLight ? '1px solid #E2E8F0' : '1px solid rgba(255, 255, 255, 0.15)',
+              color: isLight ? '#475569' : '#cbd5e1',
+              padding: '3px 8px',
+              borderRadius: '6px',
+              fontSize: '0.64rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              boxShadow: isLight ? '0 1px 3px rgba(0,0,0,0.05)' : 'none'
+            }}
+          >
+            {isLight ? '🌙 Dark' : '☀️ White'}
+          </button>
+        </div>
       </div>
 
       {/* Interactive Node Legend Bar */}
       <div style={{
         position: 'absolute',
-        bottom: '6px',
-        left: '8px',
-        right: '8px',
+        bottom: '8px',
+        left: '10px',
+        right: '10px',
         display: 'flex',
         justifyContent: 'center',
+        flexWrap: 'wrap',
         gap: '6px',
-        background: 'rgba(15, 23, 42, 0.75)',
-        backdropFilter: 'blur(6px)',
-        padding: '4px 8px',
-        borderRadius: '6px',
-        border: '1px solid rgba(255, 255, 255, 0.08)'
+        background: isLight ? 'rgba(255, 255, 255, 0.95)' : 'rgba(15, 23, 42, 0.85)',
+        backdropFilter: 'blur(8px)',
+        padding: '5px 10px',
+        borderRadius: '8px',
+        border: isLight ? '1px solid #E2E8F0' : '1px solid rgba(255, 255, 255, 0.08)',
+        boxShadow: isLight ? '0 2px 8px rgba(0,0,0,0.06)' : '0 4px 12px rgba(0,0,0,0.3)',
+        zIndex: 10
       }}>
         {nodesData.map((node) => (
           <div 
@@ -361,12 +409,13 @@ export default function CyberMatrix3D({
               display: 'flex', 
               alignItems: 'center', 
               gap: '4px', 
-              fontSize: '0.65rem',
-              color: '#cbd5e1'
+              fontSize: '0.66rem',
+              color: isLight ? '#334155' : '#cbd5e1',
+              fontWeight: 600
             }}
           >
-            <span style={{ fontSize: '0.75rem' }}>{node.icon}</span>
-            <span style={{ fontWeight: 600 }}>{node.name}</span>
+            <span style={{ fontSize: '0.78rem' }}>{node.icon}</span>
+            <span>{node.name}</span>
           </div>
         ))}
       </div>
