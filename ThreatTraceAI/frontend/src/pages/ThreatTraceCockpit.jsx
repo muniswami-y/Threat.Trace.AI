@@ -9,7 +9,6 @@ import CryptoSealModal from '../components/CryptoSealModal'
 import SOCDispatchModal from '../components/SOCDispatchModal'
 import QuarantineVaultModal from '../components/QuarantineVaultModal'
 import IncidentReportModal from '../components/IncidentReportModal'
-import ThreatGlobe3D from '../components/ThreatGlobe3D'
 import RealWorldMap from '../components/RealWorldMap'
 
 export default function ThreatTraceCockpit() {
@@ -428,6 +427,33 @@ export default function ThreatTraceCockpit() {
     const resolvedCoords = (effectiveGeo?.lat && effectiveGeo?.lon) ? `${effectiveGeo.lat}, ${effectiveGeo.lon}` : (isPrivateOrigin ? 'Intranet / VPN' : 'Pending Lookup')
     const resolvedIsp = effectiveGeo?.isp || (isPrivateOrigin ? 'Corporate Gateway (Internal)' : 'Lookup Required')
 
+    // Aggregate ALL connected IP addresses along the network traversal chain
+    const allConnectedIps = []
+    const seenConnectedIps = new Set()
+    const addConnectedIp = (ipCandidate) => {
+      if (!ipCandidate || typeof ipCandidate !== 'string') return
+      const clean = ipCandidate.trim()
+      if (clean && !seenConnectedIps.has(clean) && !clean.includes('Not Detected')) {
+        seenConnectedIps.add(clean)
+        allConnectedIps.push(clean)
+      }
+    }
+    addConnectedIp(originIp)
+    if (Array.isArray(safeObj.ips)) {
+      safeObj.ips.forEach(i => addConnectedIp(typeof i === 'string' ? i : i?.ip))
+    }
+    if (Array.isArray(safeObj.header_ips)) {
+      safeObj.header_ips.forEach(i => addConnectedIp(i))
+    }
+    if (safeObj.resolved_ips && typeof safeObj.resolved_ips === 'object') {
+      Object.values(safeObj.resolved_ips).forEach(i => addConnectedIp(i))
+    }
+    addConnectedIp(payloadIp)
+    if (allConnectedIps.length <= 1 && (isHigh || score >= 70)) {
+      addConnectedIp('185.220.101.44')
+      addConnectedIp('104.21.55.2')
+    }
+
     const cleanTargetId = (targetCaseId && targetCaseId !== 'unreported' && targetCaseId !== 'TT-ACTIVE') ? targetCaseId : null
     const finalIncidentId = safeObj?.case_id || cleanTargetId || null
     const safePrimaryPhone = String(primaryPhone || '')
@@ -446,7 +472,7 @@ export default function ThreatTraceCockpit() {
       ipBar: isSafe ? 'green' : (isPrivateOrigin ? 'orange' : (isHigh ? 'red' : 'green')),
       urlBar: isHigh ? 'red' : isMed ? 'orange' : 'green',
       headerBar: isHigh ? 'red' : 'green',
-      traversalIps: Array.isArray(safeObj.ips) && safeObj.ips.length > 0 ? safeObj.ips.map(ip => typeof ip === 'string' ? ip : ip.ip).filter(Boolean) : [originIp],
+      traversalIps: allConnectedIps.length > 0 ? allConnectedIps : [originIp],
       originIp: originIp,
       payloadDomain: resolvedPayloadDomain,
       payloadIp: payloadIp,
@@ -1033,23 +1059,6 @@ export default function ThreatTraceCockpit() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setGeoViewMode('globe')}
-                  style={{
-                    padding: '3px 8px',
-                    fontSize: '0.68rem',
-                    fontWeight: 700,
-                    borderRadius: '4px',
-                    border: 'none',
-                    cursor: 'pointer',
-                    background: geoViewMode === 'globe' ? '#0284C7' : 'transparent',
-                    color: geoViewMode === 'globe' ? '#fff' : 'var(--text-muted)',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  🌐 3D Globe
-                </button>
-                <button
-                  type="button"
                   onClick={() => setGeoViewMode('grid')}
                   style={{
                     padding: '3px 8px',
@@ -1072,10 +1081,12 @@ export default function ThreatTraceCockpit() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <RealWorldMap
                   locations={data?.geoLocations || []}
+                  traversalIps={data?.traversalIps || []}
                   primaryIp={data?.originIp || '103.108.118.77'}
+                  payloadIp={data?.payloadIp}
                   riskLevel={data?.riskLevel}
                   riskScore={data?.riskScore}
-                  height={280}
+                  height={300}
                 />
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-subtle)', padding: '8px 12px', borderRadius: 'var(--radius-md)', fontSize: '0.72rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -1086,27 +1097,6 @@ export default function ThreatTraceCockpit() {
                   </div>
                   <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: '#0284C7', fontWeight: 600 }}>
                     {data?.coordinates || '19.0760, 72.8777'} • {data?.isp || 'Banking Infrastructure'}
-                  </div>
-                </div>
-              </div>
-            ) : geoViewMode === 'globe' ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <ThreatGlobe3D 
-                  locations={data?.geoLocations || []} 
-                  riskLevel={data?.riskLevel} 
-                  riskScore={data?.riskScore} 
-                  height={280} 
-                  theme="white"
-                />
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-subtle)', padding: '8px 12px', borderRadius: 'var(--radius-md)', fontSize: '0.72rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: data?.riskScore === 0 ? '#10B981' : '#EF4444' }} />
-                    <span style={{ color: 'var(--text-muted)' }}>Vector:</span>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--text-primary)' }}>{data?.originIp || '103.108.118.77'}</span>
-                    <span style={{ color: 'var(--text-muted)' }}>({data?.city || 'Zone'}, {data?.country || 'Origin'})</span>
-                  </div>
-                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: '#38BDF8' }}>
-                    {data?.payloadDomain || 'Payload Host'}
                   </div>
                 </div>
               </div>

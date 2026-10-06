@@ -1,9 +1,8 @@
 import React, { useState } from 'react'
-import ThreatGlobe3D from './ThreatGlobe3D'
 import RealWorldMap from './RealWorldMap'
 
-export default function IPGeolocation({ locations = [] }) {
-  const [viewMode, setViewMode] = useState('map') // 'map' | '3d' | 'grid'
+export default function IPGeolocation({ locations = [], traversalIps = [] }) {
+  const [viewMode, setViewMode] = useState('map') // 'map' | 'grid'
 
   if (!locations || locations.length === 0) return null
 
@@ -39,22 +38,6 @@ export default function IPGeolocation({ locations = [] }) {
             </button>
             <button
               type="button"
-              onClick={() => setViewMode('3d')}
-              style={{
-                background: viewMode === '3d' ? '#0284C7' : 'transparent',
-                color: viewMode === '3d' ? '#fff' : '#64748B',
-                border: 'none',
-                padding: '3px 10px',
-                borderRadius: '4px',
-                fontSize: '0.72rem',
-                fontWeight: 700,
-                cursor: 'pointer'
-              }}
-            >
-              🌐 3D Globe
-            </button>
-            <button
-              type="button"
               onClick={() => setViewMode('grid')}
               style={{
                 background: viewMode === 'grid' ? '#0284C7' : 'transparent',
@@ -75,20 +58,13 @@ export default function IPGeolocation({ locations = [] }) {
       </div>
 
       <div style={{ fontSize: '0.82rem', color: '#64748B', marginBottom: '1rem' }}>
-        Real-world IP coordinate tracking: inspect precise street/city GPS coordinates on interactive map tiles, or switch to the 3D globe to trace multi-hop trajectory arcs.
+        Real-world IP coordinate tracking: inspect precise street/city GPS coordinates on interactive map tiles, with multi-hop trajectory arcs connecting all threat origin IPs.
       </div>
 
       {/* Real-World Leaflet Map View */}
       {viewMode === 'map' && (
         <div style={{ marginBottom: '1.2rem' }}>
-          <RealWorldMap locations={locations} height={320} />
-        </div>
-      )}
-
-      {/* 3D WebGL Globe View */}
-      {viewMode === '3d' && (
-        <div style={{ marginBottom: '1.2rem' }}>
-          <ThreatGlobe3D locations={locations} height={320} theme="white" />
+          <RealWorldMap locations={locations} traversalIps={traversalIps} height={320} />
         </div>
       )}
 

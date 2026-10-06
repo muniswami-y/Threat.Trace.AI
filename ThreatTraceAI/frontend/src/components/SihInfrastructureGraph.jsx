@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import CyberMatrix3D from './CyberMatrix3D'
 
 export default function SihInfrastructureGraph({ riskLevel = 'HIGH', riskScore = null }) {
   const [selectedNode, setSelectedNode] = useState(null)
   const [latency, setLatency] = useState(24)
-  const [viewMode, setViewMode] = useState('3d') // '3d' | '2d'
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -83,40 +81,6 @@ export default function SihInfrastructureGraph({ riskLevel = 'HIGH', riskScore =
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          {/* 3D / 2D Toggle Switch */}
-          <div style={{ display: 'flex', background: 'rgba(255, 255, 255, 0.06)', padding: '2px', borderRadius: '6px', border: '1px solid rgba(255, 255, 255, 0.12)' }}>
-            <button
-              onClick={() => setViewMode('3d')}
-              style={{
-                background: viewMode === '3d' ? '#0284c7' : 'transparent',
-                color: viewMode === '3d' ? '#fff' : '#94a3b8',
-                border: 'none',
-                padding: '2px 8px',
-                borderRadius: '4px',
-                fontSize: '0.68rem',
-                fontWeight: 700,
-                cursor: 'pointer'
-              }}
-            >
-              🌐 3D Space
-            </button>
-            <button
-              onClick={() => setViewMode('2d')}
-              style={{
-                background: viewMode === '2d' ? '#0284c7' : 'transparent',
-                color: viewMode === '2d' ? '#fff' : '#94a3b8',
-                border: 'none',
-                padding: '2px 8px',
-                borderRadius: '4px',
-                fontSize: '0.68rem',
-                fontWeight: 700,
-                cursor: 'pointer'
-              }}
-            >
-              📐 2D Layout
-            </button>
-          </div>
-
           <div className="radar-badge" style={{ 
             display: 'flex', 
             alignItems: 'center', 
@@ -139,20 +103,16 @@ export default function SihInfrastructureGraph({ riskLevel = 'HIGH', riskScore =
         </div>
       </div>
 
-      {/* 3D WebGL Mode */}
-      {viewMode === '3d' ? (
-        <CyberMatrix3D riskLevel={riskLevel} riskScore={riskScore} height={280} />
-      ) : (
-        /* 2D Telemetry Canvas */
-        <div style={{ 
-          background: 'linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 100%)', 
-          borderRadius: '12px', 
-          padding: '10px', 
-          position: 'relative', 
-          border: '1px solid #E2E8F0',
-          boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.03)' 
-        }}>
-        <svg width="100%" height="225" viewBox="0 0 380 205" style={{ overflow: 'visible' }}>
+      {/* 2D Telemetry Canvas */}
+      <div style={{ 
+        background: 'linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 100%)', 
+        borderRadius: '12px', 
+        padding: '10px', 
+        position: 'relative', 
+        border: '1px solid #E2E8F0',
+        boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.03)' 
+      }}>
+      <svg width="100%" height="225" viewBox="0 0 380 205" style={{ overflow: 'visible' }}>
           <defs>
             {/* Dot Grid Background */}
             <pattern id="infraGridDot" width="20" height="20" patternUnits="userSpaceOnUse">
@@ -511,7 +471,6 @@ export default function SihInfrastructureGraph({ riskLevel = 'HIGH', riskScore =
           </div>
         )}
       </div>
-    )}
 
       {/* Real-Time Telemetry Status Triad */}
       <div style={{ 
