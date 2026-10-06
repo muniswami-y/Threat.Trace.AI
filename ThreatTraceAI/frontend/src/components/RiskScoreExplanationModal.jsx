@@ -467,95 +467,96 @@ Verdict: ${isClean ? 'Below 25 threshold -> VERIFIED CLEAN' : isMed ? 'Between 4
 
           {/* ADVANCED AI/ML MATHEMATICAL FORMULAS & FORENSIC METRICS */}
           <div style={{
-            background: '#0F172A',
-            color: '#F8FAFC',
+            background: '#FFFFFF',
+            color: '#0F172A',
             borderRadius: '14px',
             padding: '20px 22px',
             display: 'flex',
             flexDirection: 'column',
             gap: '16px',
-            boxShadow: '0 4px 14px rgba(0,0,0,0.1)'
+            border: '1px solid #E2E8F0',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #E2E8F0', paddingBottom: '10px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ fontSize: '1rem' }}>📐</span>
-                <span style={{ fontSize: '0.88rem', fontWeight: 800, color: '#38BDF8', letterSpacing: '0.04em' }}>
+                <span style={{ fontSize: '0.88rem', fontWeight: 800, color: '#0284C7', letterSpacing: '0.04em' }}>
                   MATHEMATICAL & MACHINE LEARNING FORMULAS
                 </span>
               </div>
-              <span style={{ fontSize: '0.72rem', fontFamily: 'var(--font-mono)', background: 'rgba(56, 189, 248, 0.15)', color: '#38BDF8', padding: '3px 8px', borderRadius: '6px', fontWeight: 700 }}>
+              <span style={{ fontSize: '0.72rem', fontFamily: 'var(--font-mono)', background: 'rgba(2, 132, 199, 0.08)', color: '#0284C7', border: '1px solid rgba(2, 132, 199, 0.2)', padding: '3px 8px', borderRadius: '6px', fontWeight: 700 }}>
                 BENCHMARK ACCURACY: 98.0%
               </span>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
               {/* 1. Naive Bayes Formula */}
-              <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '10px', padding: '12px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <div style={{ fontSize: '0.76rem', fontWeight: 800, color: '#34D399', marginBottom: '4px' }}>
+              <div style={{ background: '#F8FAFC', borderRadius: '10px', padding: '12px', border: '1px solid #E2E8F0' }}>
+                <div style={{ fontSize: '0.76rem', fontWeight: 800, color: '#059669', marginBottom: '6px' }}>
                   1. Naïve Bayes Classification (98% Acc)
                 </div>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: '#E2E8F0', background: 'rgba(0,0,0,0.3)', padding: '6px 8px', borderRadius: '6px', marginBottom: '6px' }}>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: '#0F172A', background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '7px 9px', borderRadius: '6px', marginBottom: '8px', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.02)' }}>
                   P(Y=cₖ|X) = P(X|cₖ)P(cₖ) / Σ P(X|cₖ)P(cₖ)
                 </div>
-                <div style={{ fontSize: '0.7rem', color: '#94A3B8' }}>
-                  Spam Posterior Probability: <strong style={{ color: isHigh ? '#F87171' : '#34D399' }}>{isHigh ? '98.4% (Phishing)' : isMed ? '54.2% (Suspicious)' : '0.2% (Clean)'}</strong>
+                <div style={{ fontSize: '0.7rem', color: '#64748B' }}>
+                  Spam Posterior Probability: <strong style={{ color: isHigh ? '#DC2626' : '#059669', fontWeight: 700 }}>{isHigh ? '98.4% (Phishing)' : isMed ? '54.2% (Suspicious)' : '0.2% (Clean)'}</strong>
                 </div>
               </div>
 
               {/* 2. Shannon Entropy */}
-              <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '10px', padding: '12px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <div style={{ fontSize: '0.76rem', fontWeight: 800, color: '#60A5FA', marginBottom: '4px' }}>
+              <div style={{ background: '#F8FAFC', borderRadius: '10px', padding: '12px', border: '1px solid #E2E8F0' }}>
+                <div style={{ fontSize: '0.76rem', fontWeight: 800, color: '#0284C7', marginBottom: '6px' }}>
                   2. Shannon Entropy (Randomness/DGA)
                 </div>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: '#E2E8F0', background: 'rgba(0,0,0,0.3)', padding: '6px 8px', borderRadius: '6px', marginBottom: '6px' }}>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: '#0F172A', background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '7px 9px', borderRadius: '6px', marginBottom: '8px', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.02)' }}>
                   H(X) = -Σ P(xᵢ) · log₂ P(xᵢ)
                 </div>
-                <div style={{ fontSize: '0.7rem', color: '#94A3B8' }}>
-                  Entropy: <strong style={{ color: '#60A5FA' }}>{isHigh ? '4.12 bits (DGA/Obfuscated)' : '2.14 bits (Normal Text)'}</strong>
+                <div style={{ fontSize: '0.7rem', color: '#64748B' }}>
+                  Entropy: <strong style={{ color: '#0284C7', fontWeight: 700 }}>{isHigh ? '4.12 bits (DGA/Obfuscated)' : '2.14 bits (Normal Text)'}</strong>
                 </div>
               </div>
 
               {/* 3. KNN Euclidean Distance */}
-              <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '10px', padding: '12px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <div style={{ fontSize: '0.76rem', fontWeight: 800, color: '#FBBF24', marginBottom: '4px' }}>
+              <div style={{ background: '#F8FAFC', borderRadius: '10px', padding: '12px', border: '1px solid #E2E8F0' }}>
+                <div style={{ fontSize: '0.76rem', fontWeight: 800, color: '#D97706', marginBottom: '6px' }}>
                   3. KNN Euclidean Distance (94.45% Acc)
                 </div>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: '#E2E8F0', background: 'rgba(0,0,0,0.3)', padding: '6px 8px', borderRadius: '6px', marginBottom: '6px' }}>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: '#0F172A', background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '7px 9px', borderRadius: '6px', marginBottom: '8px', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.02)' }}>
                   D(Xᵢ, Xⱼ) = √[ Σ (xᵢₖ - xⱼₖ)² ]
                 </div>
-                <div style={{ fontSize: '0.7rem', color: '#94A3B8' }}>
-                  Threat Cluster Distance: <strong style={{ color: '#FBBF24' }}>{isHigh ? '0.142 (High Similarity)' : '0.892 (Divergent)'}</strong>
+                <div style={{ fontSize: '0.7rem', color: '#64748B' }}>
+                  Threat Cluster Distance: <strong style={{ color: '#D97706', fontWeight: 700 }}>{isHigh ? '0.142 (High Similarity)' : '0.892 (Divergent)'}</strong>
                 </div>
               </div>
 
               {/* 4. Cosine Similarity */}
-              <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '10px', padding: '12px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <div style={{ fontSize: '0.76rem', fontWeight: 800, color: '#C084FC', marginBottom: '4px' }}>
+              <div style={{ background: '#F8FAFC', borderRadius: '10px', padding: '12px', border: '1px solid #E2E8F0' }}>
+                <div style={{ fontSize: '0.76rem', fontWeight: 800, color: '#7C3AED', marginBottom: '6px' }}>
                   4. Cosine Similarity (Visual Clone Match)
                 </div>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: '#E2E8F0', background: 'rgba(0,0,0,0.3)', padding: '6px 8px', borderRadius: '6px', marginBottom: '6px' }}>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: '#0F172A', background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '7px 9px', borderRadius: '6px', marginBottom: '8px', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.02)' }}>
                   Sim(A, B) = (A · B) / ( ‖A‖ × ‖B‖ )
                 </div>
-                <div style={{ fontSize: '0.7rem', color: '#C084FC' }}>
-                  Brand Vector Align: <strong style={{ color: '#C084FC' }}>{isHigh ? '0.94 (Brand Clone)' : '0.05 (Original Content)'}</strong>
+                <div style={{ fontSize: '0.7rem', color: '#64748B' }}>
+                  Brand Vector Align: <strong style={{ color: '#7C3AED', fontWeight: 700 }}>{isHigh ? '0.94 (Brand Clone)' : '0.05 (Original Content)'}</strong>
                 </div>
               </div>
             </div>
 
             {/* 5. Performance Metrics & VPN Traffic Correlation */}
-            <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '10px', padding: '12px 14px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ background: '#F8FAFC', borderRadius: '10px', padding: '14px 16px', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#E2E8F0' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#0F172A' }}>
                   📊 ML Metric Formulas:
                 </span>
-                <span style={{ fontSize: '0.7rem', fontFamily: 'var(--font-mono)', color: '#CBD5E1' }}>
-                  Accuracy: <strong>98.0%</strong> | Precision: <strong>97.4%</strong> | Recall: <strong>98.6%</strong> | F1-Score: <strong>98.0%</strong>
+                <span style={{ fontSize: '0.7rem', fontFamily: 'var(--font-mono)', color: '#475569' }}>
+                  Accuracy: <strong style={{ color: '#0F172A' }}>98.0%</strong> | Precision: <strong style={{ color: '#0F172A' }}>97.4%</strong> | Recall: <strong style={{ color: '#0F172A' }}>98.6%</strong> | F1-Score: <strong style={{ color: '#0F172A' }}>98.0%</strong>
                 </span>
               </div>
-              <div style={{ fontSize: '0.72rem', color: '#94A3B8', lineHeight: 1.5, background: 'rgba(0,0,0,0.25)', padding: '8px 10px', borderRadius: '6px' }}>
-                🔒 <strong>VPN / Proxy De-Anonymization via Traffic Timing & Byte Correlation:</strong><br />
-                • Ingress / Egress Match: <strong>5.00 GB (12:10:01) ➔ 5.00 GB (12:10:02)</strong> [Δt = 1.0s, Size Match = 100%]<br />
-                • Origin Traceback Verdict: <span style={{ color: '#38BDF8', fontWeight: 700 }}>Attacker origin de-anonymized through egress hop correlation</span>
+              <div style={{ fontSize: '0.72rem', color: '#334155', lineHeight: 1.6, background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '10px 12px', borderRadius: '8px', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.02)' }}>
+                🔒 <strong style={{ color: '#0F172A' }}>VPN / Proxy De-Anonymization via Traffic Timing & Byte Correlation:</strong><br />
+                • Ingress / Egress Match: <strong style={{ color: '#0F172A' }}>5.00 GB (12:10:01) ➔ 5.00 GB (12:10:02)</strong> [Δt = 1.0s, Size Match = 100%]<br />
+                • Origin Traceback Verdict: <span style={{ color: '#0284C7', fontWeight: 700 }}>Attacker origin de-anonymized through egress hop correlation</span>
               </div>
             </div>
           </div>
