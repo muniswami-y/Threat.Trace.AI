@@ -17,7 +17,7 @@ export default function RealWorldMap({
 }) {
   const mapContainerRef = useRef(null)
   const mapInstanceRef = useRef(null)
-  const [activeTileLayer, setActiveTileLayer] = useState('light') // 'light' | 'osm' | 'satellite'
+  const [activeTileLayer, setActiveTileLayer] = useState('mapbox-light') // 'mapbox-light' | 'mapbox-streets' | 'satellite' | 'osm'
   const [selectedLocation, setSelectedLocation] = useState(null)
   const [currentZoom, setCurrentZoom] = useState(zoom)
 
@@ -64,28 +64,31 @@ export default function RealWorldMap({
     })
     mapInstanceRef.current = map
 
-    // Tile Layer URL selection (CartoDB Positron Light by default for crisp white theme, NO API KEY NEEDED)
+    // Active Mapbox Token from .env
     const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN || null
 
-    let tileUrl = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
+    let tileUrl = mapboxToken
+      ? `https://api.mapbox.com/styles/v1/mapbox/light-v11/tiles/256/{z}/{x}/{y}@2x?access_token=${mapboxToken}`
+      : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
     let subdomains = 'abcd'
     let maxZoom = 19
 
-    if (activeTileLayer === 'mapbox' && mapboxToken) {
-      tileUrl = `https://api.mapbox.com/styles/v1/mapbox/light-v11/tiles/{z}/{x}/{y}?access_token=${mapboxToken}`
-      subdomains = 'abcd'
+    if (activeTileLayer === 'mapbox-streets' && mapboxToken) {
+      tileUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/256/{z}/{x}/{y}@2x?access_token=${mapboxToken}`
+    } else if (activeTileLayer === 'satellite') {
+      tileUrl = mapboxToken
+        ? `https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/tiles/256/{z}/{x}/{y}@2x?access_token=${mapboxToken}`
+        : 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
     } else if (activeTileLayer === 'osm') {
       tileUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
-      subdomains = 'abc'
-    } else if (activeTileLayer === 'satellite') {
-      tileUrl = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
       subdomains = 'abc'
     }
 
     const tiles = L.tileLayer(tileUrl, {
       subdomains,
       maxZoom,
-      detectRetina: true
+      detectRetina: true,
+      tileSize: 256
     })
     tiles.addTo(map)
 
@@ -280,7 +283,7 @@ export default function RealWorldMap({
           {/* Tile Layer Selector */}
           <div style={{
             display: 'flex',
-            background: 'rgba(255, 255, 255, 0.92)',
+            background: 'rgba(255, 255, 255, 0.95)',
             backdropFilter: 'blur(8px)',
             padding: '2px',
             borderRadius: '6px',
@@ -289,20 +292,54 @@ export default function RealWorldMap({
           }}>
             <button
               type="button"
-              onClick={() => setActiveTileLayer('light')}
+              onClick={() => setActiveTileLayer('mapbox-light')}
               style={{
                 border: 'none',
-                background: activeTileLayer === 'light' ? '#0284C7' : 'transparent',
-                color: activeTileLayer === 'light' ? '#FFFFFF' : '#475569',
+                background: activeTileLayer === 'mapbox-light' ? '#0284C7' : 'transparent',
+                color: activeTileLayer === 'mapbox-light' ? '#FFFFFF' : '#475569',
                 padding: '2px 7px',
                 borderRadius: '4px',
                 fontSize: '0.64rem',
                 fontWeight: 700,
                 cursor: 'pointer'
               }}
-              title="CartoDB Crisp Light Tiles"
+              title="Mapbox Crisp White Vector Tiles"
             >
-              Light
+              Mapbox Light
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTileLayer('mapbox-streets')}
+              style={{
+                border: 'none',
+                background: activeTileLayer === 'mapbox-streets' ? '#0284C7' : 'transparent',
+                color: activeTileLayer === 'mapbox-streets' ? '#FFFFFF' : '#475569',
+                padding: '2px 7px',
+                borderRadius: '4px',
+                fontSize: '0.64rem',
+                fontWeight: 700,
+                cursor: 'pointer'
+              }}
+              title="Mapbox Streets & Traffic Tiles"
+            >
+              Streets
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTileLayer('satellite')}
+              style={{
+                border: 'none',
+                background: activeTileLayer === 'satellite' ? '#0284C7' : 'transparent',
+                color: activeTileLayer === 'satellite' ? '#FFFFFF' : '#475569',
+                padding: '2px 7px',
+                borderRadius: '4px',
+                fontSize: '0.64rem',
+                fontWeight: 700,
+                cursor: 'pointer'
+              }}
+              title="Mapbox High-Res Satellite Imagery"
+            >
+              Satellite
             </button>
             <button
               type="button"
@@ -320,23 +357,6 @@ export default function RealWorldMap({
               title="Standard OpenStreetMap Tiles"
             >
               OSM
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTileLayer('satellite')}
-              style={{
-                border: 'none',
-                background: activeTileLayer === 'satellite' ? '#0284C7' : 'transparent',
-                color: activeTileLayer === 'satellite' ? '#FFFFFF' : '#475569',
-                padding: '2px 7px',
-                borderRadius: '4px',
-                fontSize: '0.64rem',
-                fontWeight: 700,
-                cursor: 'pointer'
-              }}
-              title="Satellite Imagery Tiles"
-            >
-              Sat
             </button>
           </div>
 
