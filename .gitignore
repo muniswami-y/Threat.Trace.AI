@@ -48,3 +48,4 @@ Thumbs.db
 # Logs & Temporary Files
 *.log
 .cache/
+temp_report_assets/

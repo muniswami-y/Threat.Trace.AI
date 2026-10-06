@@ -129,7 +129,7 @@ export default function QuarantineVaultModal({ isOpen = true, onClose, quarantin
           <button
             onClick={() => setActiveTab('overview')}
             style={{
-              padding: '6px 14px', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 600, border: 'none', cursor: 'pointer',
+              padding: '6px 14px', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer',
               background: activeTab === 'overview' ? '#0284C7' : '#FFFFFF',
               color: activeTab === 'overview' ? '#FFFFFF' : '#334155',
               boxShadow: activeTab === 'overview' ? '0 2px 4px rgba(2, 132, 199, 0.25)' : 'none',
@@ -141,7 +141,7 @@ export default function QuarantineVaultModal({ isOpen = true, onClose, quarantin
           <button
             onClick={() => setActiveTab('emails')}
             style={{
-              padding: '6px 14px', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 600, border: 'none', cursor: 'pointer',
+              padding: '6px 14px', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer',
               background: activeTab === 'emails' ? '#0284C7' : '#FFFFFF',
               color: activeTab === 'emails' ? '#FFFFFF' : '#334155',
               boxShadow: activeTab === 'emails' ? '0 2px 4px rgba(2, 132, 199, 0.25)' : 'none',
@@ -153,7 +153,7 @@ export default function QuarantineVaultModal({ isOpen = true, onClose, quarantin
           <button
             onClick={() => setActiveTab('policy')}
             style={{
-              padding: '6px 14px', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 600, border: 'none', cursor: 'pointer',
+              padding: '6px 14px', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer',
               background: activeTab === 'policy' ? '#0284C7' : '#FFFFFF',
               color: activeTab === 'policy' ? '#FFFFFF' : '#334155',
               boxShadow: activeTab === 'policy' ? '0 2px 4px rgba(2, 132, 199, 0.25)' : 'none',

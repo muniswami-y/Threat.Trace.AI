@@ -1,24 +1,72 @@
+import React, { useState } from 'react'
+import ThreatGlobe3D from './ThreatGlobe3D'
+
 export default function IPGeolocation({ locations = [] }) {
+  const [viewMode, setViewMode] = useState('3d') // '3d' | 'grid'
+
   if (!locations || locations.length === 0) return null
 
   return (
-    <div className="card">
-      <div className="card-header">
-        <div className="card-title">
+    <div className="card" style={{ overflow: 'hidden' }}>
+      <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" strokeWidth="2">
             <circle cx="12" cy="12" r="10"/>
             <line x1="2" y1="12" x2="22" y2="12"/>
             <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
           </svg>
-          <span>Geographical Threat Attribution ({locations.length} Origin Coordinates)</span>
+          <span>3D Geographical Threat Attribution ({locations.length} Origin Coordinates)</span>
         </div>
-        <span className="badge badge-cyan">Live Telemetry</span>
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', background: 'rgba(255, 255, 255, 0.05)', padding: '2px', borderRadius: '6px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+            <button
+              onClick={() => setViewMode('3d')}
+              style={{
+                background: viewMode === '3d' ? '#0284c7' : 'transparent',
+                color: viewMode === '3d' ? '#fff' : '#94a3b8',
+                border: 'none',
+                padding: '3px 10px',
+                borderRadius: '4px',
+                fontSize: '0.72rem',
+                fontWeight: 700,
+                cursor: 'pointer'
+              }}
+            >
+              🌐 3D Globe
+            </button>
+            <button
+              onClick={() => setViewMode('grid')}
+              style={{
+                background: viewMode === 'grid' ? '#0284c7' : 'transparent',
+                color: viewMode === 'grid' ? '#fff' : '#94a3b8',
+                border: 'none',
+                padding: '3px 10px',
+                borderRadius: '4px',
+                fontSize: '0.72rem',
+                fontWeight: 700,
+                cursor: 'pointer'
+              }}
+            >
+              📋 Coordinates
+            </button>
+          </div>
+          <span className="badge badge-cyan">Live 3D Telemetry</span>
+        </div>
       </div>
 
       <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
-        Live approximate GeoIP triangulation via upstream IP intelligence. Useful for detecting impossible traveler logins and anomalous relay hops.
+        Interactive 3D WebGL GeoIP telemetry tracking: drag to rotate the globe in 3D space, inspect origin coordinates, and trace multi-hop relay hops.
       </div>
 
+      {/* 3D WebGL Globe View */}
+      {viewMode === '3d' && (
+        <div style={{ marginBottom: '1.2rem' }}>
+          <ThreatGlobe3D locations={locations} height={340} />
+        </div>
+      )}
+
+      {/* Origin IP Cards Grid */}
       <div className="grid grid-2">
         {locations.map((geo, idx) => {
           const isSuccess = geo.status === 'success'

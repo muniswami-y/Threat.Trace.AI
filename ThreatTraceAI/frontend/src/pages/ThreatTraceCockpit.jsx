@@ -9,6 +9,7 @@ import CryptoSealModal from '../components/CryptoSealModal'
 import SOCDispatchModal from '../components/SOCDispatchModal'
 import QuarantineVaultModal from '../components/QuarantineVaultModal'
 import IncidentReportModal from '../components/IncidentReportModal'
+import ThreatGlobe3D from '../components/ThreatGlobe3D'
 
 export default function ThreatTraceCockpit() {
   const { caseId } = useParams()
@@ -18,6 +19,7 @@ export default function ThreatTraceCockpit() {
 
   // Case & Forensic State
   const [data, setData] = useState(() => formatCaseRecord(null, ''))
+  const [geoViewMode, setGeoViewMode] = useState('globe') // 'globe' | 'grid'
   const [actionDone, setActionDone] = useState(false)
   const [reportedMsg, setReportedMsg] = useState(null)
   const [loadingCase, setLoadingCase] = useState(false)
@@ -456,6 +458,9 @@ export default function ThreatTraceCockpit() {
       country: resolvedCountry,
       region: resolvedRegion,
       coordinates: resolvedCoords,
+      geoLocations: (Array.isArray(safeObj?.geo_locations) && safeObj.geo_locations.length > 0)
+        ? safeObj.geo_locations
+        : (effectiveGeo ? [effectiveGeo] : []),
       isp: resolvedIsp,
       phones: allPhones,
       phoneCount: allPhones.length,
@@ -998,63 +1003,125 @@ export default function ThreatTraceCockpit() {
 
           {/* Right: Attribution & Geolocation Quad */}
           <div className="sih-card" style={{ justifyContent: 'space-between' }}>
-            <div className="section-heading">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="2" y1="12" x2="22" y2="12"/>
-                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-              </svg>
-              <span>ATTRIBUTION & GEOLOCATION</span>
-            </div>
-
-            {/* Side-by-Side Attribution Strip */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-              <div style={{ background: 'var(--bg-subtle)', padding: '12px 14px', borderRadius: 'var(--radius-md)', border: 'none' }}>
-                <div style={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: data?.riskScore === 0 ? '#10B981' : '#EF4444' }} />
-                  <span>IP Traversal Path</span>
-                </div>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.88rem', fontWeight: 700, color: 'var(--text-primary)', wordBreak: 'break-all' }}>
-                  {data?.traversalIps?.join(' → ') || data?.originIp || 'Verified Gateway'}
-                </div>
-                <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                  ASN: {data?.isp || 'Trusted Corporate Gateway'}
-                </div>
+            <div className="section-heading" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="2" y1="12" x2="22" y2="12"/>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                </svg>
+                <span>ATTRIBUTION & GEOLOCATION</span>
               </div>
-
-              <div style={{ background: 'var(--bg-subtle)', padding: '12px 14px', borderRadius: 'var(--radius-md)', border: 'none' }}>
-                <div style={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: data?.riskScore === 0 ? '#10B981' : '#EF4444' }} />
-                  <span>Payload Target Domain</span>
-                </div>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.88rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                  {data?.payloadDomain || 'calendar.google.com'}
-                </div>
-                <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                  Server: {data?.payloadIp || 'None Resolved'} • DNS SEC
-                </div>
-              </div>
-            </div>
-
-            {/* Geolocation 4-Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
-              <div style={{ background: 'var(--bg-subtle)', padding: '10px 12px', borderRadius: 'var(--radius-md)', border: 'none' }}>
-                <div style={{ fontSize: '0.64rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>City</div>
-                <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-primary)', marginTop: '2px' }}>{data?.city || 'Verified Zone'}</div>
-              </div>
-              <div style={{ background: 'var(--bg-subtle)', padding: '10px 12px', borderRadius: 'var(--radius-md)', border: 'none' }}>
-                <div style={{ fontSize: '0.64rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Country</div>
-                <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-primary)', marginTop: '2px' }}>{data?.country || 'Safe Origin (US)'}</div>
-              </div>
-              <div style={{ background: 'var(--bg-subtle)', padding: '10px 12px', borderRadius: 'var(--radius-md)', border: 'none' }}>
-                <div style={{ fontSize: '0.64rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Region</div>
-                <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-primary)', marginTop: '2px' }}>{data?.region || 'Verified Subnet'}</div>
-              </div>
-              <div style={{ background: 'var(--bg-subtle)', padding: '10px 12px', borderRadius: 'var(--radius-md)', border: 'none' }}>
-                <div style={{ fontSize: '0.64rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Coordinates</div>
-                <div style={{ fontSize: '0.78rem', fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--text-primary)', marginTop: '2px' }}>{data?.coordinates || 'N/A'}</div>
+              <div style={{ display: 'flex', gap: '4px', background: 'rgba(0,0,0,0.06)', padding: '2px', borderRadius: '6px' }}>
+                <button
+                  type="button"
+                  onClick={() => setGeoViewMode('globe')}
+                  style={{
+                    padding: '3px 8px',
+                    fontSize: '0.68rem',
+                    fontWeight: 700,
+                    borderRadius: '4px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    background: geoViewMode === 'globe' ? '#3B82F6' : 'transparent',
+                    color: geoViewMode === 'globe' ? '#fff' : 'var(--text-muted)',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  🌐 3D Globe
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setGeoViewMode('grid')}
+                  style={{
+                    padding: '3px 8px',
+                    fontSize: '0.68rem',
+                    fontWeight: 700,
+                    borderRadius: '4px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    background: geoViewMode === 'grid' ? '#3B82F6' : 'transparent',
+                    color: geoViewMode === 'grid' ? '#fff' : 'var(--text-muted)',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  📋 Grid View
+                </button>
               </div>
             </div>
+
+            {geoViewMode === 'globe' ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <ThreatGlobe3D 
+                  locations={data?.geoLocations || []} 
+                  riskLevel={data?.riskLevel} 
+                  riskScore={data?.riskScore} 
+                  height={280} 
+                />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-subtle)', padding: '8px 12px', borderRadius: 'var(--radius-md)', fontSize: '0.72rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: data?.riskScore === 0 ? '#10B981' : '#EF4444' }} />
+                    <span style={{ color: 'var(--text-muted)' }}>Vector:</span>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--text-primary)' }}>{data?.originIp || '103.108.118.77'}</span>
+                    <span style={{ color: 'var(--text-muted)' }}>({data?.city || 'Zone'}, {data?.country || 'Origin'})</span>
+                  </div>
+                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: '#38BDF8' }}>
+                    {data?.payloadDomain || 'Payload Host'}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* Side-by-Side Attribution Strip */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div style={{ background: 'var(--bg-subtle)', padding: '12px 14px', borderRadius: 'var(--radius-md)', border: 'none' }}>
+                    <div style={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: data?.riskScore === 0 ? '#10B981' : '#EF4444' }} />
+                      <span>IP Traversal Path</span>
+                    </div>
+                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.88rem', fontWeight: 700, color: 'var(--text-primary)', wordBreak: 'break-all' }}>
+                      {data?.traversalIps?.join(' → ') || data?.originIp || 'Verified Gateway'}
+                    </div>
+                    <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                      ASN: {data?.isp || 'Trusted Corporate Gateway'}
+                    </div>
+                  </div>
+
+                  <div style={{ background: 'var(--bg-subtle)', padding: '12px 14px', borderRadius: 'var(--radius-md)', border: 'none' }}>
+                    <div style={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: data?.riskScore === 0 ? '#10B981' : '#EF4444' }} />
+                      <span>Payload Target Domain</span>
+                    </div>
+                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.88rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                      {data?.payloadDomain || 'calendar.google.com'}
+                    </div>
+                    <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                      Server: {data?.payloadIp || 'None Resolved'} • DNS SEC
+                    </div>
+                  </div>
+                </div>
+
+                {/* Geolocation 4-Grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
+                  <div style={{ background: 'var(--bg-subtle)', padding: '10px 12px', borderRadius: 'var(--radius-md)', border: 'none' }}>
+                    <div style={{ fontSize: '0.64rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>City</div>
+                    <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-primary)', marginTop: '2px' }}>{data?.city || 'Verified Zone'}</div>
+                  </div>
+                  <div style={{ background: 'var(--bg-subtle)', padding: '10px 12px', borderRadius: 'var(--radius-md)', border: 'none' }}>
+                    <div style={{ fontSize: '0.64rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Country</div>
+                    <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-primary)', marginTop: '2px' }}>{data?.country || 'Safe Origin (US)'}</div>
+                  </div>
+                  <div style={{ background: 'var(--bg-subtle)', padding: '10px 12px', borderRadius: 'var(--radius-md)', border: 'none' }}>
+                    <div style={{ fontSize: '0.64rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Region</div>
+                    <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-primary)', marginTop: '2px' }}>{data?.region || 'Verified Subnet'}</div>
+                  </div>
+                  <div style={{ background: 'var(--bg-subtle)', padding: '10px 12px', borderRadius: 'var(--radius-md)', border: 'none' }}>
+                    <div style={{ fontSize: '0.64rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Coordinates</div>
+                    <div style={{ fontSize: '0.78rem', fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--text-primary)', marginTop: '2px' }}>{data?.coordinates || 'N/A'}</div>
+                  </div>
+                </div>
+              </>
+            )}
 
             {/* Target Link Ribbon */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', background: 'rgba(56, 189, 248, 0.06)', border: 'none', padding: '8px 12px', borderRadius: 'var(--radius-md)' }}>
